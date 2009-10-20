@@ -1,3 +1,8 @@
+/**
+  * @file
+  * Source file for the testing GUI main window.
+  */
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 
