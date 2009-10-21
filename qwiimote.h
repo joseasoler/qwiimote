@@ -12,8 +12,12 @@
 
 class QWiimote : public QObject
 {
+private:
+    static const quint16 WIIMOTE_VENDOR_ID;
+    static const quint16 WIIMOTE_PRODUCT_ID;
 public:
     QWiimote();
+    bool findWiimote();
 };
 
 #endif // QWIIMOTE_H

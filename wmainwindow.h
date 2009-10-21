@@ -7,6 +7,7 @@
 #define WMAINWINDOW_H
 
 #include <QtGui/QMainWindow>
+#include "qwiimote.h"
 
 namespace Ui
 {

@@ -9,3 +9,5 @@ SOURCES += main.cpp \
 HEADERS += wmainwindow.h \
     qwiimote.h
 FORMS += wmainwindow.ui
+LIBS += libsetupapi \
+    libhid
