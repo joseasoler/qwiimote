@@ -34,7 +34,8 @@ bool QWiimote::findWiimote()
     DWORD required_size;
     HANDLE device_handle;
     HIDD_ATTRIBUTES attributes;
-    while (SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
+    bool wiimote_found = false;
+    while (!wiimote_found && SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
     {
         //Get the required size
         SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, NULL, 0, &required_size, NULL);
@@ -56,10 +57,9 @@ bool QWiimote::findWiimote()
             if (HidD_GetAttributes(device_handle, &attributes)) {
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
                         // Is the wiimote really connected?
-                        return true;
+                        wiimote_found = true;
                 }
             }
-            // Not a wiimote
             CloseHandle(device_handle);
         }
 
@@ -67,6 +67,7 @@ bool QWiimote::findWiimote()
         index++;
     }
 
-    return false;
+    SetupDiDestroyDeviceInfoList(device_info);
+    return wiimote_found;
 }
 
