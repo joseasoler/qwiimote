@@ -8,13 +8,16 @@
 #ifndef QWIIMOTE_H
 #define QWIIMOTE_H
 
+#include <windows.h>
 #include <QObject>
 
 class QWiimote : public QObject
 {
+private:
+    HANDLE wiimote_handle;                    ///< Handle to send / receive data from the wiimote
 protected:
-    static const quint16 WIIMOTE_VENDOR_ID;
-    static const quint16 WIIMOTE_PRODUCT_ID;
+    static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID
+    static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID
 public:
     QWiimote();
     bool findWiimote();

@@ -4,12 +4,13 @@
   */
 
 #include "qwiimote.h"
-#include <windows.h>
 #include <setupapi.h>
 #include <ddk/hidsdi.h>
+#include <io.h>
+#include <cstdio>
 
-const quint16 QWiimote::WIIMOTE_VENDOR_ID  = 0x057E; ///< Wiimote vendor ID
-const quint16 QWiimote::WIIMOTE_PRODUCT_ID = 0x0306; ///< Wiimote product ID
+const quint16 QWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
+const quint16 QWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
 
 QWiimote::QWiimote()
 {
@@ -22,7 +23,7 @@ bool QWiimote::findWiimote()
     HidD_GetHidGuid(guid);
 
     //Get device info
-    HDEVINFO device_info = SetupDiGetClassDevs(guid, NULL, NULL, DIGCF_DEVICEINTERFACE); //DIGCF_PRESENT//¬¬
+    HDEVINFO device_info = SetupDiGetClassDevs(guid, NULL, NULL, DIGCF_DEVICEINTERFACE);
 
     // Create a new interface data struct and initialize its size
     PSP_DEVICE_INTERFACE_DATA device_interface_data = new SP_DEVICE_INTERFACE_DATA;
@@ -32,7 +33,6 @@ bool QWiimote::findWiimote()
     qint16 index = 1;
     PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail;
     DWORD required_size;
-    HANDLE device_handle;
     HIDD_ATTRIBUTES attributes;
     bool wiimote_found = false;
     while (!wiimote_found && SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
@@ -47,20 +47,21 @@ bool QWiimote::findWiimote()
         //Get the device interface detailed info
         if (SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, device_interface_detail,
                                         required_size, NULL, NULL)) {
-            device_handle = CreateFile(device_interface_detail->DevicePath,
+            wiimote_handle = CreateFile(device_interface_detail->DevicePath,
                                        (GENERIC_READ | GENERIC_WRITE),
                                        (FILE_SHARE_READ | FILE_SHARE_WRITE),
                                        NULL,
-                                       OPEN_ALWAYS,//¬¬
+                                       OPEN_ALWAYS,
                                        FILE_FLAG_OVERLAPPED,
                                        NULL);
-            if (HidD_GetAttributes(device_handle, &attributes)) {
+            if (HidD_GetAttributes(wiimote_handle, &attributes)) {
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
-                        // Is the wiimote really connected?
-                        wiimote_found = true;
+                    // The device is a wiimote. It is really connected?
+                    wiimote_found = true;
                 }
+            } else {
+                CloseHandle(wiimote_handle);
             }
-            CloseHandle(device_handle);
         }
 
         free(device_interface_detail);
