@@ -6,8 +6,6 @@
 #include "qwiimote.h"
 #include <setupapi.h>
 #include <ddk/hidsdi.h>
-#include <io.h>
-#include <cstdio>
 
 const quint16 QWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
 const quint16 QWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
