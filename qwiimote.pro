@@ -7,7 +7,8 @@ SOURCES += main.cpp \
     wmainwindow.cpp \
     qwiimote.cpp
 HEADERS += wmainwindow.h \
-    qwiimote.h
+    qwiimote.h \
+    qwiimote_debug.h
 FORMS += wmainwindow.ui
 LIBS += libsetupapi \
     libhid

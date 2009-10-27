@@ -10,12 +10,13 @@
 
 #include <windows.h>
 #include <QObject>
+#include "qwiimote_debug.h"
 
 class QWiimote : public QObject
 {
-private:
-    HANDLE wiimote_handle;                    ///< Handle to send / receive data from the wiimote
 protected:
+    HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote
+
     static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID
     static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID
 public:
