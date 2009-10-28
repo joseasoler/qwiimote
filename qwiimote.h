@@ -10,7 +10,7 @@
 
 #include <windows.h>
 #include <QObject>
-#include "qwiimote_debug.h"
+#include "debugcheck.h"
 
 class QWiimote : public QObject
 {
