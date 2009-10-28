@@ -5,10 +5,12 @@ TARGET = qwiimote
 TEMPLATE = app
 SOURCES += main.cpp \
     wmainwindow.cpp \
-    qwiimote.cpp
+    qwiimote.cpp \
+    qiowiimote.cpp
 HEADERS += wmainwindow.h \
     qwiimote.h \
-    debugcheck.h
+    debugcheck.h \
+    qiowiimote.h
 FORMS += wmainwindow.ui
 LIBS += libsetupapi \
     libhid

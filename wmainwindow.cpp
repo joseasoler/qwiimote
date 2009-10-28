@@ -10,13 +10,6 @@ WMainWindow::WMainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::WMainWindow)
 {
     ui->setupUi(this);
-    // Ugly way of testing, I know
-    QWiimote aux;
-    if (aux.findWiimote()) {
-        exit(6396);
-    } else {
-        exit(-100);
-    }
 }
 
 WMainWindow::~WMainWindow()
