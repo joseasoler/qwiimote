@@ -15,20 +15,12 @@ QIOWiimote::QIOWiimote()
 
 QIOWiimote::QIOWiimote(QObject * parent) : QIODevice(parent)
 {
+    this->setOpenMode(QIODevice::NotOpen);
 }
 
 QIOWiimote::~QIOWiimote()
 {
     this->close();
-}
-
-/**
-  * Begins transfer of data to the wiimote.
-  *
-  */
-bool QIOWiimote::sendData(char * data, qint64 max_size)
-{
-    return HidD_SetOutputReport(this->wiimote_handle, data, max_size) == TRUE;
 }
 
 /**
@@ -39,18 +31,18 @@ bool QIOWiimote::sendData(char * data, qint64 max_size)
 bool QIOWiimote::open(OpenMode mode)
 {
     Q_UNUSED(mode);
-    // Get the GUID of the HID class
+    // Get the GUID of the HID class.
     LPGUID guid = new GUID;
     HidD_GetHidGuid(guid);
 
-    //Get device info
+    // Get device info.
     HDEVINFO device_info = SetupDiGetClassDevs(guid, NULL, NULL, DIGCF_DEVICEINTERFACE);
 
-    // Create a new interface data struct and initialize its size
+    // Create a new interface data struct and initialize its size.
     PSP_DEVICE_INTERFACE_DATA device_interface_data = new SP_DEVICE_INTERFACE_DATA;
     device_interface_data->cbSize = sizeof(*device_interface_data);
 
-    //Enumerate through interfaces
+    // Enumerate through interfaces.
     qint16 index = 1;
     PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail;
     DWORD required_size;
@@ -58,16 +50,17 @@ bool QIOWiimote::open(OpenMode mode)
     bool wiimote_found = false;
     while (!wiimote_found && SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
     {
-        //Get the required size
+        // Get the required size.
         SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, NULL, 0, &required_size, NULL);
 
-        //Assign the required number of bytes
+        // Assign the required number of bytes.
         device_interface_detail = PSP_DEVICE_INTERFACE_DETAIL_DATA(new quint8[required_size]);
         device_interface_detail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
-        //Get the device interface detailed info
+        // Get the device interface detailed information.
         if (SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, device_interface_detail,
                                         required_size, NULL, NULL)) {
+            // Create a handle to the device.
             wiimote_handle = CreateFile(device_interface_detail->DevicePath,
                                        (GENERIC_READ | GENERIC_WRITE),
                                        (FILE_SHARE_READ | FILE_SHARE_WRITE),
@@ -76,17 +69,18 @@ bool QIOWiimote::open(OpenMode mode)
                                        FILE_FLAG_OVERLAPPED,
                                        NULL);
             if (HidD_GetAttributes(wiimote_handle, &attributes)) {
+                // Check if the device is actually a wiimote.
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
                     // To test if the wiimote is really connected, an empty LED report is sent.
-                    char buffer[2];
-                    buffer[0] = 0x11;
-                    buffer[1] = 0x00;
-                    if (wiimote_found = this->sendData(buffer, 2)) {
+                    char led_report[] = {0x11, 0x00};
+                    if (wiimote_found = this->writeData(led_report, 2)) {
                         // To get data from the wiimote, write access is required.
                         this->setOpenMode(QIODevice::ReadWrite);
                     }
                 }
-            } else {
+            }
+            // The device is not a wiimote.
+            if (!wiimote_found) {
                 CloseHandle(wiimote_handle);
             }
         }
@@ -95,6 +89,8 @@ bool QIOWiimote::open(OpenMode mode)
         index++;
     }
 
+    free(device_interface_data);
+    free(guid);
     SetupDiDestroyDeviceInfoList(device_info);
     return wiimote_found;
 }
@@ -119,5 +115,6 @@ qint64 QIOWiimote::readLineData(char * data, qint64 max_size)
 
 qint64 QIOWiimote::writeData(const char * data, qint64 max_size)
 {
-    return 0;
+    if (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE) return max_size;
+    return -1;
 }

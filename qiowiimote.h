@@ -59,7 +59,6 @@ private:
     static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID
 
     HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote
-    bool sendData(char * data, qint64 max_size);
 };
 
 #endif // QIOWIIMOTE_H
