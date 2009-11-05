@@ -1,14 +1,16 @@
 #include "qiowiimote.h"
-#include <setupapi.h>
-#include <ddk/hidsdi.h>
 
 const quint16 QIOWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
 const quint16 QIOWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
 
-/* Public */
+/* HidD_SetOutputReport is not defined in MinGW w32api. */
+extern "C"{
+    WINHIDSDI BOOL WINAPI HidD_SetOutputReport (HANDLE, PVOID, ULONG);
+}
 
 QIOWiimote::QIOWiimote()
 {
+    this->setOpenMode(QIODevice::NotOpen);
 }
 
 QIOWiimote::QIOWiimote(QObject * parent) : QIODevice(parent)
@@ -17,11 +19,27 @@ QIOWiimote::QIOWiimote(QObject * parent) : QIODevice(parent)
 
 QIOWiimote::~QIOWiimote()
 {
+    this->close();
 }
 
+/**
+  * Begins transfer of data to the wiimote.
+  *
+  */
+bool QIOWiimote::sendData(char * data, qint64 max_size)
+{
+    return HidD_SetOutputReport(this->wiimote_handle, data, max_size) == TRUE;
+}
+
+/**
+  * Opens the connection to a wiimote.
+  * @param mode This parameter is unused: the open mode is always read-write.
+  * @return True if the connection was successfully opened.
+  */
 bool QIOWiimote::open(OpenMode mode)
 {
-    //Get the GUID of the HID class
+    Q_UNUSED(mode);
+    // Get the GUID of the HID class
     LPGUID guid = new GUID;
     HidD_GetHidGuid(guid);
 
@@ -59,8 +77,14 @@ bool QIOWiimote::open(OpenMode mode)
                                        NULL);
             if (HidD_GetAttributes(wiimote_handle, &attributes)) {
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
-                    // The device is a wiimote. It is really connected?
-                    wiimote_found = true;
+                    // To test if the wiimote is really connected, an empty LED report is sent.
+                    char buffer[2];
+                    buffer[0] = 0x11;
+                    buffer[1] = 0x00;
+                    if (wiimote_found = this->sendData(buffer, 2)) {
+                        // To get data from the wiimote, write access is required.
+                        this->setOpenMode(QIODevice::ReadWrite);
+                    }
                 }
             } else {
                 CloseHandle(wiimote_handle);
@@ -77,47 +101,23 @@ bool QIOWiimote::open(OpenMode mode)
 
 void QIOWiimote::close()
 {
-
-}
-
-bool QIOWiimote::atEnd() const
-{
-    return true;
-}
-
-qint64 QIOWiimote::bytesAvailable() const
-{
-    return 0;
-}
-
-qint64 QIOWiimote::bytesToWrite () const
-{
-    return 0;
-}
-
-bool QIOWiimote::waitForBytesWritten(int msecs)
-{
-    return true;
-}
-
-bool QIOWiimote::waitForReadyRead(int msecs)
-{
-    return true;
+    if (this->openMode() != QIODevice::NotOpen) CloseHandle(wiimote_handle);
+    this->setOpenMode(QIODevice::NotOpen);
 }
 
 /* Protected */
 
-qint64 QIOWiimote::readData(char * data, qint64 maxSize)
+qint64 QIOWiimote::readData(char * data, qint64 max_size)
 {
     return 0;
 }
 
-qint64 QIOWiimote::readLineData(char * data, qint64 maxSize)
+qint64 QIOWiimote::readLineData(char * data, qint64 max_size)
 {
     return 0;
 }
 
-qint64 QIOWiimote::writeData(const char * data, qint64 maxSize)
+qint64 QIOWiimote::writeData(const char * data, qint64 max_size)
 {
     return 0;
 }

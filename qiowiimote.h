@@ -3,26 +3,26 @@
 
 #include <QIODevice>
 #include <windows.h>
+#include <setupapi.h>
+#include <ddk/hidsdi.h>
 #include "debugcheck.h"
 
 class QIOWiimote : public QIODevice
-
-/*
-  functions to test:
-    virtual qint64 size () const
-  */
 {
 public:
     QIOWiimote();
     QIOWiimote(QObject * parent);
     ~QIOWiimote();
-    bool open(OpenMode mode);
+    bool open(OpenMode mode = QIODevice::ReadWrite);
     void close();
-    bool atEnd() const;
-    qint64 bytesAvailable() const;
-    qint64 bytesToWrite () const;
+
+    /**
+      * @todo Implement these functions
+      */
+    /*
     bool waitForBytesWritten(int msecs);
     bool waitForReadyRead(int msecs);
+    */
 
     /**
       * @todo I doubt this function will have any use, but it should be implemented.
@@ -50,15 +50,16 @@ public:
     bool seek(qint64 pos) { return false; }
 
 protected:
-    qint64 readData(char * data, qint64 maxSize);
-    qint64 readLineData(char * data, qint64 maxSize);
-    qint64 writeData(const char * data, qint64 maxSize);
+    qint64 readData(char * data, qint64 max_size);
+    qint64 readLineData(char * data, qint64 max_size);
+    qint64 writeData(const char * data, qint64 max_size);
 
 private:
     static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID
     static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID
 
     HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote
+    bool sendData(char * data, qint64 max_size);
 };
 
 #endif // QIOWIIMOTE_H
