@@ -123,6 +123,15 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
     return (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE);
 }
 
+/**
+  * Gets the first report from the report list.
+  * This function assumes that the report list is not empty.
+  */
+QWiimoteReport QIOWiimote::getReport()
+{
+    return this->report_queue.dequeue();
+}
+
 /* Private */
 
 /**
@@ -162,6 +171,8 @@ void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
         new_report.data = QByteArray::fromRawData(this->read_buffer, bytes_transferred);
         // Add this report to the report queue.
         report_queue.enqueue(new_report);
+        // Schedule the next read.
+        this->readBegin();
         emit this->reportReady();
     } else {
         emit this->reportError();
