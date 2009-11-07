@@ -1,6 +1,10 @@
+/**
+  * @file qiowiimote.cpp
+  * Source file for the QIOWiimote class.
+  */
+
 #include "qiowiimote.h"
 #include "debugcheck.h"
-#include <ctime>
 
 const quint16 QIOWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
 const quint16 QIOWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
@@ -12,12 +16,17 @@ extern "C"{
 
 /* Public */
 
+/**
+  * Creates a new QIOWiimote object.
+  */
 QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
-    opened = false;
     report_queue.clear();
 }
 
+/**
+  * Ensures that the wiimote connection is correctly closed before destroying the QIOWiimote object.
+  */
 QIOWiimote::~QIOWiimote()
 {
     this->close();
@@ -40,13 +49,13 @@ bool QIOWiimote::open()
     PSP_DEVICE_INTERFACE_DATA device_interface_data = new SP_DEVICE_INTERFACE_DATA;
     device_interface_data->cbSize = sizeof(*device_interface_data);
 
-    // Iterate through interfaces.
+    // Iterate through interfaces until a wiimote is found.
     qint16 index = 1;
     PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail;
     DWORD required_size;
     HIDD_ATTRIBUTES attributes;
-    bool wiimote_found = false;
-    while (!wiimote_found && SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
+    this->opened = false;
+    while (!this->opened && SetupDiEnumDeviceInterfaces(device_info, NULL, guid, index, device_interface_data))
     {
         // Get the required size.
         SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, NULL, 0, &required_size, NULL);
@@ -71,20 +80,18 @@ bool QIOWiimote::open()
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
                     // To test if the wiimote is really connected, an empty LED report is sent.
                     char led_report[] = {0x11, 0x00};
-                    if (wiimote_found = this->writeReport(led_report, 2)) {
+                    if (this->opened = this->writeReport(led_report, 2)) {
                         // Prepare the overlapped structure.
                         this->overlapped = new OverlappedQIOWiimote;
                         this->overlapped->iowiimote = this;
 
                         // Schedule the first read.
                         this->readBegin();
-
-                        opened = true;
                     }
                 }
             }
             // The device is not a wiimote.
-            if (!wiimote_found) {
+            if (!this->opened) {
                 CloseHandle(wiimote_handle);
             }
         }
@@ -93,10 +100,11 @@ bool QIOWiimote::open()
         index++;
     }
 
+    // Clean up used variables.
     free(device_interface_data);
     free(guid);
     SetupDiDestroyDeviceInfoList(device_info);
-    return wiimote_found;
+    return this->opened;
 }
 
 void QIOWiimote::close()
@@ -153,6 +161,7 @@ void CALLBACK QIOWiimote::readCallback(DWORD error_code,
                                        DWORD bytes_transferred,
                                        LPOVERLAPPED overlapped)
 {
+    // Get the QIOWiimote object that should receive this report.
     QIOWiimote * this_io = ((OverlappedQIOWiimote *)overlapped)->iowiimote;
     this_io->readEnd(error_code, bytes_transferred);
 }

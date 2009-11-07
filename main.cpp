@@ -1,3 +1,8 @@
+/**
+  * @file main.cpp
+  * Main source file.
+  */
+
 #include <QtGui/QApplication>
 #include "wmainwindow.h"
 

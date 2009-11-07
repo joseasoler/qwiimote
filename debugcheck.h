@@ -1,3 +1,8 @@
+/**
+  * @file debugcheck.h
+  * Common file for turning on / off debug and warning output.
+  */
+
 #ifndef DEBUGCHECK_H
 #define DEBUGCHECK_H
 
