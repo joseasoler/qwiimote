@@ -13,7 +13,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->setupUi(this);
 
     QIOWiimote * test = new QIOWiimote(this);
-    if (test->open()) exit(1000);
+    if (!test->open()) exit(1000);
 }
 
 WMainWindow::~WMainWindow()

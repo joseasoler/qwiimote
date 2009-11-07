@@ -1,64 +1,60 @@
+/**
+  * @file
+  * Header file for the QIOWiimote class.
+  * QIOWiimote handles direct communication with the wiimote.
+  */
+
 #ifndef QIOWIIMOTE_H
 #define QIOWIIMOTE_H
 
-#include <QIODevice>
+#include <QQueue>
+#include <QByteArray>
 #include <windows.h>
 #include <setupapi.h>
 #include <ddk/hidsdi.h>
-#include "debugcheck.h"
 
-class QIOWiimote : public QIODevice
+class QIOWiimote;
+
+/**
+  * Struct used with asynchronous reading from the wiimote.
+  */
+struct OverlappedQIOWiimote {
+    OVERLAPPED overlapped;
+    QIOWiimote * iowiimote;
+};
+
+class QIOWiimote : public QObject
 {
 public:
-    QIOWiimote();
-    QIOWiimote(QObject * parent);
+    QIOWiimote(QObject * parent = NULL);
     ~QIOWiimote();
-    bool open(OpenMode mode = QIODevice::ReadWrite);
+    bool open();
+    bool isOpened() { return this->opened; }
     void close();
-
-    /**
-      * @todo Implement these functions
-      */
-    /*
-    bool waitForBytesWritten(int msecs);
-    bool waitForReadyRead(int msecs);
-    */
-
-    /**
-      * @todo I doubt this function will have any use, but it should be implemented.
-      */
-    bool canReadLine() const { return false; }
-
-    /**
-      * The communication with the wiimote is sequential.
-      */
-    bool isSequential() const { return true; }
-
-    /**
-      * There is no concept of position in sequential devices.
-      */
-    qint64 pos() const { return 0; }
-
-    /**
-      * Reset does not have to do anything.
-      */
-    bool reset() { return true; }
-
-    /**
-      * Sequential devices do nothing on a seek.
-      */
-    bool seek(qint64 pos) { return false; }
-
-protected:
-    qint64 readData(char * data, qint64 max_size);
-    qint64 readLineData(char * data, qint64 max_size);
-    qint64 writeData(const char * data, qint64 max_size);
+    bool writeReport(const char * data, qint64 max_size);
 
 private:
-    static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID
-    static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID
+    static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID.
+    static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID.
+    HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote.
+    char read_buffer[22];                    ///< Buffer used for asynchronous read.
+    bool opened;                             ///< True only if the connection is opened.
+    QQueue<QByteArray> report_queue;         ///< Reports ready to be processed.
 
-    HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote
+    void readBegin();
+    static void CALLBACK readCallback(DWORD error_code, DWORD bytes_transferred, LPOVERLAPPED overlapped);
+    void readEnd(DWORD error_code, DWORD bytes_transferred);
+    OverlappedQIOWiimote * overlapped;
+
+signals:
+    /**
+      * This signal is emmited whenever a new report is ready for being processed.
+      */
+    void reportReady();
+    /**
+      * This signal is emmited when there is an error at a received report.
+      */
+    void reportError();
 };
 
 #endif // QIOWIIMOTE_H

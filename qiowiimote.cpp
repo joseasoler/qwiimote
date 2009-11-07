@@ -1,4 +1,6 @@
 #include "qiowiimote.h"
+#include "debugcheck.h"
+#include <ctime>
 
 const quint16 QIOWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
 const quint16 QIOWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
@@ -8,14 +10,12 @@ extern "C"{
     WINHIDSDI BOOL WINAPI HidD_SetOutputReport (HANDLE, PVOID, ULONG);
 }
 
-QIOWiimote::QIOWiimote()
-{
-    this->setOpenMode(QIODevice::NotOpen);
-}
+/* Public */
 
-QIOWiimote::QIOWiimote(QObject * parent) : QIODevice(parent)
+QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
-    this->setOpenMode(QIODevice::NotOpen);
+    opened = false;
+    report_queue.clear();
 }
 
 QIOWiimote::~QIOWiimote()
@@ -25,12 +25,10 @@ QIOWiimote::~QIOWiimote()
 
 /**
   * Opens the connection to a wiimote.
-  * @param mode This parameter is unused: the open mode is always read-write.
-  * @return True if the connection was successfully opened.
+  * @return true if the connection was successfully opened. false otherwise.
   */
-bool QIOWiimote::open(OpenMode mode)
+bool QIOWiimote::open()
 {
-    Q_UNUSED(mode);
     // Get the GUID of the HID class.
     LPGUID guid = new GUID;
     HidD_GetHidGuid(guid);
@@ -42,7 +40,7 @@ bool QIOWiimote::open(OpenMode mode)
     PSP_DEVICE_INTERFACE_DATA device_interface_data = new SP_DEVICE_INTERFACE_DATA;
     device_interface_data->cbSize = sizeof(*device_interface_data);
 
-    // Enumerate through interfaces.
+    // Iterate through interfaces.
     qint16 index = 1;
     PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail;
     DWORD required_size;
@@ -73,9 +71,15 @@ bool QIOWiimote::open(OpenMode mode)
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
                     // To test if the wiimote is really connected, an empty LED report is sent.
                     char led_report[] = {0x11, 0x00};
-                    if (wiimote_found = this->writeData(led_report, 2)) {
-                        // To get data from the wiimote, write access is required.
-                        this->setOpenMode(QIODevice::ReadWrite);
+                    if (wiimote_found = this->writeReport(led_report, 2)) {
+                        // Prepare the overlapped structure.
+                        this->overlapped = new OverlappedQIOWiimote;
+                        this->overlapped->iowiimote = this;
+
+                        // Schedule the first read.
+                        this->readBegin();
+
+                        opened = true;
                     }
                 }
             }
@@ -97,24 +101,65 @@ bool QIOWiimote::open(OpenMode mode)
 
 void QIOWiimote::close()
 {
-    if (this->openMode() != QIODevice::NotOpen) CloseHandle(wiimote_handle);
-    this->setOpenMode(QIODevice::NotOpen);
+    if (opened) {
+        //Cancel pending data read from the wiimote.
+        CancelIo(this->wiimote_handle);
+
+        // Close device handle.
+        CloseHandle(this->wiimote_handle);
+        free(overlapped);
+
+        // Clear the report queue list.
+        report_queue.clear();
+        opened = false;
+    }
 }
 
-/* Protected */
-
-qint64 QIOWiimote::readData(char * data, qint64 max_size)
+/**
+  * Writing is done synchronously.
+  */
+bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 {
-    return 0;
+    return (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE);
 }
 
-qint64 QIOWiimote::readLineData(char * data, qint64 max_size)
+/* Private */
+
+/**
+  * Starts asynchronous read of data.
+  */
+void QIOWiimote::readBegin()
 {
-    return 0;
+    ReadFileEx(this->wiimote_handle,
+               this->read_buffer,
+               22,
+               (LPOVERLAPPED)this->overlapped,
+               QIOWiimote::readCallback);
 }
 
-qint64 QIOWiimote::writeData(const char * data, qint64 max_size)
+/**
+  * This callback is called whenever a read operation is finished.
+  */
+void CALLBACK QIOWiimote::readCallback(DWORD error_code,
+                                       DWORD bytes_transferred,
+                                       LPOVERLAPPED overlapped)
 {
-    if (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE) return max_size;
-    return -1;
+    QIOWiimote * this_io = ((OverlappedQIOWiimote *)overlapped)->iowiimote;
+    this_io->readEnd(error_code, bytes_transferred);
+}
+
+/**
+  * Takes the raw report and makes it ready for processing.
+  * The report format is time|report
+  */
+void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
+{
+    if (error_code == 0) {
+        QByteArray new_report = QByteArray::number(time(), 10);
+        new_report.append(0xFF);
+        new_report.append(this->read_buffer, bytes_transferred);
+        report_queue.enqueue(new_report);
+    } else {
+        emit this->reportError();
+    }
 }
