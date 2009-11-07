@@ -34,7 +34,7 @@ public:
     bool isOpened() { return this->opened; }
     void close();
     bool writeReport(const char * data, qint64 max_size);
-    int  numWaitingReports() { return this->report_queue.size(); }
+    int  numWaitingReports() const { return this->report_queue.size(); }
     QWiimoteReport getReport();
 
 private:
