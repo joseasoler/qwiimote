@@ -9,12 +9,16 @@
 #define QWIIMOTE_H
 
 #include <QObject>
-#include "debugcheck.h"
+#include "qiowiimote.h"
 
 class QWiimote : public QObject
 {
+    Q_OBJECT
 public:
-    QWiimote();
+    QWiimote(QObject * parent = NULL);
+    ~QWiimote();
+private:
+    QIOWiimote io_wiimote;
 };
 
 #endif // QWIIMOTE_H

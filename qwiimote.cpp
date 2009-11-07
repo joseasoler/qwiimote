@@ -4,7 +4,12 @@
   */
 
 #include "qwiimote.h"
+#include "debugcheck.h"
 
-QWiimote::QWiimote()
+QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
+{
+}
+
+QWiimote::~QWiimote()
 {
 }
