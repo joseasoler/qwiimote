@@ -155,10 +155,14 @@ void CALLBACK QIOWiimote::readCallback(DWORD error_code,
 void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 {
     if (error_code == 0) {
-        QByteArray new_report = QByteArray::number(time(), 10);
-        new_report.append(0xFF);
-        new_report.append(this->read_buffer, bytes_transferred);
+        QWiimoteReport new_report;
+        // Set the time to the current time.
+        new_report.time = QTime::currentTime();
+        // Set the data.
+        new_report.data = QByteArray::fromRawData(this->read_buffer, bytes_transferred);
+        // Add this report to the report queue.
         report_queue.enqueue(new_report);
+        emit this->reportReady();
     } else {
         emit this->reportError();
     }

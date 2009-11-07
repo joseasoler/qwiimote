@@ -7,11 +7,12 @@
 #ifndef QIOWIIMOTE_H
 #define QIOWIIMOTE_H
 
+#include <QObject>
 #include <QQueue>
-#include <QByteArray>
 #include <windows.h>
 #include <setupapi.h>
 #include <ddk/hidsdi.h>
+#include "qwiimotereport.h"
 
 class QIOWiimote;
 
@@ -25,6 +26,7 @@ struct OverlappedQIOWiimote {
 
 class QIOWiimote : public QObject
 {
+    Q_OBJECT
 public:
     QIOWiimote(QObject * parent = NULL);
     ~QIOWiimote();
@@ -39,7 +41,7 @@ private:
     HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote.
     char read_buffer[22];                    ///< Buffer used for asynchronous read.
     bool opened;                             ///< True only if the connection is opened.
-    QQueue<QByteArray> report_queue;         ///< Reports ready to be processed.
+    QQueue<QWiimoteReport> report_queue;     ///< Reports ready to be processed.
 
     void readBegin();
     static void CALLBACK readCallback(DWORD error_code, DWORD bytes_transferred, LPOVERLAPPED overlapped);
