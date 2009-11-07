@@ -132,6 +132,14 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 }
 
 /**
+  * Overloaded function.
+  */
+bool writeReport(QByteArray data)
+{
+    return this->writeReport(data.constData(), data.size());
+}
+
+/**
   * Gets the first report from the report list.
   * This function assumes that the report list is not empty.
   */
