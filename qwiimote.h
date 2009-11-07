@@ -9,18 +9,29 @@
 #define QWIIMOTE_H
 
 #include <QObject>
+#include <QFlags>
 #include "qiowiimote.h"
 
 class QWiimote : public QObject
 {
     Q_OBJECT
 public:
+    enum DataType {
+        AccelerometerData = 1,
+        WiimotionData     = 2,
+    };
+    Q_DECLARE_FLAGS(DataTypes, DataType)
     QWiimote(QObject * parent = NULL);
     ~QWiimote();
-    bool start();
+    bool start(QWiimote::DataTypes new_data_types = 0);
     void stop();
+    QWiimote::DataTypes dataTypes() const;
+    void setDataTypes(QWiimote::DataTypes new_data_types);
 private:
     QIOWiimote io_wiimote;
+    QWiimote::DataTypes data_types;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
 
 #endif // QWIIMOTE_H

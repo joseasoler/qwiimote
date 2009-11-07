@@ -11,6 +11,7 @@
   */
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
+    data_types = 0;
 }
 
 QWiimote::~QWiimote()
@@ -22,9 +23,14 @@ QWiimote::~QWiimote()
   * @todo This is just a preliminary version of start.
   * @return true if the QWiimote started correctly.
   */
-bool QWiimote::start()
+bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
-    return this->io_wiimote.open();
+    if (this->io_wiimote.open()) {
+        this->setDataTypes(new_data_types);
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -34,4 +40,14 @@ bool QWiimote::start()
 void QWiimote::stop()
 {
     this->io_wiimote.close();
+}
+
+QWiimote::DataTypes QWiimote::dataTypes() const
+{
+    return this->data_types;
+}
+
+void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
+{
+    this->data_types = new_data_types;
 }
