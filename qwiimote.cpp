@@ -12,6 +12,7 @@
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
     data_types = 0;
+    connect(io_wiimote, SIGNAL(reportReady()), this, SLOT(getReport()));
 }
 
 QWiimote::~QWiimote()
@@ -50,4 +51,13 @@ QWiimote::DataTypes QWiimote::dataTypes() const
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
     this->data_types = new_data_types;
+    char report_type = 0x00;
+    if (new_data_types == QWiimote::AccelerometerData)  report_type = 0x31;
+    char report_mode[] = {0x12, 0x00, report_type};
+    this->io_wiimote.writeReport(report_mode, 3);
+}
+
+void QWiimote::getReport()
+{
+
 }

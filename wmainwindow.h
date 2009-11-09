@@ -7,6 +7,7 @@
 #define WMAINWINDOW_H
 
 #include <QtGui/QMainWindow>
+#include "qwiimote.h"
 
 namespace Ui
 {
@@ -23,6 +24,7 @@ public:
 
 private:
     Ui::WMainWindow *ui;
+    QWiimote wiimote;
 };
 
 #endif // WMAINWINDOW_H

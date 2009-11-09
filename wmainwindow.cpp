@@ -10,6 +10,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::WMainWindow)
 {
     ui->setupUi(this);
+    wiimote.start();
 }
 
 WMainWindow::~WMainWindow()

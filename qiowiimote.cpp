@@ -134,7 +134,7 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 /**
   * Overloaded function.
   */
-bool QIOWiimote:writeReport(QByteArray data)
+bool QIOWiimote::writeReport(QByteArray data)
 {
     return this->writeReport(data.constData(), data.size());
 }

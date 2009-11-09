@@ -18,7 +18,6 @@ class QWiimote : public QObject
 public:
     enum DataType {
         AccelerometerData = 1,
-        WiimotionData     = 2,
     };
     Q_DECLARE_FLAGS(DataTypes, DataType)
     QWiimote(QObject * parent = NULL);
@@ -30,6 +29,9 @@ public:
 private:
     QIOWiimote io_wiimote;
     QWiimote::DataTypes data_types;
+
+private slots:
+    void getReport();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
