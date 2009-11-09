@@ -22,6 +22,9 @@ public:
     WMainWindow(QWidget *parent = 0);
     ~WMainWindow();
 
+public slots:
+    void changeLabel();
+
 private:
     Ui::WMainWindow *ui;
     QWiimote wiimote;

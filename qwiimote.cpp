@@ -12,7 +12,7 @@
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
     data_types = 0;
-    connect(io_wiimote, SIGNAL(reportReady()), this, SLOT(getReport()));
+    connect(&io_wiimote, SIGNAL(reportReady()), this, SLOT(getReport()));
 }
 
 QWiimote::~QWiimote()
@@ -57,7 +57,34 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     this->io_wiimote.writeReport(report_mode, 3);
 }
 
+QWiimote::WiimoteButtons QWiimote::buttonData() const
+{
+    return this->button_data;
+}
+
+/**
+  * Gets a report from the wiimote.
+  * For now, the function ignores all pending reports besides the last one.
+  * @todo Right now the function ignores all pending reports besides the last one. If the report type is different than the expected type, something should be done.
+  */
 void QWiimote::getReport()
 {
+    QWiimoteReport report;
 
+    while (this->io_wiimote.numWaitingReports() > 0) {
+        report = this->io_wiimote.getReport();
+    }
+
+    this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
+    emit updatedState();
+
+    /*
+    QWiimoteReport report;
+
+
+    if (this->data_types == 0x00) {
+        this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
+        emit updatedState();
+    }
+    */
 }
