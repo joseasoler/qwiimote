@@ -22,8 +22,6 @@ WMainWindow::~WMainWindow()
 
 void WMainWindow::changeLabel()
 {
-    //ui->label->setText(QString::number(this->wiimote.buttonData(), 16));
-    //ui->button_up->setChecked(true);
     QWiimote::WiimoteButtons button_data = this->wiimote.buttonData();
 
     ui->radio_up->setChecked(false);

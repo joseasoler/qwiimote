@@ -71,12 +71,15 @@ void QWiimote::getReport()
 {
     QWiimoteReport report;
 
+    // Ignore all reports besides the last one.
     while (this->io_wiimote.numWaitingReports() > 0) {
         report = this->io_wiimote.getReport();
     }
 
-    this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
-    emit updatedState();
+    if (this->data_types == QFlag(0)) {
+        this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
+        emit updatedState();
+    }
 
     /*
     QWiimoteReport report;
