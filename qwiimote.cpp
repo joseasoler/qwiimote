@@ -117,13 +117,4 @@ void QWiimote::getReport(QWiimoteReport report)
     }
 
     emit updatedState();
-    /*
-    QWiimoteReport report;
-
-
-    if (this->data_types == 0x00) {
-        this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
-        emit updatedState();
-    }
-    */
 }
