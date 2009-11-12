@@ -73,6 +73,21 @@ QWiimote::WiimoteButtons QWiimote::buttonData() const
     return this->button_data;
 }
 
+quint16 QWiimote::rawAccelerationX() const
+{
+    return this->x_acceleration;
+}
+
+quint16 QWiimote::rawAccelerationY() const
+{
+    return this->y_acceleration;
+}
+
+quint16 QWiimote::rawAccelerationZ() const
+{
+    return this->z_acceleration;
+}
+
 /**
   * Gets a report from the wiimote.
   * For now, the function ignores all pending reports besides the last one.
@@ -92,9 +107,20 @@ void QWiimote::getReport()
     this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
 
     if (this->data_types == QWiimote::AccelerometerData) {
-        //this->x_acceleration = (report.data[3] * 0x100 + report.data[4]);
-        //this->y_acceleration = (report.data[5] * 0x100 + report.data[6]);
-        //this->z_acceleration = (report.data[6] * 0x100 + report.data[7]);
+        this->x_acceleration = (0xFF & report.data[3]) * 4;
+        this->x_acceleration += (report.data[1] & 0x60) >> 5;
+        this->y_acceleration = (0xFF & report.data[4]) * 4;
+        this->y_acceleration += (report.data[2] & 0x20) >> 4;
+        this->z_acceleration = (0xFF & report.data[5]) * 4;
+        this->y_acceleration += (report.data[2] & 0x40) >> 5;
+        qDebug() << "Acceleration: ("
+                 << QString::number(this->x_acceleration, 16) << ", "
+                 << QString::number(this->y_acceleration, 16) << ", "
+                 << QString::number(this->z_acceleration, 16) << ")";
+    } else {
+        this->x_acceleration = 0;
+        this->y_acceleration = 0;
+        this->z_acceleration = 0;
     }
 
     emit updatedState();

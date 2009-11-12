@@ -46,6 +46,9 @@ public:
     void setDataTypes(QWiimote::DataTypes new_data_types);
 
     QWiimote::WiimoteButtons buttonData() const;
+    quint16 rawAccelerationX() const;
+    quint16 rawAccelerationY() const;
+    quint16 rawAccelerationZ() const;
 
 signals:
     void updatedState();
