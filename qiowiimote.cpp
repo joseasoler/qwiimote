@@ -110,6 +110,10 @@ bool QIOWiimote::open()
 void QIOWiimote::close()
 {
     if (opened) {
+        // Send an empty LED report to the wiimote.
+        char led_report[] = {0x11, 0x00};
+        this->writeReport(led_report, 2);
+
         //Cancel pending data read from the wiimote.
         CancelIo(this->wiimote_handle);
 
@@ -128,6 +132,7 @@ void QIOWiimote::close()
   */
 bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 {
+    qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
     return (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE);
 }
 
