@@ -61,7 +61,7 @@ private:
     quint16 z_acceleration;
 
 private slots:
-    void getReport();
+    void getReport(QWiimoteReport report);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)

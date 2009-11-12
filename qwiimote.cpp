@@ -12,7 +12,7 @@
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
     data_types = 0;
-    connect(&io_wiimote, SIGNAL(reportReady()), this, SLOT(getReport()));
+    connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 }
 
 QWiimote::~QWiimote()
@@ -93,16 +93,9 @@ quint16 QWiimote::rawAccelerationZ() const
   * For now, the function ignores all pending reports besides the last one.
   * @todo Right now the function ignores all pending reports besides the last one. If the report type is different than the expected type, something should be done.
   */
-void QWiimote::getReport()
+void QWiimote::getReport(QWiimoteReport report)
 {
-    QWiimoteReport report;
-
-    // Ignore all reports besides the last one.
-    while (this->io_wiimote.numWaitingReports() > 0) {
-        report = this->io_wiimote.getReport();
-        qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
-    }
-    qDebug() << "This report will be processed.";
+    qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
 
     this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
 

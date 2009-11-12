@@ -8,7 +8,6 @@
 #define QIOWIIMOTE_H
 
 #include <QObject>
-#include <QQueue>
 #include <windows.h>
 #include <setupapi.h>
 #include <ddk/hidsdi.h>
@@ -35,8 +34,6 @@ public:
     void close();
     bool writeReport(const char * data, qint64 max_size);
     bool writeReport(QByteArray data);
-    int  numWaitingReports() const { return this->report_queue.size(); }
-    QWiimoteReport getReport();
 
 private:
     static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID.
@@ -44,7 +41,6 @@ private:
     HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote.
     char read_buffer[22];                    ///< Buffer used for asynchronous read.
     bool opened;                             ///< True only if the connection is opened.
-    QQueue<QWiimoteReport> report_queue;     ///< Reports ready to be processed.
 
     void readBegin();
     static void CALLBACK readCallback(DWORD error_code, DWORD bytes_transferred, LPOVERLAPPED overlapped);
@@ -55,7 +51,7 @@ signals:
     /**
       * This signal is emmited whenever a new report is ready for being processed.
       */
-    void reportReady();
+    void reportReady(QWiimoteReport report);
     /**
       * This signal is emmited when there is an error at a received report.
       */

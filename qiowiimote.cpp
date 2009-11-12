@@ -21,7 +21,6 @@ extern "C"{
   */
 QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
-    report_queue.clear();
 }
 
 /**
@@ -121,8 +120,6 @@ void QIOWiimote::close()
         CloseHandle(this->wiimote_handle);
         free(overlapped);
 
-        // Clear the report queue list.
-        report_queue.clear();
         opened = false;
     }
 }
@@ -142,15 +139,6 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 bool QIOWiimote::writeReport(QByteArray data)
 {
     return this->writeReport(data.constData(), data.size());
-}
-
-/**
-  * Gets the first report from the report list.
-  * This function assumes that the report list is not empty.
-  */
-QWiimoteReport QIOWiimote::getReport()
-{
-    return this->report_queue.dequeue();
 }
 
 /* Private */
@@ -191,11 +179,10 @@ void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
         new_report.time = QTime::currentTime();
         // Set the data.
         new_report.data = QByteArray::fromRawData(this->read_buffer, bytes_transferred);
-        // Add this report to the report queue.
-        report_queue.enqueue(new_report);
         // Schedule the next read.
         this->readBegin();
-        emit this->reportReady();
+        // Emit this report.
+        emit this->reportReady(new_report);
     } else {
         emit this->reportError();
     }
