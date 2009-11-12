@@ -53,6 +53,9 @@ private:
     QIOWiimote io_wiimote;
     QWiimote::DataTypes data_types;
     QWiimote::WiimoteButtons button_data;
+    quint16 x_acceleration;
+    quint16 y_acceleration;
+    quint16 z_acceleration;
 
 private slots:
     void getReport();

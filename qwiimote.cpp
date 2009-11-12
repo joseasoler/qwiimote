@@ -48,13 +48,24 @@ QWiimote::DataTypes QWiimote::dataTypes() const
     return this->data_types;
 }
 
+/**
+  * @todo Continuous reporting is not set off.
+  */
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
     this->data_types = new_data_types;
-    char report_type = 0x00;
-    if (new_data_types == QWiimote::AccelerometerData)  report_type = 0x31;
-    char report_mode[] = {0x12, 0x00, report_type};
-    this->io_wiimote.writeReport(report_mode, 3);
+    char report_type;
+    char report_mode;
+    if (new_data_types == QWiimote::AccelerometerData) {
+        report_type = 0x04; // Continuous reporting required.
+        report_mode = 0x31;
+    }
+    else {
+        report_type = 0x00; // Continuous reporting not required.
+        report_mode = 0x30;
+    }
+    char data_report[] = {0x12, report_type, report_mode};
+    this->io_wiimote.writeReport(data_report, 3);
 }
 
 QWiimote::WiimoteButtons QWiimote::buttonData() const
@@ -74,13 +85,19 @@ void QWiimote::getReport()
     // Ignore all reports besides the last one.
     while (this->io_wiimote.numWaitingReports() > 0) {
         report = this->io_wiimote.getReport();
+        qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
+    }
+    qDebug() << "This report will be processed.";
+
+    this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
+
+    if (this->data_types == QWiimote::AccelerometerData) {
+        //this->x_acceleration = (report.data[3] * 0x100 + report.data[4]);
+        //this->y_acceleration = (report.data[5] * 0x100 + report.data[6]);
+        //this->z_acceleration = (report.data[6] * 0x100 + report.data[7]);
     }
 
-    if (this->data_types == QFlag(0)) {
-        this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
-        emit updatedState();
-    }
-
+    emit updatedState();
     /*
     QWiimoteReport report;
 

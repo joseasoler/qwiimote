@@ -11,7 +11,16 @@ WMainWindow::WMainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::WMainWindow)
 {
     ui->setupUi(this);
-    wiimote.start();
+    ui->acceleration_x->setMinimum(0);
+    ui->acceleration_x->setMaximum(0x3FF);
+    ui->acceleration_x->setValue(0);
+    ui->acceleration_y->setMinimum(0);
+    ui->acceleration_y->setMaximum(0x3FF);
+    ui->acceleration_y->setValue(0);
+    ui->acceleration_z->setMinimum(0);
+    ui->acceleration_z->setMaximum(0x3FF);
+    ui->acceleration_z->setValue(0);
+    wiimote.start(0);
     connect(&wiimote, SIGNAL(updatedState()), this, SLOT(changeLabel()));
 }
 
@@ -47,4 +56,10 @@ void WMainWindow::changeLabel()
     if (button_data & QWiimote::ButtonPlus)  ui->radio_plus->setChecked(true);
     if (button_data & QWiimote::ButtonOne)   ui->radio_1->setChecked(true);
     if (button_data & QWiimote::ButtonTwo)   ui->radio_2->setChecked(true);
+}
+
+void WMainWindow::on_report_acceleration_clicked(bool checked)
+{
+    if (checked) this->wiimote.setDataTypes(QWiimote::AccelerometerData);
+    else this->wiimote.setDataTypes(0);
 }

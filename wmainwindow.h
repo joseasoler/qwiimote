@@ -28,6 +28,9 @@ public slots:
 private:
     Ui::WMainWindow *ui;
     QWiimote wiimote;
+
+private slots:
+    void on_report_acceleration_clicked(bool checked);
 };
 
 #endif // WMAINWINDOW_H
