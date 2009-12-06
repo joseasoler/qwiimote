@@ -28,6 +28,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
     if (this->io_wiimote.open()) {
         this->setDataTypes(new_data_types);
+        this->requestCalibrationData();
         return true;
     }
 
@@ -88,33 +89,48 @@ quint16 QWiimote::rawAccelerationZ() const
     return this->z_acceleration;
 }
 
+bool QWiimote::requestCalibrationData()
+{
+    char data_report[] =
+                        {
+                            0x17, //Report type
+                            0x00, //Read from the EEPROM
+                            0x00,
+                            0x00,
+                            0x16, //Memory position
+                            0x00,
+                            0x08, //Data size
+                        };
+
+    return this->io_wiimote.writeReport(data_report, 7);
+}
+
 /**
   * Gets a report from the wiimote.
   * For now, the function ignores all pending reports besides the last one.
-  * @todo Right now the function ignores all pending reports besides the last one. If the report type is different than the expected type, something should be done.
+  * @todo Missing bit in x_acceleration.
   */
 void QWiimote::getReport(QWiimoteReport report)
 {
     qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
+    if (report.data[0] != (char)0x21) {
+        this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
+        if (report.data[0] == (char)0x31) {
 
-    this->button_data = QFlag(report.data[2] * 0x100 + report.data[1]);
 
-    if (this->data_types == QWiimote::AccelerometerData) {
-        this->x_acceleration = (0xFF & report.data[3]) * 4;
-        this->x_acceleration += (report.data[1] & 0x60) >> 5;
-        this->y_acceleration = (0xFF & report.data[4]) * 4;
-        this->y_acceleration += (report.data[2] & 0x20) >> 4;
-        this->z_acceleration = (0xFF & report.data[5]) * 4;
-        this->y_acceleration += (report.data[2] & 0x40) >> 5;
-        qDebug() << "Acceleration: ("
-                 << QString::number(this->x_acceleration, 16) << ", "
-                 << QString::number(this->y_acceleration, 16) << ", "
-                 << QString::number(this->z_acceleration, 16) << ")";
-    } else {
-        this->x_acceleration = 0;
-        this->y_acceleration = 0;
-        this->z_acceleration = 0;
+            if (this->data_types == QWiimote::AccelerometerData) {
+                this->x_acceleration =  (report.data[3] & 0xFF) * 4;
+                this->x_acceleration += (report.data[1] & 0x60) >> 5;
+                this->y_acceleration =  (report.data[4] & 0xFF) * 4;
+                this->y_acceleration += (report.data[2] & 0x20) >> 4;
+                this->z_acceleration =  (report.data[5] & 0xFF) * 4;
+                this->y_acceleration += (report.data[2] & 0x40) >> 5;
+            } else {
+                this->x_acceleration = 0;
+                this->y_acceleration = 0;
+                this->z_acceleration = 0;
+            }
+        }
+        emit updatedState();
     }
-
-    emit updatedState();
 }

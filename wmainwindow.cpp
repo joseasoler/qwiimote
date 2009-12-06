@@ -20,9 +20,9 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->acceleration_z->setMinimum(0);
     ui->acceleration_z->setMaximum(0x3FF);
     ui->acceleration_z->setValue(0);
-    wiimote.start(QWiimote::AccelerometerData);
+    wiimote.start(0);
     connect(&wiimote, SIGNAL(updatedState()), this, SLOT(changeLabel()));
-    ui->report_acceleration->setChecked(true);
+    ui->report_acceleration->setChecked(false);
 }
 
 WMainWindow::~WMainWindow()

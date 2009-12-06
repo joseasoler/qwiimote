@@ -106,6 +106,9 @@ bool QIOWiimote::open()
     return this->opened;
 }
 
+/**
+  * @todo Change reporting type before closing the connection.
+  */
 void QIOWiimote::close()
 {
     if (opened) {
@@ -130,7 +133,11 @@ void QIOWiimote::close()
 bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 {
     qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
-    return (HidD_SetOutputReport(this->wiimote_handle, strdup(data), max_size) == TRUE);
+    char * data_copy;
+    data_copy = new char[max_size];
+    for(qint64 i = 0; i < max_size; i++)
+        data_copy[i] = data[i];
+    return (HidD_SetOutputReport(this->wiimote_handle, data_copy, max_size) == TRUE);
 }
 
 /**

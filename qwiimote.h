@@ -53,12 +53,22 @@ public:
 signals:
     void updatedState();
 private:
+    bool requestCalibrationData();
+
     QIOWiimote io_wiimote;
     QWiimote::DataTypes data_types;
     QWiimote::WiimoteButtons button_data;
     quint16 x_acceleration;
     quint16 y_acceleration;
     quint16 z_acceleration;
+
+    quint16 x_zero_acceleration;
+    quint16 y_zero_acceleration;
+    quint16 z_zero_acceleration;
+
+    quint16 x_gravity;
+    quint16 y_gravity;
+    quint16 z_gravity;
 
 private slots:
     void getReport(QWiimoteReport report);
