@@ -20,6 +20,7 @@ class QWiimote : public QObject
 public:
     enum DataType {
         AccelerometerData = 1,
+        MotionPlusData = 2,
     };
 
     Q_DECLARE_FLAGS(DataTypes, DataType)
@@ -71,12 +72,16 @@ public:
 signals:
     void updatedButtons();
     void updatedAcceleration();
+    void motionPlusState(bool);
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
 
     QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
     char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
+
+    QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
+    bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
 
     QWiimote::DataTypes data_types;       ///< Current data type status.
     QWiimote::WiimoteButtons button_data; ///< Button status.
@@ -96,6 +101,7 @@ private:
 private slots:
     void getCalibrationReport(QWiimoteReport report);
     void getReport(QWiimoteReport report);
+    void pollMotionPlus();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)

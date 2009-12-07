@@ -30,6 +30,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
         // All reports are ignored until we receive the calibration data.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
+        this->motionplus_plugged = false;
         return true;
     }
 
@@ -147,6 +148,10 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 
         disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
+
+        motionplus_polling = new QTimer(this);
+        connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+        motionplus_polling->start(1000);
     } else {
         qDebug() << "Report ignored.";
         this->requestCalibrationData();
@@ -187,8 +192,33 @@ void QWiimote::getReport(QWiimoteReport report)
             }
         }
     } else {
-        qDebug() << "Report ignored.";
+        if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors
+            ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in
+            ((report.data[7] & 0xFF)  == 0x00) &&
+            ((report.data[8] & 0xFF)  == 0xA6) &&
+            ((report.data[9] & 0xFF)  == 0x20) &&
+            ((report.data[10] & 0xFF) == 0x00) &&
+            ((report.data[11] & 0xFF) == 0x05)) {
+            qDebug() << "MotionPlus plugged in.";
+            this->motionplus_plugged = true;
+        } else {
+            qDebug() << "MotionPlus not plugged in.";
+            this->motionplus_plugged = true;
+        }
     }
+}
+
+void QWiimote::pollMotionPlus()
+{
+    send_buffer[0] = 0x17;                                       //Report type
+    send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); //Read from the registers
+    send_buffer[2] = 0xA6;                                       //Memory position
+    send_buffer[3] = 0x00;
+    send_buffer[4] = 0xFA;
+    send_buffer[5] = 0x00;                                       //Data size
+    send_buffer[6] = 0x06;
+
+    this->io_wiimote.writeReport(send_buffer, 7);
 }
 
 void QWiimote::resetAccelerationData()
