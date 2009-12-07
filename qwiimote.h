@@ -11,6 +11,7 @@
 
 #include <QObject>
 #include <QFlags>
+#include <QTimer>
 #include "qiowiimote.h"
 
 class QWiimote : public QObject
@@ -90,6 +91,7 @@ private:
     quint16 z_gravity;                    ///< Gravity calibration for the z axis.
 
 private slots:
+    void getCalibrationReport(QWiimoteReport report);
     void getReport(QWiimoteReport report);
 };
 

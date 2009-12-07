@@ -12,7 +12,6 @@
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
     data_types = 0;
-    connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 }
 
 QWiimote::~QWiimote()
@@ -28,6 +27,8 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
     if (this->io_wiimote.open()) {
         this->setDataTypes(new_data_types);
+        // All reports are ignored until we receive the calibration data.
+        connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
         return true;
     }
@@ -111,6 +112,32 @@ bool QWiimote::requestCalibrationData()
     return this->io_wiimote.writeReport(send_buffer, 7);
 }
 
+void QWiimote::getCalibrationReport(QWiimoteReport report)
+{
+    qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
+    if (report.data[0] == (char)0x21) {
+        this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
+        this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
+        this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
+        qDebug() << "X zero acceleration: " << QString::number(this->x_zero_acceleration, 2);
+        qDebug() << "Y zero acceleration: " << QString::number(this->y_zero_acceleration, 2);
+        qDebug() << "Z zero acceleration: " << QString::number(this->z_zero_acceleration, 2);
+
+        this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4);
+        this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2);
+        this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03);
+        qDebug() << "X gravity: " << QString::number(this->x_gravity, 2);
+        qDebug() << "Y gravity: " << QString::number(this->y_gravity, 2);
+        qDebug() << "Z gravity: " << QString::number(this->z_gravity, 2);
+
+        disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
+        connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
+    } else {
+        qDebug() << "Report ignored.";
+        this->requestCalibrationData();
+    }
+}
+
 /**
   * Gets a report from the wiimote.
   * @todo Check possible report errors. Use a threshold while reporting acceleration changes.
@@ -144,6 +171,8 @@ void QWiimote::getReport(QWiimoteReport report)
                 }
             }
         }
+    } else {
+        qDebug() << "Report ignored.";
     }
 }
 
