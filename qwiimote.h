@@ -2,6 +2,7 @@
   * @file qwiimote.h
   * Header file for the QWiimote class.
   * QWiimote is an API for the wiimote which follows the Qt Object model.
+  * The QWiimote class mantains the state of a single wiimote.
   * http://qt.nokia.com/doc/4.5/object.html
   */
 
@@ -55,20 +56,20 @@ signals:
 private:
     bool requestCalibrationData();
 
-    QIOWiimote io_wiimote;
-    QWiimote::DataTypes data_types;
-    QWiimote::WiimoteButtons button_data;
-    quint16 x_acceleration;
-    quint16 y_acceleration;
-    quint16 z_acceleration;
+    QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
+    QWiimote::DataTypes data_types;       ///< Current data type status.
+    QWiimote::WiimoteButtons button_data; ///< Button status.
+    quint16 x_acceleration;               ///< Raw acceleration in the x axis.
+    quint16 y_acceleration;               ///< Raw acceleration in the y axis.
+    quint16 z_acceleration;               ///< Raw acceleration in the z axis.
 
-    quint16 x_zero_acceleration;
-    quint16 y_zero_acceleration;
-    quint16 z_zero_acceleration;
+    quint16 x_zero_acceleration;          ///< Zero position for the x axis.
+    quint16 y_zero_acceleration;          ///< Zero position for the y axis.
+    quint16 z_zero_acceleration;          ///< Zero position for the z axis.
 
-    quint16 x_gravity;
-    quint16 y_gravity;
-    quint16 z_gravity;
+    quint16 x_gravity;                    ///< Gravity calibration for the x axis.
+    quint16 y_gravity;                    ///< Gravity calibration for the y axis.
+    quint16 z_gravity;                    ///< Gravity calibration for the z axis.
 
 private slots:
     void getReport(QWiimoteReport report);

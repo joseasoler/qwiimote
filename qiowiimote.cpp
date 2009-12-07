@@ -78,7 +78,7 @@ bool QIOWiimote::open()
                 // Check if the device is actually a wiimote.
                 if ((attributes.VendorID == WIIMOTE_VENDOR_ID) && (attributes.ProductID == WIIMOTE_PRODUCT_ID)) {
                     // To test if the wiimote is really connected, an empty LED report is sent.
-                    char led_report[] = {0x11, 0xF0};
+                    char led_report[] = {0x11, 0x00};
                     if (this->opened = this->writeReport(led_report, 2)) {
                         // Prepare the overlapped structure.
                         this->overlapped = new OverlappedQIOWiimote;
