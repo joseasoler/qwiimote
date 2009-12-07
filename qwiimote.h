@@ -39,14 +39,27 @@ public:
 
     Q_DECLARE_FLAGS(WiimoteButtons, WiimoteButton)
 
+    enum WiimoteLed {
+        Rumble = 0x01,
+        Led1   = 0x10,
+        Led2   = 0x20,
+        Led3   = 0x40,
+        Led4   = 0x80,
+    };
+
+    Q_DECLARE_FLAGS(WiimoteLeds, WiimoteLed)
+
     QWiimote(QObject * parent = NULL);
     ~QWiimote();
     bool start(QWiimote::DataTypes new_data_types = 0);
     void stop();
-    QWiimote::DataTypes dataTypes() const;
-    void setDataTypes(QWiimote::DataTypes new_data_types);
 
+    void setDataTypes(QWiimote::DataTypes new_data_types);
+    void setLeds(QWiimote::WiimoteLeds leds);
+
+    QWiimote::DataTypes dataTypes() const;
     QWiimote::WiimoteButtons buttonData() const;
+    QWiimote::WiimoteLeds leds() const;
     quint16 rawAccelerationX() const;
     quint16 rawAccelerationY() const;
     quint16 rawAccelerationZ() const;
@@ -62,6 +75,7 @@ private:
 
     QWiimote::DataTypes data_types;       ///< Current data type status.
     QWiimote::WiimoteButtons button_data; ///< Button status.
+    QWiimote::WiimoteLeds led_data;       ///< Led status.
     quint16 x_acceleration;               ///< Raw acceleration in the x axis.
     quint16 y_acceleration;               ///< Raw acceleration in the y axis.
     quint16 z_acceleration;               ///< Raw acceleration in the z axis.
@@ -81,5 +95,7 @@ private slots:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteButtons)
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteLeds)
 
 #endif // QWIIMOTE_H

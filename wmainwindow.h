@@ -28,6 +28,7 @@ public slots:
 private:
     Ui::WMainWindow *ui;
     QWiimote wiimote;
+    QWiimote::WiimoteLeds led_state;
 
 private slots:
     void on_report_acceleration_clicked(bool checked);

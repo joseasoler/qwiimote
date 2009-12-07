@@ -21,6 +21,8 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->acceleration_z->setMaximum(0x3FF);
     ui->acceleration_z->setValue(0);
     wiimote.start(0);
+    this->led_state = QWiimote::Led1;
+    wiimote.setLeds(led_state);
     connect(&wiimote, SIGNAL(updatedState()), this, SLOT(changeLabel()));
     ui->report_acceleration->setChecked(false);
 }
@@ -33,6 +35,7 @@ WMainWindow::~WMainWindow()
 void WMainWindow::changeLabel()
 {
     QWiimote::WiimoteButtons button_data = this->wiimote.buttonData();
+    bool leds_changed = false;
 
     ui->radio_up->setChecked(false);
     ui->radio_left->setChecked(false);
@@ -46,11 +49,36 @@ void WMainWindow::changeLabel()
     ui->radio_1->setChecked(false);
     ui->radio_2->setChecked(false);
 
-    if (button_data & QWiimote::ButtonUp)    ui->radio_up->setChecked(true);
-    if (button_data & QWiimote::ButtonLeft)  ui->radio_left->setChecked(true);
-    if (button_data & QWiimote::ButtonRight) ui->radio_right->setChecked(true);
-    if (button_data & QWiimote::ButtonDown)  ui->radio_down->setChecked(true);
-    if (button_data & QWiimote::ButtonA)     ui->radio_a->setChecked(true);
+    if (button_data & QWiimote::ButtonUp) {
+        ui->radio_up->setChecked(true);
+        this->led_state ^= QWiimote::Led1;
+        leds_changed = true;
+    }
+
+    if (button_data & QWiimote::ButtonRight) {
+        ui->radio_right->setChecked(true);
+        this->led_state ^= QWiimote::Led2;
+        leds_changed = true;
+    }
+
+    if (button_data & QWiimote::ButtonDown) {
+        ui->radio_down->setChecked(true);
+        this->led_state ^= QWiimote::Led3;
+        leds_changed = true;
+    }
+
+    if (button_data & QWiimote::ButtonLeft) {
+        ui->radio_left->setChecked(true);
+        this->led_state ^= QWiimote::Led4;
+        leds_changed = true;
+    }
+
+    if (button_data & QWiimote::ButtonA) {
+        ui->radio_a->setChecked(true);
+        this->led_state ^= QWiimote::Rumble;
+        leds_changed = true;
+    }
+
     if (button_data & QWiimote::ButtonB)     ui->radio_b->setChecked(true);
     if (button_data & QWiimote::ButtonMinus) ui->radio_minus->setChecked(true);
     if (button_data & QWiimote::ButtonHome)  ui->radio_home->setChecked(true);
@@ -61,6 +89,7 @@ void WMainWindow::changeLabel()
     ui->acceleration_x->setValue(this->wiimote.rawAccelerationX());
     ui->acceleration_y->setValue(this->wiimote.rawAccelerationY());
     ui->acceleration_z->setValue(this->wiimote.rawAccelerationZ());
+    if (leds_changed) wiimote.setLeds(led_state);
 }
 
 void WMainWindow::on_report_acceleration_clicked(bool checked)
