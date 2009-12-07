@@ -23,7 +23,8 @@ public:
     ~WMainWindow();
 
 public slots:
-    void changeLabel();
+    void changeButtons();
+    void changeAcceleration();
 
 private:
     Ui::WMainWindow *ui;

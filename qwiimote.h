@@ -65,7 +65,8 @@ public:
     quint16 rawAccelerationZ() const;
 
 signals:
-    void updatedState();
+    void updatedButtons();
+    void updatedAcceleration();
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
