@@ -31,6 +31,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
         this->motionplus_plugged = false;
+        this->motionplus_active = false;
         return true;
     }
 
@@ -55,7 +56,12 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
     this->data_types = new_data_types;
     send_buffer[0] = 0x12;
-    if (new_data_types == QWiimote::AccelerometerData) {
+
+    if (this->data_types & QWiimote::MotionPlusData) {
+        this->data_types &= QWiimote::AccelerometerData; //MotionPlus always activates AccelerometerData.
+        send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
+        send_buffer[2] = 0x35;
+    } else if (this->data_types & QWiimote::AccelerometerData) {
         send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
         send_buffer[2] = 0x31;
     }

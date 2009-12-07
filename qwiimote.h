@@ -19,8 +19,8 @@ class QWiimote : public QObject
     Q_OBJECT
 public:
     enum DataType {
-        AccelerometerData = 1,
-        MotionPlusData = 2,
+        AccelerometerData = 0x01,
+        MotionPlusData = 0x02, //MotionPlus always activates AccelerometerData.
     };
 
     Q_DECLARE_FLAGS(DataTypes, DataType)
@@ -80,23 +80,23 @@ private:
     QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
     char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
 
-    QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
-    bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
-
     QWiimote::DataTypes data_types;       ///< Current data type status.
     QWiimote::WiimoteButtons button_data; ///< Button status.
     QWiimote::WiimoteLeds led_data;       ///< Led status.
+
     quint16 x_acceleration;               ///< Raw acceleration in the x axis.
     quint16 y_acceleration;               ///< Raw acceleration in the y axis.
     quint16 z_acceleration;               ///< Raw acceleration in the z axis.
-
     quint16 x_zero_acceleration;          ///< Zero position for the x axis.
     quint16 y_zero_acceleration;          ///< Zero position for the y axis.
     quint16 z_zero_acceleration;          ///< Zero position for the z axis.
-
     quint16 x_gravity;                    ///< Gravity calibration for the x axis.
     quint16 y_gravity;                    ///< Gravity calibration for the y axis.
     quint16 z_gravity;                    ///< Gravity calibration for the z axis.
+
+    QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
+    bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
+    bool motionplus_active;               ///< True if the MotionPlus has been activated.
 
 private slots:
     void getCalibrationReport(QWiimoteReport report);
