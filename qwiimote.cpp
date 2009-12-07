@@ -108,17 +108,17 @@ quint16 QWiimote::rawAccelerationZ() const
 
 qreal QWiimote::accelerationX() const
 {
-    return ((qreal)(this->x_acceleration - this->x_zero_acceleration) / (qreal)this->x_gravity);
+    return this->x_calibrated_acceleration;
 }
 
 qreal QWiimote::accelerationY() const
 {
-    return ((qreal)(this->y_acceleration - this->y_zero_acceleration) / (qreal)this->y_gravity);
+    return this->y_calibrated_acceleration;
 }
 
 qreal QWiimote::accelerationZ() const
 {
-    return ((qreal)(this->z_acceleration - this->z_zero_acceleration) / (qreal)this->z_gravity);
+    return this->y_calibrated_acceleration;
 }
 
 bool QWiimote::requestCalibrationData()
@@ -191,6 +191,12 @@ void QWiimote::getReport(QWiimoteReport report)
                     this->x_acceleration = x_new;
                     this->y_acceleration = y_new;
                     this->z_acceleration = z_new;
+                    this->x_calibrated_acceleration = ((qreal)(this->x_acceleration - this->x_zero_acceleration) /
+                                                 (qreal)this->x_gravity);
+                    this->y_calibrated_acceleration = ((qreal)(this->y_acceleration - this->y_zero_acceleration) /
+                                                 (qreal)this->y_gravity);
+                    this->z_calibrated_acceleration = ((qreal)(this->z_acceleration - this->z_zero_acceleration) /
+                                                 (qreal)this->z_gravity);
                     emit this->updatedAcceleration();
                 }
             }
@@ -241,5 +247,8 @@ void QWiimote::resetAccelerationData()
     this->x_acceleration = 0;
     this->y_acceleration = 0;
     this->z_acceleration = 0;
+    this->x_calibrated_acceleration = 0;
+    this->y_calibrated_acceleration = 0;
+    this->z_calibrated_acceleration = 0;
     emit this->updatedAcceleration();
 }

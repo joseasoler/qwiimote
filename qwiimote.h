@@ -93,6 +93,9 @@ private:
     quint16 x_gravity;                    ///< Gravity calibration for the x axis.
     quint16 y_gravity;                    ///< Gravity calibration for the y axis.
     quint16 z_gravity;                    ///< Gravity calibration for the z axis.
+    qreal   x_calibrated_acceleration;    ///< Acceleration in the x axis.
+    qreal   y_calibrated_acceleration;    ///< Acceleration in the y axis.
+    qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
 
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
     bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
