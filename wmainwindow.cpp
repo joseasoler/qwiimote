@@ -20,6 +20,19 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->acceleration_z->setMinimum(0);
     ui->acceleration_z->setMaximum(0x3FF);
     ui->acceleration_z->setValue(0);
+
+    ui->real_acceleration_x->setSmallDecimalPoint(true);
+    ui->real_acceleration_y->setSmallDecimalPoint(true);
+    ui->real_acceleration_z->setSmallDecimalPoint(true);
+
+    ui->real_acceleration_x->setNumDigits(10);
+    ui->real_acceleration_y->setNumDigits(10);
+    ui->real_acceleration_z->setNumDigits(10);
+
+    ui->real_acceleration_x->setSegmentStyle(QLCDNumber::Flat);
+    ui->real_acceleration_y->setSegmentStyle(QLCDNumber::Flat);
+    ui->real_acceleration_z->setSegmentStyle(QLCDNumber::Flat);
+
     wiimote.start(0);
     this->led_state = QWiimote::Led1;
     wiimote.setLeds(led_state);
@@ -38,6 +51,10 @@ void WMainWindow::changeAcceleration()
     ui->acceleration_x->setValue(this->wiimote.rawAccelerationX());
     ui->acceleration_y->setValue(this->wiimote.rawAccelerationY());
     ui->acceleration_z->setValue(this->wiimote.rawAccelerationZ());
+
+    ui->real_acceleration_x->display(this->wiimote.accelerationX());
+    ui->real_acceleration_y->display(this->wiimote.accelerationY());
+    ui->real_acceleration_z->display(this->wiimote.accelerationZ());
 }
 
 void WMainWindow::changeButtons()

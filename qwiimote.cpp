@@ -99,6 +99,21 @@ quint16 QWiimote::rawAccelerationZ() const
     return this->z_acceleration;
 }
 
+qreal QWiimote::accelerationX() const
+{
+    return ((qreal)(this->x_acceleration - this->x_zero_acceleration) / (qreal)this->x_gravity);
+}
+
+qreal QWiimote::accelerationY() const
+{
+    return ((qreal)(this->y_acceleration - this->y_zero_acceleration) / (qreal)this->y_gravity);
+}
+
+qreal QWiimote::accelerationZ() const
+{
+    return ((qreal)(this->z_acceleration - this->z_zero_acceleration) / (qreal)this->z_gravity);
+}
+
 bool QWiimote::requestCalibrationData()
 {
     send_buffer[0] = 0x17;                                       //Report type

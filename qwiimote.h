@@ -64,6 +64,9 @@ public:
     quint16 rawAccelerationX() const;
     quint16 rawAccelerationY() const;
     quint16 rawAccelerationZ() const;
+    qreal accelerationX() const;
+    qreal accelerationY() const;
+    qreal accelerationZ() const;
 
 signals:
     void updatedButtons();
