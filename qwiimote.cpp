@@ -241,4 +241,5 @@ void QWiimote::resetAccelerationData()
     this->x_acceleration = 0;
     this->y_acceleration = 0;
     this->z_acceleration = 0;
+    emit this->updatedAcceleration();
 }
