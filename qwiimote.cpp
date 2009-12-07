@@ -55,18 +55,16 @@ QWiimote::DataTypes QWiimote::dataTypes() const
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
     this->data_types = new_data_types;
-    char report_type;
-    char report_mode;
+    send_buffer[0] = 0x12;
     if (new_data_types == QWiimote::AccelerometerData) {
-        report_type = 0x04; // Continuous reporting required.
-        report_mode = 0x31;
+        send_buffer[1] = 0x04; // Continuous reporting required.
+        send_buffer[2] = 0x31;
     }
     else {
-        report_type = 0x00; // Continuous reporting not required.
-        report_mode = 0x30;
+        send_buffer[1] = 0x00; // Continuous reporting not required.
+        send_buffer[2] = 0x30;
     }
-    char data_report[] = {0x12, report_type, report_mode};
-    this->io_wiimote.writeReport(data_report, 3);
+    this->io_wiimote.writeReport(send_buffer, 3);
 }
 
 QWiimote::WiimoteButtons QWiimote::buttonData() const
@@ -91,18 +89,15 @@ quint16 QWiimote::rawAccelerationZ() const
 
 bool QWiimote::requestCalibrationData()
 {
-    char data_report[] =
-                        {
-                            0x17, //Report type
-                            0x00, //Read from the EEPROM
-                            0x00,
-                            0x00,
-                            0x16, //Memory position
-                            0x00,
-                            0x08, //Data size
-                        };
+    send_buffer[0] = 0x17; //Report type
+    send_buffer[1] = 0x00; //Read from the EEPROM
+    send_buffer[2] = 0x00; //Memory position
+    send_buffer[3] = 0x00;
+    send_buffer[4] = 0x16;
+    send_buffer[5] = 0x00; //Data size
+    send_buffer[6] = 0x08;
 
-    return this->io_wiimote.writeReport(data_report, 7);
+    return this->io_wiimote.writeReport(send_buffer, 7);
 }
 
 /**

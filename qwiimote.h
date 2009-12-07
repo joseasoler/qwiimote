@@ -57,6 +57,8 @@ private:
     bool requestCalibrationData();
 
     QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
+    char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
+
     QWiimote::DataTypes data_types;       ///< Current data type status.
     QWiimote::WiimoteButtons button_data; ///< Button status.
     quint16 x_acceleration;               ///< Raw acceleration in the x axis.
