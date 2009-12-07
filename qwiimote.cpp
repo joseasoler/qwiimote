@@ -165,13 +165,11 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 void QWiimote::getReport(QWiimoteReport report)
 {
     qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
-    if (report.data[0] != (char)0x21) {
-        QWiimote::WiimoteButtons button_new = QFlag(report.data[2] * 0x100 + report.data[1]);
-        if (this->button_data != button_new) {
-            button_data = button_new;
-            emit this->updatedButtons();
-        }
-        if (report.data[0] == (char)0x31) {
+
+    int report_type = report.data[0] & 0xFF;
+
+    switch (report_type) {
+        case 0x31: //Acceleration report
             if (this->data_types == QWiimote::AccelerometerData) {
                 quint16 x_new, y_new, z_new;
                 x_new =  (report.data[3] & 0xFF) * 4;
@@ -190,21 +188,32 @@ void QWiimote::getReport(QWiimoteReport report)
                     emit this->updatedAcceleration();
                 }
             }
-        }
-    } else {
-        if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors
-            ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in
-            ((report.data[7] & 0xFF)  == 0x00) &&
-            ((report.data[8] & 0xFF)  == 0xA6) &&
-            ((report.data[9] & 0xFF)  == 0x20) &&
-            ((report.data[10] & 0xFF) == 0x00) &&
-            ((report.data[11] & 0xFF) == 0x05)) {
-            qDebug() << "MotionPlus plugged in.";
-            this->motionplus_plugged = true;
-        } else {
-            qDebug() << "MotionPlus not plugged in.";
-            this->motionplus_plugged = true;
-        }
+        break;
+        // Fallthrough
+        case 0x21:
+            if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors
+                ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in
+                ((report.data[7] & 0xFF)  == 0x00) &&
+                ((report.data[8] & 0xFF)  == 0xA6) &&
+                ((report.data[9] & 0xFF)  == 0x20) &&
+                ((report.data[10] & 0xFF) == 0x00) &&
+                ((report.data[11] & 0xFF) == 0x05)) {
+                qDebug() << "MotionPlus plugged in.";
+                if (!this->motionplus_plugged) emit motionPlusState(true);
+                this->motionplus_plugged = true;
+            } else {
+                qDebug() << "MotionPlus not plugged in.";
+                if (!this->motionplus_plugged) emit motionPlusState(false);
+                this->motionplus_plugged = false;
+            }
+        break;
+    }
+
+    //Button data is present in every report for now.
+    QWiimote::WiimoteButtons button_new = QFlag(report.data[2] * 0x100 + report.data[1]);
+    if (this->button_data != button_new) {
+        button_data = button_new;
+        emit this->updatedButtons();
     }
 }
 
