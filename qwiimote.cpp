@@ -11,7 +11,6 @@
   */
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
-    data_types = 0;
 }
 
 QWiimote::~QWiimote()
@@ -27,9 +26,11 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
     if (this->io_wiimote.open()) {
         this->setDataTypes(new_data_types);
-        // All reports are ignored until we receive the calibration data.
+
+        // All reports are ignored until the calibration data is received.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
+        data_types = 0;
         this->motionplus_plugged = false;
         this->motionplus_active = false;
         return true;
@@ -58,7 +59,7 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     send_buffer[0] = 0x12;
 
     if (this->data_types & QWiimote::MotionPlusData) {
-        this->data_types &= QWiimote::AccelerometerData; //MotionPlus always activates AccelerometerData.
+        this->data_types &= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
         send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
         send_buffer[2] = 0x35;
     } else if (this->data_types & QWiimote::AccelerometerData) {
@@ -76,8 +77,8 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 {
     this->led_data = leds;
-    send_buffer[0] = 0x11;
-    send_buffer[1] = leds;
+    send_buffer[0] = 0x11; // LED report.
+    send_buffer[1] = leds; // LED status.
     this->io_wiimote.writeReport(send_buffer, 2);
 }
 
@@ -138,6 +139,7 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 {
     qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
     if (report.data[0] == (char)0x21) {
+        // Get the required calibration values from the report.
         this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
         this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
         this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
@@ -152,10 +154,13 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
         qDebug() << "Y gravity: " << QString::number(this->y_gravity, 2);
         qDebug() << "Z gravity: " << QString::number(this->z_gravity, 2);
 
+        // Stop checking only calibration reports.
         disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
+        // Start checking all other reports.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 
         motionplus_polling = new QTimer(this);
+        // Start MotionPlus polling.
         connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
         motionplus_polling->start(1000);
     } else {
@@ -185,12 +190,14 @@ void QWiimote::getReport(QWiimoteReport report)
                 z_new =  (report.data[5] & 0xFF) * 4;
                 z_new += (report.data[2] & 0x40) >> 5;
 
+                // Process acceleration info only if the new values are different than the old ones.
                 if ((x_new != this->x_acceleration) ||
                     (y_new != this->y_acceleration) ||
                     (z_new != this->z_acceleration)) {
                     this->x_acceleration = x_new;
                     this->y_acceleration = y_new;
                     this->z_acceleration = z_new;
+                    // Calibrated values
                     this->x_calibrated_acceleration = ((qreal)(this->x_acceleration - this->x_zero_acceleration) /
                                                  (qreal)this->x_gravity);
                     this->y_calibrated_acceleration = ((qreal)(this->y_acceleration - this->y_zero_acceleration) /
@@ -201,8 +208,8 @@ void QWiimote::getReport(QWiimoteReport report)
                 }
             }
         break;
-        // Fallthrough
-        case 0x21:
+
+    case 0x21: // Read memory data, assumed to be a MotionPlus check.
             if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors
                 ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in
                 ((report.data[7] & 0xFF)  == 0x00) &&
@@ -221,7 +228,7 @@ void QWiimote::getReport(QWiimoteReport report)
         break;
     }
 
-    //Button data is present in every report for now.
+    //Button data is present in every received report for now.
     QWiimote::WiimoteButtons button_new = QFlag(report.data[2] * 0x100 + report.data[1]);
     if (this->button_data != button_new) {
         button_data = button_new;

@@ -33,6 +33,8 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->real_acceleration_y->setSegmentStyle(QLCDNumber::Flat);
     ui->real_acceleration_z->setSegmentStyle(QLCDNumber::Flat);
 
+    count = 0;
+
     wiimote.start(0);
     this->led_state = QWiimote::Led1;
     wiimote.setLeds(led_state);
@@ -52,9 +54,12 @@ void WMainWindow::changeAcceleration()
     ui->acceleration_y->setValue(this->wiimote.rawAccelerationY());
     ui->acceleration_z->setValue(this->wiimote.rawAccelerationZ());
 
-    ui->real_acceleration_x->display(this->wiimote.accelerationX());
-    ui->real_acceleration_y->display(this->wiimote.accelerationY());
-    ui->real_acceleration_z->display(this->wiimote.accelerationZ());
+    count++;
+    if (count % 500) {
+        ui->real_acceleration_x->display(this->wiimote.accelerationX());
+        ui->real_acceleration_y->display(this->wiimote.accelerationY());
+        ui->real_acceleration_z->display(this->wiimote.accelerationZ());
+    }
 }
 
 void WMainWindow::changeButtons()

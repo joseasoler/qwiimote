@@ -101,6 +101,12 @@ private:
     bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
     bool motionplus_active;               ///< True if the MotionPlus has been activated.
 
+    QTimer * status_polling;              ///< Timer that polls wiimote status reports.
+    bool status_requested;                ///< True if a status report is expected.
+    quint8 battery_level;                 ///< Battery level of the wiimote.
+    bool battery_empty;                   ///< True if the battery is almost empty.
+
+
 private slots:
     void getCalibrationReport(QWiimoteReport report);
     void getReport(QWiimoteReport report);
