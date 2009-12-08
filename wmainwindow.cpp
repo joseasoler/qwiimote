@@ -33,6 +33,9 @@ WMainWindow::WMainWindow(QWidget *parent)
     ui->real_acceleration_y->setSegmentStyle(QLCDNumber::Flat);
     ui->real_acceleration_z->setSegmentStyle(QLCDNumber::Flat);
 
+    ui->battery_level->setNumDigits(3);
+    ui->battery_level->setSegmentStyle(QLCDNumber::Flat);
+
     count = 0;
 
     wiimote.start(0);
@@ -40,6 +43,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     wiimote.setLeds(led_state);
     connect(&wiimote, SIGNAL(updatedButtons()), this, SLOT(changeButtons()));
     connect(&wiimote, SIGNAL(updatedAcceleration()), this, SLOT(changeAcceleration()));
+    connect(&wiimote, SIGNAL(updatedBattery()), this, SLOT(changeBattery()));
     ui->report_acceleration->setChecked(false);
 }
 
@@ -123,4 +127,9 @@ void WMainWindow::on_report_acceleration_clicked(bool checked)
 {
     if (checked) this->wiimote.setDataTypes(QWiimote::AccelerometerData);
     else this->wiimote.setDataTypes(0);
+}
+
+void WMainWindow::changeBattery()
+{
+    ui->battery_level->display(this->wiimote.batteryLevel());
 }

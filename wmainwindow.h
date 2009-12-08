@@ -25,6 +25,7 @@ public:
 public slots:
     void changeButtons();
     void changeAcceleration();
+    void changeBattery();
 
 private:
     Ui::WMainWindow *ui;

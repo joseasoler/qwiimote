@@ -33,6 +33,10 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
         data_types = 0;
         this->motionplus_plugged = false;
         this->motionplus_active = false;
+
+        this->status_requested = false;
+        this->battery_level = 0;
+        this->battery_empty = false;
         return true;
     }
 
@@ -122,6 +126,17 @@ qreal QWiimote::accelerationZ() const
     return this->y_calibrated_acceleration;
 }
 
+quint8 QWiimote::batteryLevel() const
+{
+    return this->battery_level;
+}
+
+bool QWiimote::batteryEmpty() const
+{
+    return this->battery_empty;
+}
+
+
 bool QWiimote::requestCalibrationData()
 {
     send_buffer[0] = 0x17;                                       //Report type
@@ -159,10 +174,18 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
         // Start checking all other reports.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 
-        motionplus_polling = new QTimer(this);
         // Start MotionPlus polling.
+        motionplus_polling = new QTimer(this);
         connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
         motionplus_polling->start(1000);
+        this->pollMotionPlus();
+
+        // Start status report polling.
+        status_polling = new QTimer(this);
+        connect(status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
+        status_polling->start(12000);
+        this->pollStatusReport();
+
     } else {
         qDebug() << "Report ignored.";
         this->requestCalibrationData();
@@ -226,6 +249,28 @@ void QWiimote::getReport(QWiimoteReport report)
                 this->motionplus_plugged = false;
             }
         break;
+
+        case 0x20: // Status report
+            quint8 new_battery_level = (report.data[6] & 0xFF);
+            bool new_battery_empty = ((report.data[3] & 0x01) == 0x01);
+            if ((new_battery_level != this->battery_level) ||
+                (new_battery_empty != this->battery_empty)) {
+                this->battery_level = new_battery_level;
+                qDebug() << "Battery level: " << this->battery_level;
+                emit this->updatedBattery();
+                if (this->battery_empty) {
+                    emit this->emptyBattery();
+                }
+            }
+
+
+            // If the status request was not requested, the data reporting mode must be changed.
+            if (!this->status_requested) {
+                this->setDataTypes(this->data_types);
+            }
+            this->status_requested = false;
+
+        break;
     }
 
     //Button data is present in every received report for now.
@@ -238,15 +283,33 @@ void QWiimote::getReport(QWiimoteReport report)
 
 void QWiimote::pollMotionPlus()
 {
-    send_buffer[0] = 0x17;                                       //Report type
-    send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); //Read from the registers
-    send_buffer[2] = 0xA6;                                       //Memory position
-    send_buffer[3] = 0x00;
-    send_buffer[4] = 0xFA;
-    send_buffer[5] = 0x00;                                       //Data size
-    send_buffer[6] = 0x06;
+    static char motionplus_buffer[] = {
+        0x17, //Report type
+        0x04, //Read from the registers
+        0xA6, //Memory position
+        0x00,
+        0xFA,
+        0x00, //Data size
+        0x06
+    };
 
-    this->io_wiimote.writeReport(send_buffer, 7);
+    motionplus_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
+
+    status_requested = true;
+
+    this->io_wiimote.writeReport(motionplus_buffer, 7);
+}
+
+void QWiimote::pollStatusReport()
+{
+    static char statusreport_buffer[] = {
+        0x15,
+        0x00
+    };
+
+    statusreport_buffer[1] = this->led_data & QWiimote::Rumble;
+
+    this->io_wiimote.writeReport(statusreport_buffer, 2);
 }
 
 void QWiimote::resetAccelerationData()

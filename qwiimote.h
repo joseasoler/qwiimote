@@ -62,6 +62,7 @@ public:
     QWiimote::DataTypes dataTypes() const;
     QWiimote::WiimoteButtons buttonData() const;
     QWiimote::WiimoteLeds leds() const;
+
     quint16 rawAccelerationX() const;
     quint16 rawAccelerationY() const;
     quint16 rawAccelerationZ() const;
@@ -69,9 +70,14 @@ public:
     qreal accelerationY() const;
     qreal accelerationZ() const;
 
+    quint8 batteryLevel() const;
+    bool batteryEmpty() const;
+
 signals:
     void updatedButtons();
     void updatedAcceleration();
+    void updatedBattery();
+    void emptyBattery();
     void motionPlusState(bool);
 private:
     bool requestCalibrationData();
@@ -111,6 +117,7 @@ private slots:
     void getCalibrationReport(QWiimoteReport report);
     void getReport(QWiimoteReport report);
     void pollMotionPlus();
+    void pollStatusReport();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
