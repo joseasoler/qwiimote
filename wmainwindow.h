@@ -34,6 +34,7 @@ private:
     int count;
 
 private slots:
+    void on_report_motionplus_clicked(bool checked);
     void on_report_acceleration_clicked(bool checked);
 };
 

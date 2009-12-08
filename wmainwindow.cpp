@@ -45,6 +45,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     connect(&wiimote, SIGNAL(updatedAcceleration()), this, SLOT(changeAcceleration()));
     connect(&wiimote, SIGNAL(updatedBattery()), this, SLOT(changeBattery()));
     ui->report_acceleration->setChecked(false);
+    ui->report_motionplus->setChecked(false);
 }
 
 WMainWindow::~WMainWindow()
@@ -125,11 +126,23 @@ void WMainWindow::changeButtons()
 
 void WMainWindow::on_report_acceleration_clicked(bool checked)
 {
-    if (checked) this->wiimote.setDataTypes(QWiimote::AccelerometerData);
-    else this->wiimote.setDataTypes(0);
+    if (checked) this->wiimote.setDataTypes(this->wiimote.dataTypes() | QWiimote::AccelerometerData);
+    else this->wiimote.setDataTypes(this->wiimote.dataTypes() & !QWiimote::AccelerometerData);
 }
 
 void WMainWindow::changeBattery()
 {
     ui->battery_level->display(this->wiimote.batteryLevel());
+}
+
+void WMainWindow::on_report_motionplus_clicked(bool checked)
+{
+    if (checked) {
+        this->wiimote.setDataTypes(this->wiimote.dataTypes() | QWiimote::MotionPlusData);
+        ui->report_acceleration->setDisabled(true);
+        ui->report_acceleration->setChecked(true);
+    } else {
+        this->wiimote.setDataTypes(this->wiimote.dataTypes() & ~QWiimote::MotionPlusData);
+        ui->report_acceleration->setDisabled(false);
+    }
 }

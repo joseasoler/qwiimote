@@ -238,7 +238,7 @@
    <widget class="QCheckBox" name="report_acceleration">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>280</x>
       <y>200</y>
       <width>121</width>
       <height>18</height>
@@ -351,6 +351,19 @@
     </property>
     <property name="text">
      <string>Battery Level</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="report_motionplus">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>310</y>
+      <width>121</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Report MotionPlus</string>
     </property>
    </widget>
   </widget>

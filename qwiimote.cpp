@@ -63,7 +63,7 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     send_buffer[0] = 0x12;
 
     if (this->data_types & QWiimote::MotionPlusData) {
-        this->data_types &= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
+        this->data_types |= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
         send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
         send_buffer[2] = 0x35;
     } else if (this->data_types & QWiimote::AccelerometerData) {
@@ -75,6 +75,7 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
         send_buffer[2] = 0x30;
         resetAccelerationData();
     }
+        qDebug() << "Data types: " << this->data_types;
     this->io_wiimote.writeReport(send_buffer, 3);
 }
 
@@ -203,8 +204,10 @@ void QWiimote::getReport(QWiimoteReport report)
     int report_type = report.data[0] & 0xFF;
 
     switch (report_type) {
-        case 0x31: //Acceleration report
-            if (this->data_types == QWiimote::AccelerometerData) {
+        case 0x35: // Acceleration + Extension report
+            // Fallthrough
+        case 0x31: // Acceleration report
+            if (this->data_types & QWiimote::AccelerometerData) {
                 quint16 x_new, y_new, z_new;
                 x_new =  (report.data[3] & 0xFF) * 4;
                 x_new += (report.data[1] & 0x60) >> 5;
