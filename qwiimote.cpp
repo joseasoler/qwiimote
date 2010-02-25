@@ -74,6 +74,7 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     } else if (!(new_data_types & QWiimote::MotionPlusData) && this->motionplus_state == QWiimote::MotionPlusWorking) {
         this->motionplus_state = QWiimote::MotionPlusInactive;
         if (this->motionplus_polling != NULL) {// Stop MotionPlus polling.
+            this->disableMotionPlus();
             disconnect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
             delete motionplus_polling;
             motionplus_polling = NULL;
@@ -94,7 +95,6 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
         send_buffer[2] = 0x30;
         resetAccelerationData();
     }
-    qDebug() << "Data types: " << this->data_types;
     this->io_wiimote.writeReport(send_buffer, 3);
 }
 
@@ -216,7 +216,7 @@ void QWiimote::getReport(QWiimoteReport report)
 
     switch (report_type) {
         case 0x35: // Acceleration + Extension report.
-            qDebug() << "Receiving a extension report " << report.data.toHex() << " from the wiimote.";
+            //qDebug() << "Receiving a extension report " << report.data.toHex() << " from the wiimote.";
             // Fallthrough
         case 0x31: // Acceleration report.
             if (this->data_types & QWiimote::AccelerometerData) {
@@ -255,17 +255,18 @@ void QWiimote::getReport(QWiimoteReport report)
                 ((report.data[7] & 0xFF)  == 0x00) &&
                 ((report.data[8] & 0xFF)  == 0xA6) &&
                 ((report.data[9] & 0xFF)  == 0x20) &&
-                ((report.data[10] & 0xFF) == 0x00) &&
                 ((report.data[11] & 0xFF) == 0x05)) {
                 qDebug() << "MotionPlus plugged in.";
                 if (this->motionplus_state == QWiimote::MotionPlusActivated) {
+                    this->enableMotionPlus();
                     this->motionplus_state = QWiimote::MotionPlusWorking;
                     emit motionPlusState(true);
                 }
-            } else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
+            }/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {//¬¬
+                qDebug() << "MotionPlus plugged out.";
                 this->motionplus_state = QWiimote::MotionPlusActivated;
                 emit motionPlusState(false);
-            }
+            }*/
         break;
 
         case 0x20: // Status report.
@@ -380,8 +381,6 @@ void QWiimote::enableMotionPlus()
     enable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
 
     this->io_wiimote.writeReport(enable_buffer, 22);
-
-    //this->requestStatusReport();
 }
 
 void QWiimote::disableMotionPlus()
@@ -415,6 +414,4 @@ void QWiimote::disableMotionPlus()
     disable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
 
     this->io_wiimote.writeReport(disable_buffer, 22);
-
-    //this->requestStatusReport();
 }
