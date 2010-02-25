@@ -20,7 +20,7 @@ class QWiimote : public QObject
 public:
     enum DataType {
         AccelerometerData = 0x01,
-        MotionPlusData = 0x02, //MotionPlus always activates AccelerometerData.
+        MotionPlusData    = 0x02, //MotionPlus always activates AccelerometerData.
     };
 
     Q_DECLARE_FLAGS(DataTypes, DataType)
@@ -82,6 +82,9 @@ signals:
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
+    void requestStatusReport();
+    void enableMotionPlus();
+    void disableMotionPlus();
 
     QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
     char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
@@ -104,8 +107,15 @@ private:
     qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
 
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
-    bool motionplus_plugged;              ///< True if the MotionPlus is plugged in.
-    bool motionplus_active;               ///< True if the MotionPlus has been activated.
+    enum MotionPlusState {
+        MotionPlusInactive,                         ///< Initial state.
+        MotionPlusActivated,                        ///< The MotionPlus has been activated by the user, but not by hardware.
+        MotionPlusWorking,                          ///< The MotionPlus is fully working.
+    };
+
+    Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
+
+    QWiimote::MotionPlusStates motionplus_state;
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.
     bool status_requested;                ///< True if a status report is expected.
@@ -125,5 +135,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteButtons)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteLeds)
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::MotionPlusStates)
 
 #endif // QWIIMOTE_H

@@ -31,12 +31,12 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
         data_types = 0;
-        this->motionplus_plugged = false;
-        this->motionplus_active = false;
-
+        this->motionplus_state = QWiimote::MotionPlusInactive;
         this->status_requested = false;
         this->battery_level = 0;
         this->battery_empty = false;
+        this->motionplus_polling = NULL;
+
         return true;
     }
 
@@ -59,14 +59,31 @@ QWiimote::DataTypes QWiimote::dataTypes() const
 
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
-    this->data_types = new_data_types;
     send_buffer[0] = 0x12;
 
-    if (this->data_types & QWiimote::MotionPlusData) {
-        this->data_types |= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
+    if (new_data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusInactive) {
+        new_data_types |= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
+        this->motionplus_state = QWiimote::MotionPlusActivated;
+
+        if (this->motionplus_polling == NULL) {// Start MotionPlus polling.
+            motionplus_polling = new QTimer(this);
+            connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+            motionplus_polling->start(1000);
+            this->pollMotionPlus();
+        }
+    } else if (!(new_data_types & QWiimote::MotionPlusData) && this->motionplus_state == QWiimote::MotionPlusWorking) {
+        this->motionplus_state = QWiimote::MotionPlusInactive;
+        if (this->motionplus_polling != NULL) {// Stop MotionPlus polling.
+            disconnect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+            delete motionplus_polling;
+            motionplus_polling = NULL;
+        }
+    }
+    this->data_types = new_data_types;
+    if (this->data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusWorking) {
         send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
         send_buffer[2] = 0x35;
-    } else if (this->data_types & QWiimote::AccelerometerData) {
+    } else if (this->data_types & QWiimote::AccelerometerData && this->motionplus_state != QWiimote::MotionPlusWorking) {
         send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
         send_buffer[2] = 0x31;
     }
@@ -75,7 +92,7 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
         send_buffer[2] = 0x30;
         resetAccelerationData();
     }
-        qDebug() << "Data types: " << this->data_types;
+    qDebug() << "Data types: " << this->data_types;
     this->io_wiimote.writeReport(send_buffer, 3);
 }
 
@@ -175,12 +192,6 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
         // Start checking all other reports.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 
-        // Start MotionPlus polling.
-        motionplus_polling = new QTimer(this);
-        connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
-        motionplus_polling->start(1000);
-        this->pollMotionPlus();
-
         // Start status report polling.
         status_polling = new QTimer(this);
         connect(status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
@@ -236,20 +247,21 @@ void QWiimote::getReport(QWiimoteReport report)
         break;
 
     case 0x21: // Read memory data, assumed to be a MotionPlus check.
-            if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors
-                ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in
+            if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors.
+                ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in.
                 ((report.data[7] & 0xFF)  == 0x00) &&
                 ((report.data[8] & 0xFF)  == 0xA6) &&
                 ((report.data[9] & 0xFF)  == 0x20) &&
                 ((report.data[10] & 0xFF) == 0x00) &&
                 ((report.data[11] & 0xFF) == 0x05)) {
                 qDebug() << "MotionPlus plugged in.";
-                if (!this->motionplus_plugged) emit motionPlusState(true);
-                this->motionplus_plugged = true;
-            } else {
-                qDebug() << "MotionPlus not plugged in.";
-                if (!this->motionplus_plugged) emit motionPlusState(false);
-                this->motionplus_plugged = false;
+                if (this->motionplus_state == QWiimote::MotionPlusActivated) {
+                    this->motionplus_state = QWiimote::MotionPlusWorking;
+                    emit motionPlusState(true);
+                }
+            } else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
+                this->motionplus_state = QWiimote::MotionPlusActivated;
+                emit motionPlusState(false);
             }
         break;
 
@@ -298,12 +310,11 @@ void QWiimote::pollMotionPlus()
 
     motionplus_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
 
-    status_requested = true;
-
     this->io_wiimote.writeReport(motionplus_buffer, 7);
+    this->setDataTypes(this->data_types);
 }
 
-void QWiimote::pollStatusReport()
+void QWiimote::requestStatusReport()
 {
     static char statusreport_buffer[] = {
         0x15,
@@ -315,6 +326,12 @@ void QWiimote::pollStatusReport()
     this->io_wiimote.writeReport(statusreport_buffer, 2);
 }
 
+void QWiimote::pollStatusReport()
+{
+    this->requestStatusReport();
+    this->status_requested = true;
+}
+
 void QWiimote::resetAccelerationData()
 {
     this->x_acceleration = 0;
@@ -324,4 +341,40 @@ void QWiimote::resetAccelerationData()
     this->y_calibrated_acceleration = 0;
     this->z_calibrated_acceleration = 0;
     emit this->updatedAcceleration();
+}
+
+
+void QWiimote::enableMotionPlus()
+{
+    // Write 0x04 to register 0xA600FE.
+    static char activate_buffer[] = {
+        0x16, // Report type
+        0x04, // Write to the registers
+        0xA6, // Memory position
+        0x00,
+        0xFE,
+        0x01, // Data size
+        0x04, // Activate MotionPlus
+        0x00, // Padding
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00
+    };
+
+    activate_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
+
+    this->io_wiimote.writeReport(activate_buffer, 22);
+
+    this->requestStatusReport();
 }
