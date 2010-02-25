@@ -176,7 +176,7 @@ void CALLBACK QIOWiimote::readCallback(DWORD error_code,
 
 /**
   * Takes the raw report and makes it ready for processing.
-  * The report format is time|report
+  * The report format is time|report.
   */
 void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 {

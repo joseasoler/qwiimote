@@ -157,12 +157,12 @@ bool QWiimote::batteryEmpty() const
 
 bool QWiimote::requestCalibrationData()
 {
-    send_buffer[0] = 0x17;                                       //Report type
-    send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); //Read from the EEPROM
-    send_buffer[2] = 0x00;                                       //Memory position
+    send_buffer[0] = 0x17;                                       //Report type.
+    send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); //Read from the EEPROM.
+    send_buffer[2] = 0x00;                                       //Memory position.
     send_buffer[3] = 0x00;
     send_buffer[4] = 0x16;
-    send_buffer[5] = 0x00;                                       //Data size
+    send_buffer[5] = 0x00;                                       //Data size.
     send_buffer[6] = 0x08;
 
     return this->io_wiimote.writeReport(send_buffer, 7);
@@ -215,9 +215,9 @@ void QWiimote::getReport(QWiimoteReport report)
     int report_type = report.data[0] & 0xFF;
 
     switch (report_type) {
-        case 0x35: // Acceleration + Extension report
+        case 0x35: // Acceleration + Extension report.
             // Fallthrough
-        case 0x31: // Acceleration report
+        case 0x31: // Acceleration report.
             if (this->data_types & QWiimote::AccelerometerData) {
                 quint16 x_new, y_new, z_new;
                 x_new =  (report.data[3] & 0xFF) * 4;
@@ -234,7 +234,7 @@ void QWiimote::getReport(QWiimoteReport report)
                     this->x_acceleration = x_new;
                     this->y_acceleration = y_new;
                     this->z_acceleration = z_new;
-                    // Calibrated values
+                    // Calibrated values.
                     this->x_calibrated_acceleration = ((qreal)(this->x_acceleration - this->x_zero_acceleration) /
                                                  (qreal)this->x_gravity);
                     this->y_calibrated_acceleration = ((qreal)(this->y_acceleration - this->y_zero_acceleration) /
@@ -265,7 +265,7 @@ void QWiimote::getReport(QWiimoteReport report)
             }
         break;
 
-        case 0x20: // Status report
+        case 0x20: // Status report.
             quint8 new_battery_level = (report.data[6] & 0xFF);
             bool new_battery_empty = ((report.data[3] & 0x01) == 0x01);
             if ((new_battery_level != this->battery_level) ||
@@ -299,12 +299,12 @@ void QWiimote::getReport(QWiimoteReport report)
 void QWiimote::pollMotionPlus()
 {
     static char motionplus_buffer[] = {
-        0x17, //Report type
-        0x04, //Read from the registers
-        0xA6, //Memory position
+        0x17, //Report type.
+        0x04, //Read from the registers.
+        0xA6, //Memory position.
         0x00,
         0xFA,
-        0x00, //Data size
+        0x00, //Data size.
         0x06
     };
 
@@ -348,14 +348,14 @@ void QWiimote::enableMotionPlus()
 {
     // Write 0x04 to register 0xA600FE.
     static char activate_buffer[] = {
-        0x16, // Report type
-        0x04, // Write to the registers
-        0xA6, // Memory position
+        0x16, // Report type.
+        0x04, // Write to the registers.
+        0xA6, // Memory position.
         0x00,
         0xFE,
-        0x01, // Data size
-        0x04, // Activate MotionPlus
-        0x00, // Padding
+        0x01, // Data size.
+        0x04, // Activate MotionPlus.
+        0x00, // Padding.
         0x00,
         0x00,
         0x00,
