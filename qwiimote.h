@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QFlags>
 #include <QTimer>
+#include <QQuaternion>
 #include "qiowiimote.h"
 
 class QWiimote : public QObject
@@ -40,6 +41,14 @@ public:
     };
 
     Q_DECLARE_FLAGS(WiimoteButtons, WiimoteButton)
+
+    enum MotionPlusState {
+        MotionPlusInactive,                         ///< Initial state.
+        MotionPlusActivated,                        ///< The MotionPlus has been activated by the user, but not by hardware.
+        MotionPlusWorking,                          ///< The MotionPlus is fully working.
+    };
+
+    Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
 
     enum WiimoteLed {
         Rumble = 0x01,
@@ -107,14 +116,6 @@ private:
     qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
 
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
-    enum MotionPlusState {
-        MotionPlusInactive,                         ///< Initial state.
-        MotionPlusActivated,                        ///< The MotionPlus has been activated by the user, but not by hardware.
-        MotionPlusWorking,                          ///< The MotionPlus is fully working.
-    };
-
-    Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
-
     QWiimote::MotionPlusStates motionplus_state;
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.
