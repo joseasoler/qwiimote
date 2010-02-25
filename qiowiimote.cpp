@@ -64,8 +64,8 @@ bool QIOWiimote::open()
         device_interface_detail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
         // Get the device interface detailed information.
-        if (SetupDiGetDeviceInterfaceDetail(device_info, device_interface_data, device_interface_detail,
-                                        required_size, NULL, NULL)) {
+        if (SetupDiGetDeviceInterfaceDetail
+                (device_info, device_interface_data, device_interface_detail, required_size, NULL, NULL)) {
             // Create a handle to the device.
             wiimote_handle = CreateFile(device_interface_detail->DevicePath,
                                        (GENERIC_READ | GENERIC_WRITE),
@@ -135,8 +135,7 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
     qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
     char * data_copy;
     data_copy = new char[max_size];
-    for(qint64 i = 0; i < max_size; i++)
-        data_copy[i] = data[i];
+    for(qint64 i = 0; i < max_size; i++) data_copy[i] = data[i];
     return (HidD_SetOutputReport(this->wiimote_handle, data_copy, max_size) == TRUE);
 }
 

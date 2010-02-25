@@ -216,7 +216,6 @@ void QWiimote::getReport(QWiimoteReport report)
 
     switch (report_type) {
         case 0x35: // Acceleration + Extension report.
-            //qDebug() << "Receiving a extension report " << report.data.toHex() << " from the wiimote.";
             // Fallthrough
         case 0x31: // Acceleration report.
             if (this->data_types & QWiimote::AccelerometerData) {
@@ -230,8 +229,8 @@ void QWiimote::getReport(QWiimoteReport report)
 
                 // Process acceleration info only if the new values are different than the old ones.
                 if ((x_new != this->x_acceleration) ||
-                    (y_new != this->y_acceleration) ||
-                    (z_new != this->z_acceleration)) {
+                        (y_new != this->y_acceleration) ||
+                        (z_new != this->z_acceleration)) {
                     this->x_acceleration = x_new;
                     this->y_acceleration = y_new;
                     this->z_acceleration = z_new;
@@ -251,11 +250,11 @@ void QWiimote::getReport(QWiimoteReport report)
             qDebug() << "Receiving a read memory report " << report.data.toHex() << " from the wiimote.";
 
             if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors.
-                ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in.
-                ((report.data[7] & 0xFF)  == 0x00) &&
-                ((report.data[8] & 0xFF)  == 0xA6) &&
-                ((report.data[9] & 0xFF)  == 0x20) &&
-                ((report.data[11] & 0xFF) == 0x05)) {
+                    ((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in.
+                    ((report.data[7] & 0xFF)  == 0x00) &&
+                    ((report.data[8] & 0xFF)  == 0xA6) &&
+                    ((report.data[9] & 0xFF)  == 0x20) &&
+                    ((report.data[11] & 0xFF) == 0x05)) {
                 qDebug() << "MotionPlus plugged in.";
                 if (this->motionplus_state == QWiimote::MotionPlusActivated) {
                     this->enableMotionPlus();
@@ -275,7 +274,7 @@ void QWiimote::getReport(QWiimoteReport report)
             quint8 new_battery_level = (report.data[6] & 0xFF);
             bool new_battery_empty = ((report.data[3] & 0x01) == 0x01);
             if ((new_battery_level != this->battery_level) ||
-                (new_battery_empty != this->battery_empty)) {
+                    (new_battery_empty != this->battery_empty)) {
                 this->battery_level = new_battery_level;
                 qDebug() << "Battery level: " << this->battery_level;
                 emit this->updatedBattery();
