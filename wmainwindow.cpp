@@ -3,6 +3,7 @@
   * Source file for the testing GUI main window.
   */
 
+#include <cmath>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "debugcheck.h"
@@ -27,6 +28,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     connect(&wiimote, SIGNAL(updatedButtons()), this, SLOT(changeButtons()));
     connect(&wiimote, SIGNAL(updatedAcceleration()), this, SLOT(changeAcceleration()));
     connect(&wiimote, SIGNAL(updatedBattery()), this, SLOT(changeBattery()));
+    connect(&wiimote, SIGNAL(updatedMotionPlus()), this, SLOT(changeOrientation()));
     ui->report_acceleration->setChecked(false);
     ui->report_motionplus->setChecked(false);
 }
@@ -125,5 +127,25 @@ void WMainWindow::on_report_motionplus_clicked(bool checked)
 
 void WMainWindow::changeOrientation()
 {
-    QMatrix4x4 orientation = this->wiimote.orientation();
+    QQuaternion orientation = this->wiimote.orientation();
+    qreal q0 = orientation.x();
+    qreal q1 = orientation.y();
+    qreal q2 = orientation.z();
+    qreal q3 = orientation.scalar();
+    qreal angle_1 = atan2(2 * (q0 * q1 + q2 * q3) , 1 - 2 * (q1 * q1 + q2 * q2));
+    qreal angle_2 = asin(2 * (q0 * q2 - q3 * q1));
+    qreal angle_3 = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
+
+    const qreal PI = 3.141592653589793238462643;
+
+    angle_1 += PI;
+    angle_1 = angle_1 * 180 / PI;
+    angle_2 += PI;
+    angle_2 = angle_2 * 180 / PI;
+    angle_3 += PI;
+    angle_3 = angle_3 * 180 / PI;
+
+    ui->angle_x->display(angle_1);
+    ui->angle_y->display(angle_2);
+    ui->angle_z->display(angle_3);
 }

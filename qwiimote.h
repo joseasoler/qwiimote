@@ -12,7 +12,7 @@
 #include <QObject>
 #include <QFlags>
 #include <QTimer>
-#include <QMatrix4x4>
+#include <QQuaternion>
 #include "qiowiimote.h"
 
 class QWiimote : public QObject
@@ -79,7 +79,7 @@ public:
     qreal accelerationY() const;
     qreal accelerationZ() const;
 
-    QMatrix4x4 orientation() const { return motionplus_orientation; }
+    QQuaternion orientation() const { return motionplus_orientation; }
 
     quint8 batteryLevel() const;
     bool batteryEmpty() const;
@@ -121,7 +121,7 @@ private:
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
     QWiimote::MotionPlusStates motionplus_state;
 
-    QMatrix4x4 motionplus_orientation;    ///< Orientation of the MotionPlus.
+    QQuaternion motionplus_orientation;    ///< Orientation of the MotionPlus.
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.
     bool status_requested;                ///< True if a status report is expected.

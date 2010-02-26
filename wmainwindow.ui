@@ -306,14 +306,14 @@
    <widget class="QLCDNumber" name="angle_x">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>363</x>
       <y>60</y>
-      <width>64</width>
+      <width>171</width>
       <height>23</height>
      </rect>
     </property>
     <property name="numDigits">
-     <number>3</number>
+     <number>10</number>
     </property>
     <property name="segmentStyle">
      <enum>QLCDNumber::Flat</enum>
@@ -322,14 +322,14 @@
    <widget class="QLCDNumber" name="angle_y">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>363</x>
       <y>110</y>
-      <width>64</width>
+      <width>171</width>
       <height>23</height>
      </rect>
     </property>
     <property name="numDigits">
-     <number>3</number>
+     <number>10</number>
     </property>
     <property name="segmentStyle">
      <enum>QLCDNumber::Flat</enum>
@@ -338,14 +338,14 @@
    <widget class="QLCDNumber" name="angle_z">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>363</x>
       <y>160</y>
-      <width>64</width>
+      <width>171</width>
       <height>23</height>
      </rect>
     </property>
     <property name="numDigits">
-     <number>3</number>
+     <number>10</number>
     </property>
     <property name="segmentStyle">
      <enum>QLCDNumber::Flat</enum>
