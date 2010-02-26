@@ -31,7 +31,6 @@ private:
     Ui::WMainWindow *ui;
     QWiimote wiimote;
     QWiimote::WiimoteLeds led_state;
-    int count;
 
 private slots:
     void on_report_motionplus_clicked(bool checked);

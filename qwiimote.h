@@ -88,6 +88,7 @@ signals:
     void updatedBattery();
     void emptyBattery();
     void motionPlusState(bool);
+    void updatedMotionPlus();
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
