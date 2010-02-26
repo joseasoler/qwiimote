@@ -122,3 +122,8 @@ void WMainWindow::on_report_motionplus_clicked(bool checked)
         ui->report_acceleration->setDisabled(false);
     }
 }
+
+void WMainWindow::changeOrientation()
+{
+    QMatrix4x4 orientation = this->wiimote.orientation();
+}
