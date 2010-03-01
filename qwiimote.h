@@ -79,6 +79,7 @@ public:
     qreal accelerationY() const;
     qreal accelerationZ() const;
 
+    QTime last_report;
     QQuaternion orientation() const { return motionplus_orientation; }
 
     quint8 batteryLevel() const;

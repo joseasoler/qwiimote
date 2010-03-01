@@ -3,6 +3,7 @@
   * Source file for the QWiimote class.
   */
 
+#include <cmath>
 #include "qwiimote.h"
 #include "debugcheck.h"
 
@@ -217,7 +218,56 @@ void QWiimote::getReport(QWiimoteReport report)
 
     switch (report_type) {
         case 0x35: // Acceleration + Extension report.
-            // Fallthrough
+            if (this->data_types & QWiimote::MotionPlusData) {
+                qreal yaw_speed, roll_speed, pitch_speed;
+
+                yaw_speed = report.data[5] & 0xFF;
+                yaw_speed += (report.data[8] & 0xFC);
+                yaw_speed *= 1000;
+                yaw_speed /= (report.data[8] & 0x02) ? 4 : 20;
+
+                roll_speed =   report.data[6] & 0xFF;
+                roll_speed += (report.data[8] & 0xFC);
+                roll_speed *= 1000;
+                roll_speed /= (report.data[9] & 0x02) ? 4 : 20;
+
+                pitch_speed =   report.data[7] & 0xFF;
+                pitch_speed += (report.data[10] & 0xFC);
+                pitch_speed *= 1000;
+                pitch_speed /= (report.data[8] & 0x01) ? 4 : 20;
+
+                quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
+                qreal angle_1, angle_2, angle_3;
+                angle_3 = elapsed_time * yaw_speed;
+                angle_2 = elapsed_time * roll_speed;
+                angle_1 = elapsed_time * pitch_speed;
+
+                qreal c_1 = cos(angle_1 / 2);
+                qreal c_2 = cos(angle_2 / 2);
+                qreal c_3 = cos(angle_3 / 2);
+                qreal s_1 = sin(angle_1 / 2);
+                qreal s_2 = sin(angle_2 / 2);
+                qreal s_3 = sin(angle_3 / 2);
+                QQuaternion new_orientation;
+
+                new_orientation.setX     (c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+                new_orientation.setY     (s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+                new_orientation.setZ     (c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+                new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+
+                this->motionplus_orientation *= new_orientation;
+
+                qDebug() << "New quaternion: (" << this->motionplus_orientation.x() << ", "
+                                                << this->motionplus_orientation.y() << ", "
+                                                << this->motionplus_orientation.z() << ", "
+                                                << this->motionplus_orientation.scalar() << ")";
+
+                this->last_report = report.time;
+
+                emit this->updatedMotionPlus();
+
+            }
+            // Fallthrough.
         case 0x31: // Acceleration report.
             if (this->data_types & QWiimote::AccelerometerData) {
                 quint16 x_new, y_new, z_new;
@@ -260,6 +310,8 @@ void QWiimote::getReport(QWiimoteReport report)
                 if (this->motionplus_state == QWiimote::MotionPlusActivated) {
                     this->enableMotionPlus();
                     this->motionplus_state = QWiimote::MotionPlusWorking;
+                    /** @todo This should be changed when calibration is implemented. */
+                    this->last_report = QTime::currentTime();
                     emit motionPlusState(true);
                 }
             }/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {//¬¬
