@@ -137,11 +137,11 @@ void WMainWindow::changeOrientation()
     qreal angle_2 = asin(2 * (q0 * q2 - q3 * q1));
     qreal angle_3 = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
 
-    const qreal PI = 3.141592653589793238462643;
+    angle_1 = angle_1 * 180 / QW_PI;
+    angle_2 = angle_2 * 180 / QW_PI;
+    angle_3 = angle_3 * 180 / QW_PI;
 
-    angle_1 = angle_1 * 180 / PI;
-    angle_2 = angle_2 * 180 / PI;
-    angle_3 = angle_3 * 180 / PI;
+    qDebug() << "Angles: " << angle_1 << " " << angle_2 << " " << angle_3;
 
     ui->angle_x->display(angle_1);
     ui->angle_y->display(angle_3);

@@ -222,25 +222,29 @@ void QWiimote::getReport(QWiimoteReport report)
                 qreal yaw_speed, roll_speed, pitch_speed;
 
                 yaw_speed = report.data[5] & 0xFF;
-                yaw_speed += (report.data[8] & 0xFC);
-                yaw_speed *= 1000;
+                yaw_speed += (report.data[8] & 0xFC) << 6;
+                //yaw_speed *= 1000;
                 yaw_speed /= (report.data[8] & 0x02) ? 4 : 20;
 
                 roll_speed =   report.data[6] & 0xFF;
-                roll_speed += (report.data[8] & 0xFC);
-                roll_speed *= 1000;
+                roll_speed += (report.data[8] & 0xFC << 6);
+                //roll_speed *= 1000;
                 roll_speed /= (report.data[9] & 0x02) ? 4 : 20;
 
                 pitch_speed =   report.data[7] & 0xFF;
-                pitch_speed += (report.data[10] & 0xFC);
-                pitch_speed *= 1000;
+                pitch_speed += (report.data[10] & 0xFC) << 6;
+                //pitch_speed *= 1000;
                 pitch_speed /= (report.data[8] & 0x01) ? 4 : 20;
+
+                qDebug() << "Angle Speeds: (" << pitch_speed << ", "
+                                              << roll_speed << ", "
+                                              << yaw_speed << ")";
 
                 quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
                 qreal angle_1, angle_2, angle_3;
-                angle_3 = elapsed_time * yaw_speed;
-                angle_2 = elapsed_time * roll_speed;
-                angle_1 = elapsed_time * pitch_speed;
+                angle_3 = elapsed_time * yaw_speed * QW_PI / 180;
+                angle_2 = elapsed_time * roll_speed * QW_PI / 180;
+                angle_1 = elapsed_time * pitch_speed * QW_PI / 180;
 
                 qreal c_1 = cos(angle_1 / 2);
                 qreal c_2 = cos(angle_2 / 2);
@@ -254,13 +258,10 @@ void QWiimote::getReport(QWiimoteReport report)
                 new_orientation.setY     (s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
                 new_orientation.setZ     (c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
                 new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+                new_orientation.normalize();
 
                 this->motionplus_orientation *= new_orientation;
-
-                qDebug() << "New quaternion: (" << this->motionplus_orientation.x() << ", "
-                                                << this->motionplus_orientation.y() << ", "
-                                                << this->motionplus_orientation.z() << ", "
-                                                << this->motionplus_orientation.scalar() << ")";
+                this->motionplus_orientation.normalize();
 
                 this->last_report = report.time;
 
@@ -467,3 +468,4 @@ void QWiimote::disableMotionPlus()
 
     this->io_wiimote.writeReport(disable_buffer, 22);
 }
+
