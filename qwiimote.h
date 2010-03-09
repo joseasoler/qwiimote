@@ -124,6 +124,10 @@ private:
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
     QWiimote::MotionPlusStates motionplus_state;
 
+    bool motionplus_calibrated;
+    quint16 pitch_zero_orientation;        ///< Zero angle for pitch.
+    quint16 roll_zero_orientation;         ///< Zero angle for roll.
+    quint16 yaw_zero_orientation;          ///< Zero angle for yaw.
     QQuaternion motionplus_orientation;    ///< Orientation of the MotionPlus.
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.

@@ -223,17 +223,17 @@ void QWiimote::getReport(QWiimoteReport report)
 
                 yaw_speed = report.data[5] & 0xFF;
                 yaw_speed += (report.data[8] & 0xFC) << 6;
-                //yaw_speed *= 1000;
+                yaw_speed *= 1000;
                 yaw_speed /= (report.data[8] & 0x02) ? 4 : 20;
 
                 roll_speed =   report.data[6] & 0xFF;
                 roll_speed += (report.data[8] & 0xFC << 6);
-                //roll_speed *= 1000;
+                roll_speed *= 1000;
                 roll_speed /= (report.data[9] & 0x02) ? 4 : 20;
 
                 pitch_speed =   report.data[7] & 0xFF;
                 pitch_speed += (report.data[10] & 0xFC) << 6;
-                //pitch_speed *= 1000;
+                pitch_speed *= 1000;
                 pitch_speed /= (report.data[8] & 0x01) ? 4 : 20;
 
                 qDebug() << "Angle Speeds: (" << pitch_speed << ", "
