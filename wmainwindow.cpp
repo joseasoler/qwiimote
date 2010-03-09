@@ -106,7 +106,7 @@ void WMainWindow::changeButtons()
 void WMainWindow::on_report_acceleration_clicked(bool checked)
 {
     if (checked) this->wiimote.setDataTypes(this->wiimote.dataTypes() | QWiimote::AccelerometerData);
-    else this->wiimote.setDataTypes(this->wiimote.dataTypes() & !QWiimote::AccelerometerData);
+    else this->wiimote.setDataTypes(this->wiimote.dataTypes() & ~QWiimote::AccelerometerData);
 }
 
 void WMainWindow::changeBattery()
