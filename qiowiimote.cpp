@@ -130,7 +130,7 @@ void QIOWiimote::close()
 /**
   * Writing is done synchronously.
   * @param data Report that will be sent to the wiimote.
-  * @param max_size Size of the report. Using a size greater
+  * @param max_size Size of the report. Using a size greater than #MAX_REPORT_SIZE is not allowed.
   */
 bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 {
