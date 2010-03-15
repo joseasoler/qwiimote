@@ -414,26 +414,11 @@ void QWiimote::enableMotionPlus()
         0xFE,
         0x01, // Data size.
         0x04, // Activate MotionPlus.
-        0x00, // Padding.
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00
     };
 
     enable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
 
-    this->io_wiimote.writeReport(enable_buffer, 22);
+    this->io_wiimote.writeReport(enable_buffer, 7);
 }
 
 void QWiimote::disableMotionPlus()
@@ -447,25 +432,10 @@ void QWiimote::disableMotionPlus()
         0xF0,
         0x01, // Data size.
         0x55, // Disable MotionPlus.
-        0x00, // Padding.
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00
     };
 
     disable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
 
-    this->io_wiimote.writeReport(disable_buffer, 22);
+    this->io_wiimote.writeReport(disable_buffer, 7);
 }
 
