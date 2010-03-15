@@ -13,6 +13,8 @@
 #include <ddk/hidsdi.h>
 #include "qwiimotereport.h"
 
+#define MAX_REPORT_SIZE 22
+
 class QIOWiimote;
 
 /**
@@ -39,7 +41,7 @@ private:
     static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID.
     static const quint16 WIIMOTE_PRODUCT_ID; ///< Wiimote product ID.
     HANDLE wiimote_handle;                   ///< Handle to send / receive data from the wiimote.
-    char read_buffer[22];                    ///< Buffer used for asynchronous read.
+    char read_buffer[MAX_REPORT_SIZE];       ///< Buffer used for asynchronous read.
     bool opened;                             ///< True only if the connection is opened.
 
     void readBegin();

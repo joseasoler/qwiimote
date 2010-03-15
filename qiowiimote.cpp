@@ -129,14 +129,20 @@ void QIOWiimote::close()
 
 /**
   * Writing is done synchronously.
+  * @param data Report that will be sent to the wiimote.
+  * @param max_size Size of the report. Using a size greater
   */
 bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 {
+    Q_ASSERT_X(max_size <= MAX_REPORT_SIZE, "QIOWiimote::writeReport", "A report can't have a size greater than 22.");
     qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
-    char * data_copy;
-    data_copy = new char[max_size];
-    for(qint64 i = 0; i < max_size; i++) data_copy[i] = data[i];
-    return (HidD_SetOutputReport(this->wiimote_handle, data_copy, max_size) == TRUE);
+
+    char data_copy[MAX_REPORT_SIZE];
+
+    for(register int i = 0; i < max_size; i++) data_copy[i] = data[i];
+    /* Pad the rest of the report with zeroes just to be sure. */
+    for(register int i = max_size; i < MAX_REPORT_SIZE; i++) data_copy[i] = 0;
+    return (HidD_SetOutputReport(this->wiimote_handle, data_copy, MAX_REPORT_SIZE) == TRUE);
 }
 
 /**
@@ -156,7 +162,7 @@ void QIOWiimote::readBegin()
 {
     ReadFileEx(this->wiimote_handle,
                this->read_buffer,
-               22,
+               MAX_REPORT_SIZE,
                (LPOVERLAPPED)this->overlapped,
                QIOWiimote::readCallback);
 }
