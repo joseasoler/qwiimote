@@ -1,8 +1,8 @@
 /**
   * @file qwiimote.h
   * Header file for the QWiimote class.
-  * QWiimote is an API for the wiimote which follows the Qt Object model.
-  * The QWiimote class mantains the state of a single wiimote.
+  * QWiimote is an API for the Wiimote which follows the Qt Object model.
+  * The QWiimote class mantains the state of a single Wiimote.
   * http://qt.nokia.com/doc/4.5/object.html
   */
 
@@ -15,19 +15,27 @@
 #include <QQuaternion>
 #include "qiowiimote.h"
 
-#define QW_PI 3.141592653589793238462643
+#define QW_PI 3.141592653589793238462643 ///< Pi constant.
 
+/**
+  * QWiimote represents the state of a Wiimote and any connected extensions.
+  * @see #QIOWiimote.
+  *
+  * @todo Using more than one instance of this class is untested.
+  */
 class QWiimote : public QObject
 {
     Q_OBJECT
 public:
+    /** Defines all data reporting types available. Button data is always active. */
     enum DataType {
-        AccelerometerData = 0x01,
-        MotionPlusData    = 0x02, // MotionPlus always activates AccelerometerData.
+        AccelerometerData = 0x01, ///< Get Accelerometer data.
+        MotionPlusData    = 0x02, ///< MotionPlus always activates AccelerometerData.
     };
 
     Q_DECLARE_FLAGS(DataTypes, DataType)
 
+    /** Flags to check if one of the Wiimote buttons has been pressed. */
     enum WiimoteButton {
         ButtonLeft  = 0x0001,
         ButtonRight = 0x0002,
@@ -44,14 +52,16 @@ public:
 
     Q_DECLARE_FLAGS(WiimoteButtons, WiimoteButton)
 
+    /** State of the MotionPlus extension. */
     enum MotionPlusState {
-        MotionPlusInactive,                         ///< Initial state.
-        MotionPlusActivated,                        ///< The MotionPlus has been activated by the user, but not by hardware.
-        MotionPlusWorking,                          ///< The MotionPlus is fully working.
+        MotionPlusInactive,  ///< Initial state.
+        MotionPlusActivated, ///< The MotionPlus has been activated by the user, but not by hardware.
+        MotionPlusWorking,   ///< The MotionPlus is fully working.
     };
 
     Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
 
+    /** Flags to check if one of the Wiimote buttons has been pressed. */
     enum WiimoteLed {
         Rumble = 0x01,
         Led1   = 0x10,
@@ -125,10 +135,10 @@ private:
     QWiimote::MotionPlusStates motionplus_state;
 
     bool motionplus_calibrated;
-    quint16 pitch_zero_orientation;        ///< Zero angle for pitch.
-    quint16 roll_zero_orientation;         ///< Zero angle for roll.
-    quint16 yaw_zero_orientation;          ///< Zero angle for yaw.
-    QQuaternion motionplus_orientation;    ///< Orientation of the MotionPlus.
+    quint16 pitch_zero_orientation;       ///< Zero angle for pitch.
+    quint16 roll_zero_orientation;        ///< Zero angle for roll.
+    quint16 yaw_zero_orientation;         ///< Zero angle for yaw.
+    QQuaternion motionplus_orientation;   ///< Orientation of the MotionPlus.
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.
     bool status_requested;                ///< True if a status report is expected.
