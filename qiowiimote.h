@@ -13,7 +13,7 @@
 #include <ddk/hidsdi.h>
 #include "qwiimotereport.h"
 
-#define MAX_REPORT_SIZE 22
+#define MAX_REPORT_SIZE 22 ///< Maximum size of a report.
 
 class QIOWiimote;
 
@@ -21,10 +21,16 @@ class QIOWiimote;
   * Struct used with asynchronous reading from the wiimote.
   */
 struct OverlappedQIOWiimote {
-    OVERLAPPED overlapped;
-    QIOWiimote * iowiimote;
+    OVERLAPPED overlapped;  ///< Used for asynchronous reading.
+    QIOWiimote * iowiimote; ///< Pointer to the QIOWiimote instance that should receive this reading.
 };
 
+/**
+  * Class that handles asynchronous reading and synchronous writing to a wiimote.
+  * @see #OverlappedQIOWiimote.
+  *
+  * @todo Using more than one instance of this class is untested.
+  */
 class QIOWiimote : public QObject
 {
     Q_OBJECT
