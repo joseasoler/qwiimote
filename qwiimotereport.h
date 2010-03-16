@@ -10,6 +10,12 @@
 #include <QByteArray>
 #include <QTime>
 
+/**
+  * Stores a received Wiimote report until it is processed.
+  * @see #QIOWiimote.
+  *
+  * @todo time is still unused. Should be used at MotionPlus and to reduce noise at acceleration.
+  */
 struct QWiimoteReport {
     QTime      time; ///< Time of arrival of the report.
     QByteArray data; ///< Data of the report.
