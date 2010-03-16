@@ -14,10 +14,11 @@ extern "C"{
     WINHIDSDI BOOL WINAPI HidD_SetOutputReport (HANDLE, PVOID, ULONG);
 }
 
-/* Public */
+/* Public functions */
 
 /**
   * Creates a new QIOWiimote object.
+  * @param parent The parent of this instance. Usually it will be a #QWiimote.
   */
 QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
@@ -107,7 +108,8 @@ bool QIOWiimote::open()
 }
 
 /**
-  * @todo Change reporting type before closing the connection.
+  * Closes the connection to the Wiimote.
+  * @todo Change reporting type before closing the connection. Does not seem necessary, though.
   */
 void QIOWiimote::close()
 {
@@ -128,7 +130,7 @@ void QIOWiimote::close()
 }
 
 /**
-  * Writing is done synchronously.
+  * Sends a report to the Wiimote. Writing is done synchronously.
   * @param data Report that will be sent to the wiimote.
   * @param max_size Size of the report. Using a size greater than #MAX_REPORT_SIZE is not allowed.
   */
@@ -146,14 +148,16 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
 }
 
 /**
+  * Sends a report to the Wiimote. Writing is done synchronously.
   * Overloaded function.
+  * @param data Report that will be sent to the wiimote.
   */
 bool QIOWiimote::writeReport(QByteArray data)
 {
     return this->writeReport(data.constData(), data.size());
 }
 
-/* Private */
+/* Private functions */
 
 /**
   * Starts asynchronous read of data.
@@ -169,6 +173,9 @@ void QIOWiimote::readBegin()
 
 /**
   * This callback is called whenever a read operation is finished.
+  * @param error_code The I/O completion status. This parameter can be one of the system error codes.
+  * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
+  * @param overlapped A pointer to the OVERLAPPED structure specified by the asynchronous I/O function.
   */
 void CALLBACK QIOWiimote::readCallback(DWORD error_code,
                                        DWORD bytes_transferred,
@@ -182,6 +189,8 @@ void CALLBACK QIOWiimote::readCallback(DWORD error_code,
 /**
   * Takes the raw report and makes it ready for processing.
   * The report format is time|report.
+  * @param error_code The I/O completion status. This parameter can be one of the system error codes.
+  * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
   */
 void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 {
