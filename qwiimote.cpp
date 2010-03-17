@@ -438,22 +438,14 @@ void QWiimote::pollMotionPlus()
 }
 
 /**
-  * Requests a status report from the Wiimote.
+  * Polls a status report from the Wiimote.
   */
-void QWiimote::requestStatusReport()
+void QWiimote::pollStatusReport()
 {
     send_buffer[0] = 0x15;                                       // Report type.
     send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble);
 
     this->io_wiimote.writeReport(send_buffer, 2);
-}
-
-/**
-  * Polls a status report from the Wiimote.
-  */
-void QWiimote::pollStatusReport()
-{
-    this->requestStatusReport();
     this->status_requested = true;
 }
 

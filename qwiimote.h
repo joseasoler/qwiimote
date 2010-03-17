@@ -107,7 +107,6 @@ signals:
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
-    void requestStatusReport();
     void enableMotionPlus();
     void disableMotionPlus();
 
