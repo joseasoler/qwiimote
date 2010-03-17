@@ -28,7 +28,7 @@ WMainWindow::WMainWindow(QWidget *parent)
     connect(&wiimote, SIGNAL(updatedButtons()), this, SLOT(changeButtons()));
     connect(&wiimote, SIGNAL(updatedAcceleration()), this, SLOT(changeAcceleration()));
     connect(&wiimote, SIGNAL(updatedBattery()), this, SLOT(changeBattery()));
-    connect(&wiimote, SIGNAL(updatedMotionPlus()), this, SLOT(changeOrientation()));
+    connect(&wiimote, SIGNAL(updatedOrientation()), this, SLOT(changeOrientation()));
     ui->report_acceleration->setChecked(false);
     ui->report_motionplus->setChecked(false);
     this->changeOrientation();

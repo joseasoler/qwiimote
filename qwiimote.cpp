@@ -330,7 +330,7 @@ void QWiimote::getReport(QWiimoteReport report)
 
                 this->last_report = report.time;
 
-                emit this->updatedMotionPlus();
+                emit this->updatedOrientation();
 
             }
             // Fallthrough.

@@ -108,7 +108,7 @@ signals:
     /** Emitted when the MotionPlus changes its state. */
     void motionPlusState(bool);
     /** Emitted when the orientation values change. */
-    void updatedMotionPlus();
+    void updatedOrientation();
 private:
     bool requestCalibrationData();
     void resetAccelerationData();
