@@ -75,8 +75,6 @@ QWiimote::DataTypes QWiimote::dataTypes() const
   */
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
-    send_buffer[0] = 0x12;
-
     if (new_data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusInactive) {
         new_data_types |= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
         this->motionplus_state = QWiimote::MotionPlusActivated;
@@ -99,18 +97,24 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     this->data_types = new_data_types;
     qDebug() << "Data types: " << this->data_types;
     qDebug() << "MotionPlus state: " << this->motionplus_state;
+
+    send_buffer[0] = 0x12;
+
     if (this->data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusWorking) {
-        send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
+        send_buffer[1] = 0x04; // Continuous reporting required.
         send_buffer[2] = 0x35;
     } else if (this->data_types & QWiimote::AccelerometerData && this->motionplus_state != QWiimote::MotionPlusWorking) {
-        send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Continuous reporting required.
+        send_buffer[1] = 0x04; // Continuous reporting required.
         send_buffer[2] = 0x31;
     }
     else {
-        send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); // Continuous reporting not required.
+        send_buffer[1] = 0x00; // Continuous reporting not required.
         send_buffer[2] = 0x30;
         resetAccelerationData();
     }
+
+    send_buffer[1] |= this->led_data & QWiimote::Rumble;
+
     this->io_wiimote.writeReport(send_buffer, 3);
 }
 
@@ -217,12 +221,12 @@ bool QWiimote::batteryEmpty() const
   */
 bool QWiimote::requestCalibrationData()
 {
-    send_buffer[0] = 0x17;                                       //Report type.
-    send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); //Read from the EEPROM.
-    send_buffer[2] = 0x00;                                       //Memory position.
+    send_buffer[0] = 0x17;                                       // Report type.
+    send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); // Read from the EEPROM.
+    send_buffer[2] = 0x00;                                       // Memory position.
     send_buffer[3] = 0x00;
     send_buffer[4] = 0x16;
-    send_buffer[5] = 0x00;                                       //Data size.
+    send_buffer[5] = 0x00;                                       // Data size.
     send_buffer[6] = 0x08;
 
     return this->io_wiimote.writeReport(send_buffer, 7);
@@ -421,19 +425,15 @@ void QWiimote::getReport(QWiimoteReport report)
   */
 void QWiimote::pollMotionPlus()
 {
-    static char motionplus_buffer[] = {
-        0x17, //Report type.
-        0x04, //Read from the registers.
-        0xA6, //Memory position.
-        0x00,
-        0xFA,
-        0x00, //Data size.
-        0x06
-    };
+    send_buffer[0] = 0x17;                                       // Report type.
+    send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Read from the registers.
+    send_buffer[2] = 0xA6;                                       // Memory position.
+    send_buffer[3] = 0x00;
+    send_buffer[4] = 0xFA;
+    send_buffer[5] = 0x00;                                       // Data size.
+    send_buffer[6] = 0x06;
 
-    motionplus_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
-
-    this->io_wiimote.writeReport(motionplus_buffer, 7);
+    this->io_wiimote.writeReport(send_buffer, 7);
     this->setDataTypes(this->data_types);
 }
 
@@ -442,14 +442,10 @@ void QWiimote::pollMotionPlus()
   */
 void QWiimote::requestStatusReport()
 {
-    static char statusreport_buffer[] = {
-        0x15,
-        0x00
-    };
+    send_buffer[0] = 0x15;                                       // Report type.
+    send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble);
 
-    statusreport_buffer[1] = this->led_data & QWiimote::Rumble;
-
-    this->io_wiimote.writeReport(statusreport_buffer, 2);
+    this->io_wiimote.writeReport(send_buffer, 2);
 }
 
 /**
@@ -480,20 +476,16 @@ void QWiimote::resetAccelerationData()
   */
 void QWiimote::enableMotionPlus()
 {
+    send_buffer[0] = 0x16;                                       // Report type.
+    send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
+    send_buffer[2] = 0xA6;                                       // Memory position.
+    send_buffer[3] = 0x00;
+    send_buffer[4] = 0xFE;
+    send_buffer[5] = 0x01;                                       // Data size.
+    send_buffer[6] = 0x04;                                       // Activate the MotionPlus.
+
     // Write 0x04 to register 0xA600FE.
-    static char enable_buffer[] = {
-        0x16, // Report type.
-        0x04, // Write to the registers.
-        0xA6, // Memory position.
-        0x00,
-        0xFE,
-        0x01, // Data size.
-        0x04, // Activate MotionPlus.
-    };
-
-    enable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
-
-    this->io_wiimote.writeReport(enable_buffer, 7);
+    this->io_wiimote.writeReport(send_buffer, 7);
 }
 
 /**
@@ -501,19 +493,14 @@ void QWiimote::enableMotionPlus()
   */
 void QWiimote::disableMotionPlus()
 {
+    send_buffer[0] = 0x16;                                       // Report type.
+    send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
+    send_buffer[2] = 0xA4;                                       // Memory position.
+    send_buffer[3] = 0x00;
+    send_buffer[4] = 0xF0;
+    send_buffer[5] = 0x01;                                       // Data size.
+    send_buffer[6] = 0x55;                                       // Disable the MotionPlus.
+
     // Write 0x55 to register 0xA400F0.
-    static char disable_buffer[] = {
-        0x16, // Report type.
-        0x04, // Write to the registers.
-        0xA4, // Memory position.
-        0x00,
-        0xF0,
-        0x01, // Data size.
-        0x55, // Disable MotionPlus.
-    };
-
-    disable_buffer[1] = 0x04  | (this->led_data & QWiimote::Rumble);
-
-    this->io_wiimote.writeReport(disable_buffer, 7);
+    this->io_wiimote.writeReport(send_buffer, 7);
 }
-
