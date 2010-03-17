@@ -9,12 +9,17 @@
 
 /**
   * Creates a new QWiimote instance.
+  * @param parent The parent of this instance.
   */
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
     this->motionplus_orientation = QQuaternion::fromAxisAndAngle(0, 0, 1, 0);
 }
 
+/**
+  * Destructor of QWiimote.
+  * @todo Check if it should call to close.
+  */
 QWiimote::~QWiimote()
 {
 }
@@ -32,6 +37,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
         // All reports are ignored until the calibration data is received.
         connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
         this->requestCalibrationData();
+        // Initialize internal values.
         data_types = 0;
         this->motionplus_state = QWiimote::MotionPlusInactive;
         this->status_requested = false;
@@ -54,11 +60,19 @@ void QWiimote::stop()
     this->io_wiimote.close();
 }
 
+/**
+  * Check what data types are currently being reported.
+  * @return Flags of the current data types.
+  */
 QWiimote::DataTypes QWiimote::dataTypes() const
 {
     return this->data_types;
 }
 
+/**
+  * Sets what data types will be reported.
+  * @param new_data_types Flags of the data types to report.
+  */
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
     send_buffer[0] = 0x12;
@@ -100,6 +114,10 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
     this->io_wiimote.writeReport(send_buffer, 3);
 }
 
+/**
+  * Sets what leds will be turned on.
+  * @param leds Flags of the leds to turn on.
+  */
 void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 {
     this->led_data = leds;
@@ -108,57 +126,95 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
     this->io_wiimote.writeReport(send_buffer, 2);
 }
 
+/**
+  * Check what buttons are pressed now.
+  * @return Flags of the currently pressed buttons.
+  */
 QWiimote::WiimoteButtons QWiimote::buttonData() const
 {
     return this->button_data;
 }
 
+/**
+  * Allows to know what leds are on right now.
+  * @return Flags of the used leds.
+  */
 QWiimote::WiimoteLeds QWiimote::leds() const
 {
     return this->led_data;
 }
 
+/**
+  * @return Raw acceleration on the X axis.
+  */
 quint16 QWiimote::rawAccelerationX() const
 {
     return this->x_acceleration;
 }
 
+/**
+  * @return Raw acceleration on the Y axis.
+  */
 quint16 QWiimote::rawAccelerationY() const
 {
     return this->y_acceleration;
 }
 
+/**
+  * @return Raw acceleration on the Z axis.
+  */
 quint16 QWiimote::rawAccelerationZ() const
 {
     return this->z_acceleration;
 }
 
+/**
+  * @return Calibrated acceleration on the X axis.
+  */
 qreal QWiimote::accelerationX() const
 {
     return this->x_calibrated_acceleration;
 }
 
+/**
+  * @return Calibrated acceleration on the Y axis.
+  */
 qreal QWiimote::accelerationY() const
 {
     return this->y_calibrated_acceleration;
 }
 
+/**
+  * @return Calibrated acceleration on the Z axis.
+  */
 qreal QWiimote::accelerationZ() const
 {
     return this->y_calibrated_acceleration;
 }
 
+/**
+  * Get the current battery level of this Wiimote.
+  * @return Battery level of the Wiimote.
+  */
 quint8 QWiimote::batteryLevel() const
 {
     return this->battery_level;
 }
 
+/**
+  * Allows to know if the battery is empty or not.
+  * @return True if the battery is empty, false otherwise.
+  */
 bool QWiimote::batteryEmpty() const
 {
     return this->battery_empty;
 }
 
 
+/**
+  * Request the calibration data from the Wiimote.
+  * @return True if the report was sent correctly.
+  */
 bool QWiimote::requestCalibrationData()
 {
     send_buffer[0] = 0x17;                                       //Report type.
@@ -172,6 +228,10 @@ bool QWiimote::requestCalibrationData()
     return this->io_wiimote.writeReport(send_buffer, 7);
 }
 
+/**
+  * This function processes all incoming reports until a report with the acceleration data is received.
+  * @param report Received report.
+  */
 void QWiimote::getCalibrationReport(QWiimoteReport report)
 {
     qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
@@ -210,6 +270,7 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 
 /**
   * Gets a report from the wiimote.
+  * @param report Received report.
   * @todo Check possible report errors. Use a threshold while reporting acceleration changes.
   */
 void QWiimote::getReport(QWiimoteReport report)
@@ -315,7 +376,7 @@ void QWiimote::getReport(QWiimoteReport report)
                     this->last_report = QTime::currentTime();
                     emit motionPlusState(true);
                 }
-            }/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {//¬¬
+            }/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
                 qDebug() << "MotionPlus plugged out.";
                 this->motionplus_state = QWiimote::MotionPlusActivated;
                 emit motionPlusState(false);
@@ -355,6 +416,9 @@ void QWiimote::getReport(QWiimoteReport report)
     }
 }
 
+/**
+  * Checks if a MotionPlus is connected.
+  */
 void QWiimote::pollMotionPlus()
 {
     static char motionplus_buffer[] = {
@@ -373,6 +437,9 @@ void QWiimote::pollMotionPlus()
     this->setDataTypes(this->data_types);
 }
 
+/**
+  * Requests a status report from the Wiimote.
+  */
 void QWiimote::requestStatusReport()
 {
     static char statusreport_buffer[] = {
@@ -385,12 +452,18 @@ void QWiimote::requestStatusReport()
     this->io_wiimote.writeReport(statusreport_buffer, 2);
 }
 
+/**
+  * Polls a status report from the Wiimote.
+  */
 void QWiimote::pollStatusReport()
 {
     this->requestStatusReport();
     this->status_requested = true;
 }
 
+/**
+  * Resets all stored acceleration data.
+  */
 void QWiimote::resetAccelerationData()
 {
     this->x_acceleration = 0;
@@ -402,7 +475,9 @@ void QWiimote::resetAccelerationData()
     emit this->updatedAcceleration();
 }
 
-
+/**
+  * Enable the MotionPlus extension.
+  */
 void QWiimote::enableMotionPlus()
 {
     // Write 0x04 to register 0xA600FE.
@@ -421,6 +496,9 @@ void QWiimote::enableMotionPlus()
     this->io_wiimote.writeReport(enable_buffer, 7);
 }
 
+/**
+  * Disable the MotionPlus extension.
+  */
 void QWiimote::disableMotionPlus()
 {
     // Write 0x55 to register 0xA400F0.
