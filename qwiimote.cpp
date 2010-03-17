@@ -388,16 +388,16 @@ void QWiimote::getReport(QWiimoteReport report)
 
             quint8 new_battery_level = (report.data[6] & 0xFF);
             bool new_battery_empty = ((report.data[3] & 0x01) == 0x01);
-            if ((new_battery_level != this->battery_level) ||
-                    (new_battery_empty != this->battery_empty)) {
+            if (new_battery_level != this->battery_level) {
                 this->battery_level = new_battery_level;
                 qDebug() << "Battery level: " << this->battery_level;
                 emit this->updatedBattery();
-                if (this->battery_empty) {
-                    emit this->emptyBattery();
-                }
             }
-
+            if (new_battery_empty != this->battery_empty) {
+                this->battery_empty = new_battery_empty;
+                qDebug() << "The battery is now empty.";
+                emit this->emptyBattery();
+            }
 
             // If the status request was not requested, the data reporting mode must be changed.
             if (!this->status_requested) {
