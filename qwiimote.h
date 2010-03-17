@@ -81,8 +81,8 @@ public:
     void setLeds(QWiimote::WiimoteLeds leds);
 
     QWiimote::DataTypes dataTypes() const;
-    QWiimote::WiimoteButtons buttonData() const;
     QWiimote::WiimoteLeds leds() const;
+    QWiimote::WiimoteButtons buttonData() const;
 
     quint16 rawAccelerationX() const;
     quint16 rawAccelerationY() const;
@@ -91,18 +91,23 @@ public:
     qreal accelerationY() const;
     qreal accelerationZ() const;
 
-    QTime last_report;
     QQuaternion orientation() const { return motionplus_orientation; }
 
     quint8 batteryLevel() const;
     bool batteryEmpty() const;
 
 signals:
+    /** Emitted when the state of the buttons changes. */
     void updatedButtons();
+    /** Emitted when the acceleration values change. */
     void updatedAcceleration();
+    /** Emitted when the state of the battery changes. */
     void updatedBattery();
+    /** Emitted when the battery is empty. */
     void emptyBattery();
+    /** Emitted when the MotionPlus changes its state. */
     void motionPlusState(bool);
+    /** Emitted when the orientation values change. */
     void updatedMotionPlus();
 private:
     bool requestCalibrationData();
@@ -116,6 +121,8 @@ private:
     QWiimote::DataTypes data_types;       ///< Current data type status.
     QWiimote::WiimoteButtons button_data; ///< Button status.
     QWiimote::WiimoteLeds led_data;       ///< Led status.
+
+    QTime last_report;                    ///< Time when the last report was received.
 
     quint16 x_acceleration;               ///< Raw acceleration in the x axis.
     quint16 y_acceleration;               ///< Raw acceleration in the y axis.
