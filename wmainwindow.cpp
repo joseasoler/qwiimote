@@ -141,7 +141,7 @@ void WMainWindow::changeOrientation()
     angle_2 = angle_2 * 180 / QW_PI;
     angle_3 = angle_3 * 180 / QW_PI;
 
-    qDebug() << "Angles: " << angle_1 << " " << angle_2 << " " << angle_3;
+    qDebug() << "Resulting angles: " << angle_1 << " " << angle_2 << " " << angle_3;
 
     ui->angle_x->display(angle_1);
     ui->angle_y->display(angle_3);

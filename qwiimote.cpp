@@ -7,6 +7,8 @@
 #include "qwiimote.h"
 #include "debugcheck.h"
 
+const quint16 QWiimote::MOTIONPLUS_TIME = 1000;
+
 /**
   * Creates a new QWiimote instance.
   * @param parent The parent of this instance.
@@ -85,7 +87,9 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
             motionplus_polling->start(1000);
             this->pollMotionPlus();
         }
-    } else if (!(new_data_types & QWiimote::MotionPlusData) && this->motionplus_state == QWiimote::MotionPlusWorking) {
+    } else if (!(new_data_types & QWiimote::MotionPlusData) &&
+               (this->motionplus_state == QWiimote::MotionPlusWorking ||
+                this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
         this->motionplus_state = QWiimote::MotionPlusInactive;
         if (this->motionplus_polling != NULL) {// Stop MotionPlus polling.
             this->disableMotionPlus();
@@ -100,10 +104,12 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 
     send_buffer[0] = 0x12;
 
-    if (this->data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusWorking) {
+    if ((this->data_types & QWiimote::MotionPlusData) != 0 &&
+        (this->motionplus_state == QWiimote::MotionPlusWorking ||
+         this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
         send_buffer[1] = 0x04; // Continuous reporting required.
         send_buffer[2] = 0x35;
-    } else if (this->data_types & QWiimote::AccelerometerData && this->motionplus_state != QWiimote::MotionPlusWorking) {
+    } else if ((this->data_types & QWiimote::AccelerometerData) != 0 && this->motionplus_state != QWiimote::MotionPlusWorking) {
         send_buffer[1] = 0x04; // Continuous reporting required.
         send_buffer[2] = 0x31;
     }
@@ -284,54 +290,109 @@ void QWiimote::getReport(QWiimoteReport report)
     switch (report_type) {
         case 0x35: // Acceleration + Extension report.
             if (this->data_types & QWiimote::MotionPlusData) {
-                qreal yaw_speed, roll_speed, pitch_speed;
+                qint16 raw_pitch, raw_roll, raw_yaw;
+                bool fast_pitch, fast_roll, fast_yaw;
 
-                yaw_speed = report.data[5] & 0xFF;
-                yaw_speed += (report.data[8] & 0xFC) << 6;
-                yaw_speed *= 1000;
-                yaw_speed /= (report.data[8] & 0x02) ? 4 : 20;
+                qDebug() << "Raw yaw is: " << (report.data[5] & 0xFF) << " + " << ((report.data[8] & 0xFC) << 6);
 
-                roll_speed =   report.data[6] & 0xFF;
-                roll_speed += (report.data[8] & 0xFC << 6);
-                roll_speed *= 1000;
-                roll_speed /= (report.data[9] & 0x02) ? 4 : 20;
+                raw_yaw = report.data[5] & 0xFF;
+                raw_yaw += (report.data[8] & 0xFC) << 6;
+                fast_yaw = (report.data[8] & 0x02) == 0;
 
-                pitch_speed =   report.data[7] & 0xFF;
-                pitch_speed += (report.data[10] & 0xFC) << 6;
-                pitch_speed *= 1000;
-                pitch_speed /= (report.data[8] & 0x01) ? 4 : 20;
+                qDebug() << "Raw roll is: " << (report.data[6] & 0xFF) << " + " << ((report.data[9] & 0xFC) << 6);
 
-                qDebug() << "Angle Speeds: (" << pitch_speed << ", "
-                                              << roll_speed << ", "
-                                              << yaw_speed << ")";
+                raw_roll =   report.data[6] & 0xFF;
+                raw_roll += (report.data[9] & 0xFC) << 6;
+                fast_roll = (report.data[9] & 0x02) == 0;
 
-                quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
-                qreal angle_1, angle_2, angle_3;
-                angle_3 = elapsed_time * yaw_speed * QW_PI / 180;
-                angle_2 = elapsed_time * roll_speed * QW_PI / 180;
-                angle_1 = elapsed_time * pitch_speed * QW_PI / 180;
+                qDebug() << "Raw pitch is: " << (report.data[7] & 0xFF) << " + " << ((report.data[10] & 0xFC) << 6);
 
-                qreal c_1 = cos(angle_1 / 2);
-                qreal c_2 = cos(angle_2 / 2);
-                qreal c_3 = cos(angle_3 / 2);
-                qreal s_1 = sin(angle_1 / 2);
-                qreal s_2 = sin(angle_2 / 2);
-                qreal s_3 = sin(angle_3 / 2);
-                QQuaternion new_orientation;
+                raw_pitch =   report.data[7] & 0xFF;
+                raw_pitch += (report.data[10] & 0xFC) << 6;
+                fast_pitch = (report.data[8] & 0x01) == 0;
 
-                new_orientation.setX     (c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-                new_orientation.setY     (s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-                new_orientation.setZ     (c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
-                new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
-                new_orientation.normalize();
+                qDebug() << "Raw values: "
+                         << raw_pitch << " "
+                         << raw_roll  << " "
+                         << raw_yaw;
 
-                this->motionplus_orientation *= new_orientation;
-                this->motionplus_orientation.normalize();
+                if (this->motionplus_state == QWiimote::MotionPlusWorking) {
+                    /* Calibrate orientation. */
+                    /** @todo This needs a better method to check that the Wiimote is not moving. */
+                    if (!fast_pitch && !fast_roll && !fast_yaw) {
+                        this->pitch_zero_orientation += raw_pitch;
+                        this->roll_zero_orientation += raw_roll;
+                        this->yaw_zero_orientation += raw_yaw;
+                        this->num_samples++;
 
-                this->last_report = report.time;
+                        if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
+                            this->motionplus_state = QWiimote::MotionPlusCalibrated;
+                            qDebug() << "Initial calibration values: "
+                                     << this->pitch_zero_orientation << " "
+                                     << this->roll_zero_orientation  << " "
+                                     << this->yaw_zero_orientation;
+                            qDebug() << "Number of samples: " << this->num_samples;
+                            this->pitch_zero_orientation /= this->num_samples;
+                            this->roll_zero_orientation /= this->num_samples;
+                            this->yaw_zero_orientation /= this->num_samples;
+                            qDebug() << "Calibration values obtained for orientation: "
+                                     << this->pitch_zero_orientation << " "
+                                     << this->roll_zero_orientation  << " "
+                                     << this->yaw_zero_orientation;
+                            emit motionPlusState();
+                        }
+                    }
+                } else {
+                    qreal yaw_speed, roll_speed, pitch_speed;
 
-                emit this->updatedOrientation();
+                    pitch_speed = raw_pitch - this->pitch_zero_orientation;
+                    pitch_speed /= (fast_pitch) ? 4000 : 20000;
 
+                    roll_speed = raw_roll - this->roll_zero_orientation;
+                    roll_speed /= (fast_roll) ? 4000 : 20000;
+
+                    yaw_speed = raw_yaw - this->yaw_zero_orientation;
+                    yaw_speed /= (fast_yaw) ? 4000 : 20000;
+
+                    qDebug() << "Speeds: "
+                             << pitch_speed << " "
+                             << roll_speed  << " "
+                             << yaw_speed;
+
+
+                    quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
+                    qDebug() << "Elapsed time: " << elapsed_time;
+                    qreal angle_1, angle_2, angle_3;
+                    angle_1 = elapsed_time * pitch_speed * QW_PI / 180;
+                    angle_2 = elapsed_time * roll_speed * QW_PI / 180;
+                    angle_3 = elapsed_time * yaw_speed * QW_PI / 180;
+
+                    qDebug() << "Angles: "
+                             << angle_1 << " "
+                             << angle_2  << " "
+                             << angle_3;
+
+                    qreal c_1 = cos(angle_1 / 2);
+                    qreal c_2 = cos(angle_2 / 2);
+                    qreal c_3 = cos(angle_3 / 2);
+                    qreal s_1 = sin(angle_1 / 2);
+                    qreal s_2 = sin(angle_2 / 2);
+                    qreal s_3 = sin(angle_3 / 2);
+                    QQuaternion new_orientation;
+
+                    new_orientation.setX     (c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+                    new_orientation.setY     (s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+                    new_orientation.setZ     (c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+                    new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+                    new_orientation.normalize();
+
+                    this->motionplus_orientation *= new_orientation;
+                    this->motionplus_orientation.normalize();
+
+                    this->last_report = report.time;
+
+                    emit this->updatedOrientation();
+                }
             }
             // Fallthrough.
         case 0x31: // Acceleration report.
@@ -378,7 +439,7 @@ void QWiimote::getReport(QWiimoteReport report)
                     this->motionplus_state = QWiimote::MotionPlusWorking;
                     /** @todo This should be changed when calibration is implemented. */
                     this->last_report = QTime::currentTime();
-                    emit motionPlusState(true);
+                    emit motionPlusState();
                 }
             }/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
                 qDebug() << "MotionPlus plugged out.";
@@ -477,6 +538,9 @@ void QWiimote::enableMotionPlus()
 
     // Write 0x04 to register 0xA600FE.
     this->io_wiimote.writeReport(send_buffer, 7);
+
+    this->num_samples = 0;
+    this->calibration_time = QTime::currentTime();
 }
 
 /**

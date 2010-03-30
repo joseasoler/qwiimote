@@ -54,9 +54,10 @@ public:
 
     /** State of the MotionPlus extension. */
     enum MotionPlusState {
-        MotionPlusInactive,  ///< Initial state.
-        MotionPlusActivated, ///< The MotionPlus has been activated by the user, but not by hardware.
-        MotionPlusWorking,   ///< The MotionPlus is fully working.
+        MotionPlusInactive,   ///< Initial state.
+        MotionPlusActivated,  ///< The MotionPlus has been activated by the user, but not by hardware.
+        MotionPlusWorking,    ///< The MotionPlus is working but it is not calibrated.
+        MotionPlusCalibrated, ///< The MotionPlus is calibrated and its data is now used.
     };
 
     Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
@@ -106,7 +107,7 @@ signals:
     /** Emitted when the battery is empty. */
     void emptyBattery();
     /** Emitted when the MotionPlus changes its state. */
-    void motionPlusState(bool);
+    void motionPlusState();
     /** Emitted when the orientation values change. */
     void updatedOrientation();
 private:
@@ -114,6 +115,9 @@ private:
     void resetAccelerationData();
     void enableMotionPlus();
     void disableMotionPlus();
+
+    static const quint16 MOTIONPLUS_TIME; ///< Time required to calibrate the MotionPlus.
+
 
     QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
     char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
@@ -140,10 +144,11 @@ private:
     QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
     QWiimote::MotionPlusStates motionplus_state;
 
-    bool motionplus_calibrated;
-    quint16 pitch_zero_orientation;       ///< Zero angle for pitch.
-    quint16 roll_zero_orientation;        ///< Zero angle for roll.
-    quint16 yaw_zero_orientation;         ///< Zero angle for yaw.
+    QTime calibration_time;               ///< Used to calibrate orientation for a certain amount of time.
+    quint16 num_samples;                  ///< Number of samples taken for calibrating the orientation.
+    qint32 pitch_zero_orientation;        ///< Zero angle for pitch.
+    qint32 roll_zero_orientation;         ///< Zero angle for roll.
+    qint32 yaw_zero_orientation;          ///< Zero angle for yaw.
     QQuaternion motionplus_orientation;   ///< Orientation of the MotionPlus.
 
     QTimer * status_polling;              ///< Timer that polls wiimote status reports.
