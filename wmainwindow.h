@@ -11,31 +11,31 @@
 
 namespace Ui
 {
-    class WMainWindow;
+	class WMainWindow;
 }
 
 class WMainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    WMainWindow(QWidget *parent = 0);
-    ~WMainWindow();
+	WMainWindow(QWidget *parent = 0);
+	~WMainWindow();
 
 public slots:
-    void changeButtons();
-    void changeAcceleration();
-    void changeBattery();
-    void changeOrientation();
+	void changeButtons();
+	void changeAcceleration();
+	void changeBattery();
+	void changeOrientation();
 
 private:
-    Ui::WMainWindow *ui;
-    QWiimote wiimote;
-    QWiimote::WiimoteLeds led_state;
+	Ui::WMainWindow *ui;
+	QWiimote wiimote;
+	QWiimote::WiimoteLeds led_state;
 
 private slots:
-    void on_report_motionplus_clicked(bool checked);
-    void on_report_acceleration_clicked(bool checked);
+	void on_report_motionplus_clicked(bool checked);
+	void on_report_acceleration_clicked(bool checked);
 };
 
 #endif // WMAINWINDOW_H
