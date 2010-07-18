@@ -290,49 +290,52 @@ void QWiimote::getReport(QWiimoteReport report)
 	switch (report_type) {
 		case 0x35: // Acceleration + Extension report.
 			if (this->data_types & QWiimote::MotionPlusData) {
-				qint16 raw_pitch, raw_roll, raw_yaw;
-				bool fast_pitch, fast_roll, fast_yaw;
+				qint16 raw_pitch,  raw_roll,  raw_yaw;
+				bool   fast_pitch, fast_roll, fast_yaw;
 
-				raw_yaw  =   (report.data[6] & 0xFF);
-				raw_yaw +=   (report.data[9] & 0xFC) << 6;
-				fast_yaw =   (report.data[9] & 0x02) == 0;
+				raw_yaw  =   (report.data[6]  & 0xFF);
+				raw_yaw +=   (report.data[9]  & 0xFC) << 6;
+				fast_yaw =   (report.data[9]  & 0x02) == 0;
 
-				raw_roll  =  (report.data[7] & 0xFF);
+				raw_roll  =  (report.data[7]  & 0xFF);
 				raw_roll +=  (report.data[10] & 0xFC) << 6;
 				fast_roll =  (report.data[10] & 0x02) == 0;
 
-				raw_pitch  = (report.data[8] & 0xFF);
+				raw_pitch  = (report.data[8]  & 0xFF);
 				raw_pitch += (report.data[11] & 0xFC) << 6;
-				fast_pitch = (report.data[9] & 0x01) == 0;
+				fast_pitch = (report.data[9]  & 0x01) == 0;
 
-				qDebug() << "Raw values: "
-						 << raw_pitch << " "
-						 << raw_roll  << " "
-						 << raw_yaw;
+				qDebug() << "Raw values:\t"
+						<< raw_pitch << "\t(" << fast_pitch << ")\t"
+						<< raw_roll  << "\t(" << fast_roll  << ")\t"
+						<< raw_yaw   << "\t(" << fast_yaw   << ")";
 
 				if (this->motionplus_state == QWiimote::MotionPlusWorking) {
 					/* Calibrate orientation. */
 					/** @todo This needs a better method to check that the Wiimote is not moving. */
 					if (!fast_pitch && !fast_roll && !fast_yaw) {
 						this->pitch_zero_orientation += raw_pitch;
-						this->roll_zero_orientation += raw_roll;
-						this->yaw_zero_orientation += raw_yaw;
+						this->roll_zero_orientation  += raw_roll;
+						this->yaw_zero_orientation   += raw_yaw;
 						this->num_samples++;
 
 						if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
+
 							this->motionplus_state = QWiimote::MotionPlusCalibrated;
 							qDebug() << "Initial calibration values: "
-									 << this->pitch_zero_orientation << " "
-									 << this->roll_zero_orientation  << " "
-									 << this->yaw_zero_orientation;
+									<< this->pitch_zero_orientation << "\t"
+									<< this->roll_zero_orientation  << "\t"
+									<< this->yaw_zero_orientation;
 							qDebug() << "Number of samples: " << this->num_samples;
+
 							this->pitch_zero_orientation /= this->num_samples;
-							this->roll_zero_orientation /= this->num_samples;
-							this->yaw_zero_orientation /= this->num_samples;
+							this->roll_zero_orientation  /= this->num_samples;
+							this->yaw_zero_orientation   /= this->num_samples;
 							qDebug() << "Calibration values obtained for orientation: "
-									 << this->pitch_zero_orientation << " "
-									 << this->roll_zero_orientation  << " "
-									 << this->yaw_zero_orientation;
+									<< this->pitch_zero_orientation << " "
+									<< this->roll_zero_orientation  << " "
+									<< this->yaw_zero_orientation;
+
 							emit motionPlusState();
 						}
 					}
@@ -349,9 +352,9 @@ void QWiimote::getReport(QWiimoteReport report)
 					yaw_speed /= (fast_yaw) ? 4000 : 20000;
 
 					qDebug() << "Speeds: "
-							 << pitch_speed << " "
-							 << roll_speed  << " "
-							 << yaw_speed;
+							<< pitch_speed << "\t"
+							<< roll_speed  << "\t"
+							<< yaw_speed;
 
 
 					quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
@@ -362,9 +365,9 @@ void QWiimote::getReport(QWiimoteReport report)
 					angle_3 = elapsed_time * yaw_speed * QW_PI / 180;
 
 					qDebug() << "Angles: "
-							 << angle_1 << " "
-							 << angle_2  << " "
-							 << angle_3;
+							<< angle_1 << "\t"
+							<< angle_2 << "\t"
+							<< angle_3;
 
 					qreal c_1 = cos(angle_1 / 2);
 					qreal c_2 = cos(angle_2 / 2);
@@ -374,9 +377,9 @@ void QWiimote::getReport(QWiimoteReport report)
 					qreal s_3 = sin(angle_3 / 2);
 					QQuaternion new_orientation;
 
-					new_orientation.setX	 (c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-					new_orientation.setY	 (s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-					new_orientation.setZ	 (c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+					new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+					new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+					new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
 					new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
 					new_orientation.normalize();
 
