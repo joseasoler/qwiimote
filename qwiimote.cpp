@@ -446,7 +446,10 @@ void QWiimote::getReport(QWiimoteReport report)
 				if (this->motionplus_state == QWiimote::MotionPlusActivated) {
 					this->enableMotionPlus();
 					this->motionplus_state = QWiimote::MotionPlusWorking;
-					/** @todo This should be changed when calibration is implemented. */
+					/* Set calibration values to zero. */
+					this->pitch_zero_orientation = 0;
+					this->roll_zero_orientation  = 0;
+					this->yaw_zero_orientation   = 0;
 					this->last_report = QTime::currentTime();
 					emit motionPlusState();
 				}
