@@ -293,23 +293,17 @@ void QWiimote::getReport(QWiimoteReport report)
 				qint16 raw_pitch, raw_roll, raw_yaw;
 				bool fast_pitch, fast_roll, fast_yaw;
 
-				qDebug() << "Raw yaw is: " << (report.data[5] & 0xFF) << " + " << ((report.data[8] & 0xFC) << 6);
+				raw_yaw  =   (report.data[6] & 0xFF);
+				raw_yaw +=   (report.data[9] & 0xFC) << 6;
+				fast_yaw =   (report.data[9] & 0x02) == 0;
 
-				raw_yaw = report.data[5] & 0xFF;
-				raw_yaw += (report.data[8] & 0xFC) << 6;
-				fast_yaw = (report.data[8] & 0x02) == 0;
+				raw_roll  =  (report.data[7] & 0xFF);
+				raw_roll +=  (report.data[10] & 0xFC) << 6;
+				fast_roll =  (report.data[10] & 0x02) == 0;
 
-				qDebug() << "Raw roll is: " << (report.data[6] & 0xFF) << " + " << ((report.data[9] & 0xFC) << 6);
-
-				raw_roll =   report.data[6] & 0xFF;
-				raw_roll += (report.data[9] & 0xFC) << 6;
-				fast_roll = (report.data[9] & 0x02) == 0;
-
-				qDebug() << "Raw pitch is: " << (report.data[7] & 0xFF) << " + " << ((report.data[10] & 0xFC) << 6);
-
-				raw_pitch =   report.data[7] & 0xFF;
-				raw_pitch += (report.data[10] & 0xFC) << 6;
-				fast_pitch = (report.data[8] & 0x01) == 0;
+				raw_pitch  = (report.data[8] & 0xFF);
+				raw_pitch += (report.data[11] & 0xFC) << 6;
+				fast_pitch = (report.data[9] & 0x01) == 0;
 
 				qDebug() << "Raw values: "
 						 << raw_pitch << " "
