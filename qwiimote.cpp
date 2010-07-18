@@ -305,18 +305,28 @@ void QWiimote::getReport(QWiimoteReport report)
 				raw_pitch += (report.data[11] & 0xFC) << 6;
 				fast_pitch = (report.data[9]  & 0x01) == 0;
 
-				qDebug() << "Raw values:\t"
+/*				qDebug() << "Raw values:\t"
 						<< raw_pitch << "\t(" << fast_pitch << ")\t"
 						<< raw_roll  << "\t(" << fast_roll  << ")\t"
-						<< raw_yaw   << "\t(" << fast_yaw   << ")";
+						<< raw_yaw   << "\t(" << fast_yaw   << ")";*/
 
 				if (this->motionplus_state == QWiimote::MotionPlusWorking) {
-					/* Calibrate orientation. */
+					/* Calibrate orientation. Only take into account "still" samples. */
 					/** @todo This needs a better method to check that the Wiimote is not moving. */
-					if (!fast_pitch && !fast_roll && !fast_yaw) {
+					if (!fast_pitch &&
+						 !fast_roll &&
+						 !fast_yaw &&
+						 raw_pitch > 7000 && raw_pitch < 9000 &&
+						 raw_roll > 7000 && raw_roll < 9000 &&
+						 raw_yaw > 7000 && raw_yaw < 9000
+						 ) {
 						this->pitch_zero_orientation += raw_pitch;
 						this->roll_zero_orientation  += raw_roll;
 						this->yaw_zero_orientation   += raw_yaw;
+						qDebug() << "Acc values:\t"
+							<< this->pitch_zero_orientation << "\t"
+							<< this->roll_zero_orientation  << "\t"
+							<< this->yaw_zero_orientation;
 						this->num_samples++;
 
 						if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
@@ -340,6 +350,7 @@ void QWiimote::getReport(QWiimoteReport report)
 						}
 					}
 				} else {
+					 /*
 					qreal yaw_speed, roll_speed, pitch_speed;
 
 					pitch_speed = raw_pitch - this->pitch_zero_orientation;
@@ -389,6 +400,7 @@ void QWiimote::getReport(QWiimoteReport report)
 					this->last_report = report.time;
 
 					emit this->updatedOrientation();
+					*/
 				}
 			}
 			// Fallthrough.
