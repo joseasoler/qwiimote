@@ -227,12 +227,12 @@ bool QWiimote::batteryEmpty() const
   */
 bool QWiimote::requestCalibrationData()
 {
-	send_buffer[0] = 0x17;									   // Report type.
+	send_buffer[0] = 0x17; // Report type.
 	send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); // Read from the EEPROM.
-	send_buffer[2] = 0x00;									   // Memory position.
+	send_buffer[2] = 0x00; // Memory position.
 	send_buffer[3] = 0x00;
 	send_buffer[4] = 0x16;
-	send_buffer[5] = 0x00;									   // Data size.
+	send_buffer[5] = 0x00; // Data size.
 	send_buffer[6] = 0x08;
 
 	return this->io_wiimote.writeReport(send_buffer, 7);
@@ -498,12 +498,12 @@ void QWiimote::getReport(QWiimoteReport report)
   */
 void QWiimote::pollMotionPlus()
 {
-	send_buffer[0] = 0x17;									   // Report type.
+	send_buffer[0] = 0x17; // Report type.
 	send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Read from the registers.
-	send_buffer[2] = 0xA6;									   // Memory position.
+	send_buffer[2] = 0xA6; // Memory position.
 	send_buffer[3] = 0x00;
 	send_buffer[4] = 0xFA;
-	send_buffer[5] = 0x00;									   // Data size.
+	send_buffer[5] = 0x00; // Data size.
 	send_buffer[6] = 0x06;
 
 	this->io_wiimote.writeReport(send_buffer, 7);
@@ -515,7 +515,7 @@ void QWiimote::pollMotionPlus()
   */
 void QWiimote::pollStatusReport()
 {
-	send_buffer[0] = 0x15;									   // Report type.
+	send_buffer[0] = 0x15; // Report type.
 	send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble);
 
 	this->io_wiimote.writeReport(send_buffer, 2);
