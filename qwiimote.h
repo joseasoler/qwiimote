@@ -116,8 +116,9 @@ private:
 	void enableMotionPlus();
 	void disableMotionPlus();
 
-	static const quint16 MOTIONPLUS_TIME; ///< Time required to calibrate the MotionPlus.
-
+	static const quint16 MOTIONPLUS_TIME;        ///< Time required to calibrate the MotionPlus.
+	static const qreal DEGREES_PER_SECOND_SLOW;  ///< MotionPlus speed (slow).
+	static const qreal DEGREES_PER_SECOND_FAST;  ///< MotionPlus speed (fast).
 
 	QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
 	char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.

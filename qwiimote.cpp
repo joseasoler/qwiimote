@@ -8,6 +8,8 @@
 #include "debugcheck.h"
 
 const quint16 QWiimote::MOTIONPLUS_TIME = 1000;
+const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 594.0 / 8192.0;
+const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW * 2000 / 440;
 
 /**
   * Creates a new QWiimote instance.
@@ -305,11 +307,6 @@ void QWiimote::getReport(QWiimoteReport report)
 				raw_pitch += (report.data[11] & 0xFC) << 6;
 				fast_pitch = (report.data[9]  & 0x01) == 0;
 
-/*				qDebug() << "Raw values:\t"
-						<< raw_pitch << "\t(" << fast_pitch << ")\t"
-						<< raw_roll  << "\t(" << fast_roll  << ")\t"
-						<< raw_yaw   << "\t(" << fast_yaw   << ")";*/
-
 				if (this->motionplus_state == QWiimote::MotionPlusWorking) {
 					/* Calibrate orientation. Only take into account "still" samples. */
 					/** @todo This needs a better method to check that the Wiimote is not moving. */
@@ -323,57 +320,46 @@ void QWiimote::getReport(QWiimoteReport report)
 						this->pitch_zero_orientation += raw_pitch;
 						this->roll_zero_orientation  += raw_roll;
 						this->yaw_zero_orientation   += raw_yaw;
-						qDebug() << "Acc values:\t"
-							<< this->pitch_zero_orientation << "\t"
-							<< this->roll_zero_orientation  << "\t"
-							<< this->yaw_zero_orientation;
 						this->num_samples++;
 
 						if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
 
 							this->motionplus_state = QWiimote::MotionPlusCalibrated;
-							qDebug() << "Initial calibration values: "
-									<< this->pitch_zero_orientation << "\t"
-									<< this->roll_zero_orientation  << "\t"
-									<< this->yaw_zero_orientation;
-							qDebug() << "Number of samples: " << this->num_samples;
 
 							this->pitch_zero_orientation /= this->num_samples;
 							this->roll_zero_orientation  /= this->num_samples;
 							this->yaw_zero_orientation   /= this->num_samples;
-							qDebug() << "Calibration values obtained for orientation: "
-									<< this->pitch_zero_orientation << " "
-									<< this->roll_zero_orientation  << " "
-									<< this->yaw_zero_orientation;
 
 							emit motionPlusState();
 						}
 					}
 				} else {
-					 /*
 					qreal yaw_speed, roll_speed, pitch_speed;
 
 					pitch_speed = raw_pitch - this->pitch_zero_orientation;
-					pitch_speed /= (fast_pitch) ? 4000 : 20000;
+					pitch_speed /= (fast_pitch) ?	QWiimote::DEGREES_PER_SECOND_SLOW :
+															QWiimote::DEGREES_PER_SECOND_FAST;
 
 					roll_speed = raw_roll - this->roll_zero_orientation;
-					roll_speed /= (fast_roll) ? 4000 : 20000;
+					roll_speed /= (fast_roll) ?	QWiimote::DEGREES_PER_SECOND_SLOW :
+															QWiimote::DEGREES_PER_SECOND_FAST;
 
 					yaw_speed = raw_yaw - this->yaw_zero_orientation;
-					yaw_speed /= (fast_yaw) ? 4000 : 20000;
+					yaw_speed /= (fast_yaw) ?		QWiimote::DEGREES_PER_SECOND_SLOW :
+															QWiimote::DEGREES_PER_SECOND_FAST;
 
 					qDebug() << "Speeds: "
-							<< pitch_speed << "\t"
-							<< roll_speed  << "\t"
-							<< yaw_speed;
+							<< pitch_speed << "\t(" << raw_pitch << " - " << this->pitch_zero_orientation << ")\t"
+							<< roll_speed  << "\t(" << raw_roll << " - " << this->roll_zero_orientation << ")\t"
+							<< yaw_speed   << "\t(" << raw_yaw << " - " << this->yaw_zero_orientation << ")";
 
-
+/*
 					quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					qDebug() << "Elapsed time: " << elapsed_time;
 					qreal angle_1, angle_2, angle_3;
-					angle_1 = elapsed_time * pitch_speed * QW_PI / 180;
-					angle_2 = elapsed_time * roll_speed * QW_PI / 180;
-					angle_3 = elapsed_time * yaw_speed * QW_PI / 180;
+					angle_1 = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
+					angle_2 = (elapsed_time * roll_speed * QW_PI / 180) / 1000;
+					angle_3 = (elapsed_time * yaw_speed * QW_PI / 180) / 1000;
 
 					qDebug() << "Angles: "
 							<< angle_1 << "\t"
