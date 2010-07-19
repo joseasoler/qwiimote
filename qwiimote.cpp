@@ -10,6 +10,7 @@
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
 const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 594.0 / 8192.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW * 2000 / 440;
+const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
 
 /**
   * Creates a new QWiimote instance.
@@ -336,15 +337,18 @@ void QWiimote::getReport(QWiimoteReport report)
 				} else {
 					qreal yaw_speed, roll_speed, pitch_speed;
 
-					pitch_speed = raw_pitch - this->pitch_zero_orientation;
+					pitch_speed = abs(raw_pitch - this->pitch_zero_orientation) > QWiimote::MOTIONPLUS_THRESHOLD ?
+									  raw_pitch - this->pitch_zero_orientation : 0;
 					pitch_speed /= (fast_pitch) ?	QWiimote::DEGREES_PER_SECOND_SLOW :
 															QWiimote::DEGREES_PER_SECOND_FAST;
 
-					roll_speed = raw_roll - this->roll_zero_orientation;
+					roll_speed = abs(raw_roll - this->roll_zero_orientation) > QWiimote::MOTIONPLUS_THRESHOLD ?
+									 raw_roll - this->roll_zero_orientation : 0;
 					roll_speed /= (fast_roll) ?	QWiimote::DEGREES_PER_SECOND_SLOW :
 															QWiimote::DEGREES_PER_SECOND_FAST;
 
-					yaw_speed = raw_yaw - this->yaw_zero_orientation;
+					yaw_speed = abs(raw_yaw - this->yaw_zero_orientation) > QWiimote::MOTIONPLUS_THRESHOLD ?
+									raw_yaw - this->yaw_zero_orientation : 0;
 					yaw_speed /= (fast_yaw) ?		QWiimote::DEGREES_PER_SECOND_SLOW :
 															QWiimote::DEGREES_PER_SECOND_FAST;
 
