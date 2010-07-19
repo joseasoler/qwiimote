@@ -352,18 +352,12 @@ void QWiimote::getReport(QWiimoteReport report)
 					yaw_speed /= (fast_yaw) ?		QWiimote::DEGREES_PER_SECOND_FAST :
 															QWiimote::DEGREES_PER_SECOND_SLOW;
 
-					qDebug() << "Speeds: "
-							<< pitch_speed << "\t(" << raw_pitch << " - " << this->pitch_zero_orientation << ")\t"
-							<< roll_speed  << "\t(" << raw_roll << " - " << this->roll_zero_orientation << ")\t"
-							<< yaw_speed   << "\t(" << raw_yaw << " - " << this->yaw_zero_orientation << ")";
-
-/*
 					quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					qDebug() << "Elapsed time: " << elapsed_time;
 					qreal angle_1, angle_2, angle_3;
 					angle_1 = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
-					angle_2 = (elapsed_time * roll_speed * QW_PI / 180) / 1000;
-					angle_3 = (elapsed_time * yaw_speed * QW_PI / 180) / 1000;
+					angle_2 = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
+					angle_3 = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
 
 					qDebug() << "Angles: "
 							<< angle_1 << "\t"
@@ -390,7 +384,6 @@ void QWiimote::getReport(QWiimoteReport report)
 					this->last_report = report.time;
 
 					emit this->updatedOrientation();
-					*/
 				}
 			}
 			// Fallthrough.
@@ -481,6 +474,7 @@ void QWiimote::getReport(QWiimoteReport report)
 		button_data = button_new;
 		emit this->updatedButtons();
 	}
+	this->last_report = QTime::currentTime();
 }
 
 /**
