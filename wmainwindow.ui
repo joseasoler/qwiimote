@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>653</width>
+    <height>445</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -293,8 +293,8 @@
    <widget class="QCheckBox" name="report_motionplus">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>200</y>
+      <x>190</x>
+      <y>360</y>
       <width>121</width>
       <height>18</height>
      </rect>
@@ -306,8 +306,8 @@
    <widget class="QLCDNumber" name="angle_x">
     <property name="geometry">
      <rect>
-      <x>363</x>
-      <y>60</y>
+      <x>163</x>
+      <y>220</y>
       <width>171</width>
       <height>23</height>
      </rect>
@@ -322,8 +322,8 @@
    <widget class="QLCDNumber" name="angle_y">
     <property name="geometry">
      <rect>
-      <x>363</x>
-      <y>110</y>
+      <x>163</x>
+      <y>270</y>
       <width>171</width>
       <height>23</height>
      </rect>
@@ -338,8 +338,8 @@
    <widget class="QLCDNumber" name="angle_z">
     <property name="geometry">
      <rect>
-      <x>363</x>
-      <y>160</y>
+      <x>163</x>
+      <y>320</y>
       <width>171</width>
       <height>23</height>
      </rect>
@@ -351,13 +351,23 @@
      <enum>QLCDNumber::Flat</enum>
     </property>
    </widget>
+   <widget class="WOpenGL" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>10</y>
+      <width>291</width>
+      <height>281</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>653</width>
      <height>21</height>
     </rect>
    </property>
@@ -373,6 +383,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>WOpenGL</class>
+   <extends>QWidget</extends>
+   <header>wopengl.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

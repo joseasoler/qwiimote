@@ -3,15 +3,18 @@
 # -------------------------------------------------
 TARGET = qwiimote
 TEMPLATE = app
+QT += opengl
 SOURCES += main.cpp \
     wmainwindow.cpp \
     qwiimote.cpp \
-    qiowiimote.cpp
+    qiowiimote.cpp \
+    wopengl.cpp
 HEADERS += wmainwindow.h \
     qwiimote.h \
     debugcheck.h \
     qiowiimote.h \
-    qwiimotereport.h
+    qwiimotereport.h \
+    wopengl.h
 FORMS += wmainwindow.ui
 LIBS += libsetupapi \
     libhid
