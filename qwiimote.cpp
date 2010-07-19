@@ -8,7 +8,7 @@
 #include "debugcheck.h"
 
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
-const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 594.0 / 8192.0;
+const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 594.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
 const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
 
