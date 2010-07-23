@@ -253,16 +253,16 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 		this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
 		this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
 		this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
-		qDebug() << "X zero acceleration: " << QString::number(this->x_zero_acceleration, 2);
-		qDebug() << "Y zero acceleration: " << QString::number(this->y_zero_acceleration, 2);
-		qDebug() << "Z zero acceleration: " << QString::number(this->z_zero_acceleration, 2);
+		qDebug() << "X zero acceleration: " << this->x_zero_acceleration;
+		qDebug() << "Y zero acceleration: " << this->y_zero_acceleration;
+		qDebug() << "Z zero acceleration: " << this->z_zero_acceleration;
 
 		this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4);
 		this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2);
 		this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03);
-		qDebug() << "X gravity: " << QString::number(this->x_gravity, 2);
-		qDebug() << "Y gravity: " << QString::number(this->y_gravity, 2);
-		qDebug() << "Z gravity: " << QString::number(this->z_gravity, 2);
+		qDebug() << "X gravity: " << this->x_gravity;
+		qDebug() << "Y gravity: " << this->y_gravity;
+		qDebug() << "Z gravity: " << this->z_gravity;
 
 		// Stop checking only calibration reports.
 		disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
@@ -414,6 +414,9 @@ void QWiimote::getReport(QWiimoteReport report)
 					qDebug() << "Raw acceleration: " << this->x_acceleration << " "
 																<< this->y_acceleration << " "
 																<< this->z_acceleration;
+					qDebug() << "Zeroed acceleration: " << this->x_acceleration - this->x_zero_acceleration << " "
+																	<< this->y_acceleration - this->y_zero_acceleration << " "
+																	<< this->z_acceleration - this->z_zero_acceleration;
 					qDebug() << "Calibrated acceleration: " << this->x_calibrated_acceleration << " "
 																		 << this->y_calibrated_acceleration << " "
 																		 << this->z_calibrated_acceleration;
