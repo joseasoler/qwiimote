@@ -39,10 +39,10 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 	if (this->io_wiimote.open()) {
 		this->setDataTypes(new_data_types);
 
-		// All reports are ignored until the calibration data is received.
+		/* All reports are ignored until the calibration data is received. */
 		connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
 		this->requestCalibrationData();
-		// Initialize internal values.
+		/* Initialize internal values. */
 		data_types = 0;
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->status_requested = false;
@@ -81,10 +81,12 @@ QWiimote::DataTypes QWiimote::dataTypes() const
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
 	if (new_data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusInactive) {
-		new_data_types |= QWiimote::AccelerometerData; // MotionPlus always activates AccelerometerData.
+		/* MotionPlus always activates AccelerometerData. */
+		new_data_types |= QWiimote::AccelerometerData;
 		this->motionplus_state = QWiimote::MotionPlusActivated;
 
-		if (this->motionplus_polling == NULL) {// Start MotionPlus polling.
+		/* Start MotionPlus polling. */
+		if (this->motionplus_polling == NULL) {
 			motionplus_polling = new QTimer(this);
 			connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
 			motionplus_polling->start(1000);
@@ -110,14 +112,17 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 	if ((this->data_types & QWiimote::MotionPlusData) != 0 &&
 		(this->motionplus_state == QWiimote::MotionPlusWorking ||
 		 this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
-		send_buffer[1] = 0x04; // Continuous reporting required.
+		/* Continuous reporting required. */
+		send_buffer[1] = 0x04;
 		send_buffer[2] = 0x35;
 	} else if ((this->data_types & QWiimote::AccelerometerData) != 0 && this->motionplus_state != QWiimote::MotionPlusWorking) {
-		send_buffer[1] = 0x04; // Continuous reporting required.
+		/* Continuous reporting required. */
+		send_buffer[1] = 0x04;
 		send_buffer[2] = 0x31;
 	}
 	else {
-		send_buffer[1] = 0x00; // Continuous reporting not required.
+		/* Continuous reporting not required. */
+		send_buffer[1] = 0x00;
 		send_buffer[2] = 0x30;
 		resetAccelerationData();
 	}
@@ -249,7 +254,7 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 {
 	qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
 	if (report.data[0] == (char)0x21) {
-		// Get the required calibration values from the report.
+		/* Get the required calibration values from the report. */
 		this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
 		this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
 		this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
@@ -264,12 +269,12 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 		qDebug() << "Y gravity: " << this->y_gravity;
 		qDebug() << "Z gravity: " << this->z_gravity;
 
-		// Stop checking only calibration reports.
+		/* Stop checking only calibration reports. */
 		disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
 		// Start checking all other reports.
 		connect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getReport(QWiimoteReport)));
 
-		// Start status report polling.
+		/* Start status report polling. */
 		status_polling = new QTimer(this);
 		connect(status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
 		status_polling->start(12000);
@@ -386,7 +391,7 @@ void QWiimote::getReport(QWiimoteReport report)
 					emit this->updatedOrientation();
 				}
 			}
-			// Fallthrough.
+			/* Fallthrough. */
 		case 0x31: // Acceleration report.
 			if (this->data_types & QWiimote::AccelerometerData) {
 				quint16 x_new, y_new, z_new;
@@ -397,14 +402,14 @@ void QWiimote::getReport(QWiimoteReport report)
 				z_new =  (report.data[5] & 0xFF) * 4;
 				z_new += (report.data[2] & 0x40) >> 5;
 
-				// Process acceleration info only if the new values are different than the old ones.
+				/* Process acceleration info only if the new values are different than the old ones. */
 				if ((x_new != this->x_acceleration) ||
 					 (y_new != this->y_acceleration) ||
 					 (z_new != this->z_acceleration)) {
 					this->x_acceleration = x_new;
 					this->y_acceleration = y_new;
 					this->z_acceleration = z_new;
-					// Calibrated values.
+					/* Calibrated values. */
 					this->x_calibrated_acceleration = ((qreal)(this->x_acceleration - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);
 					this->y_calibrated_acceleration = ((qreal)(this->y_acceleration - this->y_zero_acceleration) /
@@ -468,7 +473,7 @@ void QWiimote::getReport(QWiimoteReport report)
 				emit this->emptyBattery();
 			}
 
-			// If the status request was not requested, the data reporting mode must be changed.
+			/* If the status request was not requested, the data reporting mode must be changed. */
 			if (!this->status_requested) {
 				this->setDataTypes(this->data_types);
 			}
@@ -477,7 +482,7 @@ void QWiimote::getReport(QWiimoteReport report)
 		break;
 	}
 
-	//Button data is present in every received report for now.
+	/* Button data is present in every received report for now. */
 	QWiimote::WiimoteButtons button_new = QFlag(report.data[2] * 0x100 + report.data[1]);
 	if (this->button_data != button_new) {
 		button_data = button_new;
