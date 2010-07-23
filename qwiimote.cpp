@@ -399,8 +399,8 @@ void QWiimote::getReport(QWiimoteReport report)
 
 				// Process acceleration info only if the new values are different than the old ones.
 				if ((x_new != this->x_acceleration) ||
-						(y_new != this->y_acceleration) ||
-						(z_new != this->z_acceleration)) {
+					 (y_new != this->y_acceleration) ||
+					 (z_new != this->z_acceleration)) {
 					this->x_acceleration = x_new;
 					this->y_acceleration = y_new;
 					this->z_acceleration = z_new;
@@ -411,6 +411,12 @@ void QWiimote::getReport(QWiimoteReport report)
 												 (qreal)this->y_gravity);
 					this->z_calibrated_acceleration = ((qreal)(this->z_acceleration - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
+					qDebug() << "Raw acceleration: " << this->x_acceleration << " "
+																<< this->y_acceleration << " "
+																<< this->z_acceleration;
+					qDebug() << "Calibrated acceleration: " << this->x_calibrated_acceleration << " "
+																		 << this->y_calibrated_acceleration << " "
+																		 << this->z_calibrated_acceleration;
 					emit this->updatedAcceleration();
 				}
 			}
