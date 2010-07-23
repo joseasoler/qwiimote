@@ -5,6 +5,9 @@ WOpenGL::WOpenGL(QWidget *parent) : QGLWidget(parent)
 	angle_x = 0;
 	angle_y = 0;
 	angle_z = 0;
+
+	connect(&this->update_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+	this->update_timer.start(100);
 }
 
 void WOpenGL::initializeGL()

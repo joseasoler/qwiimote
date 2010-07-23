@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QGLWidget>
+#include <QTimer>
 
 class WOpenGL : public QGLWidget
 {
@@ -24,6 +25,8 @@ private:
 	qreal angle_x;
 	qreal angle_y;
 	qreal angle_z;
+
+	QTimer update_timer;
 };
 
 #endif // WOPENGL_H
