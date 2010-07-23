@@ -147,5 +147,5 @@ void WMainWindow::changeOrientation()
 	ui->angle_y->display(angle_3);
 	ui->angle_z->display(angle_2);
 
-	ui->glwidget->updateAngles(angle_1, angle_2, angle_3);
+	ui->glwidget->updateAngles(angle_1, angle_3, angle_2);
 }
