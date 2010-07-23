@@ -133,19 +133,19 @@ void WMainWindow::changeOrientation()
 	qreal q1 = orientation.y();
 	qreal q2 = orientation.z();
 	qreal q3 = orientation.scalar();
-	qreal angle_1 = atan2(2 * (q0 * q1 + q2 * q3) , 1 - 2 * (q1 * q1 + q2 * q2));
-	qreal angle_2 = asin (2 * (q0 * q2 - q3 * q1));
-	qreal angle_3 = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
+	qreal pitch_angle = atan2(2 * (q0 * q1 + q2 * q3) , 1 - 2 * (q1 * q1 + q2 * q2));
+	qreal roll_angle  = asin (2 * (q0 * q2 - q3 * q1));
+	qreal yaw_angle   = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
 
-	angle_1 = floor(angle_1 * 180 / QW_PI);
-	angle_2 = floor(angle_2 * 180 / QW_PI);
-	angle_3 = floor(angle_3 * 180 / QW_PI);
+	pitch_angle = floor(pitch_angle * 180 / QW_PI);
+	roll_angle  = floor(roll_angle * 180 / QW_PI);
+	yaw_angle   = floor(yaw_angle * 180 / QW_PI);
 
-	qDebug() << "Resulting angles: " << angle_1 << " " << angle_2 << " " << angle_3;
+	qDebug() << "Resulting angles: " << pitch_angle << " " << roll_angle << " " << yaw_angle;
 
-	ui->angle_x->display(angle_1);
-	ui->angle_y->display(angle_3);
-	ui->angle_z->display(angle_2);
+	ui->angle_x->display(pitch_angle);
+	ui->angle_y->display(yaw_angle);
+	ui->angle_z->display(roll_angle);
 
-	ui->glwidget->updateAngles(angle_1, angle_3, angle_2);
+	ui->glwidget->updateAngles(pitch_angle, yaw_angle, roll_angle);
 }

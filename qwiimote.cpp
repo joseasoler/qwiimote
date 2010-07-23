@@ -354,22 +354,22 @@ void QWiimote::getReport(QWiimoteReport report)
 
 					quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					qDebug() << "Elapsed time: " << elapsed_time;
-					qreal angle_1, angle_2, angle_3;
-					angle_1 = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
-					angle_2 = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
-					angle_3 = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
+					qreal pitch_angle, roll_angle, yaw_angle;
+					pitch_angle = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
+					roll_angle = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
+					yaw_angle = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
 
 					qDebug() << "Angles: "
-							<< angle_1 << "\t"
-							<< angle_2 << "\t"
-							<< angle_3;
+							<< pitch_angle << "\t"
+							<< roll_angle << "\t"
+							<< yaw_angle;
 
-					qreal c_1 = cos(angle_1 / 2);
-					qreal c_2 = cos(angle_2 / 2);
-					qreal c_3 = cos(angle_3 / 2);
-					qreal s_1 = sin(angle_1 / 2);
-					qreal s_2 = sin(angle_2 / 2);
-					qreal s_3 = sin(angle_3 / 2);
+					qreal c_1 = cos(pitch_angle / 2);
+					qreal c_2 = cos(roll_angle / 2);
+					qreal c_3 = cos(yaw_angle / 2);
+					qreal s_1 = sin(pitch_angle / 2);
+					qreal s_2 = sin(roll_angle / 2);
+					qreal s_3 = sin(yaw_angle / 2);
 					QQuaternion new_orientation;
 
 					new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
