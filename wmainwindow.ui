@@ -351,7 +351,7 @@
      <enum>QLCDNumber::Flat</enum>
     </property>
    </widget>
-   <widget class="WOpenGL" name="widget" native="true">
+   <widget class="WOpenGL" name="glwidget" native="true">
     <property name="geometry">
      <rect>
       <x>350</x>

@@ -16,7 +16,7 @@ void WOpenGL::initializeGL()
 	glEnable(GL_CULL_FACE);
 }
 
-void WOpenGL::UpdateAngles(qreal a_x, qreal a_y, qreal a_z)
+void WOpenGL::updateAngles(qreal a_x, qreal a_y, qreal a_z)
 {
 	this->angle_x = a_x;
 	this->angle_y = a_y;

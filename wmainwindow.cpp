@@ -134,7 +134,7 @@ void WMainWindow::changeOrientation()
 	qreal q2 = orientation.z();
 	qreal q3 = orientation.scalar();
 	qreal angle_1 = atan2(2 * (q0 * q1 + q2 * q3) , 1 - 2 * (q1 * q1 + q2 * q2));
-	qreal angle_2 = asin(2 * (q0 * q2 - q3 * q1));
+	qreal angle_2 = asin (2 * (q0 * q2 - q3 * q1));
 	qreal angle_3 = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
 
 	angle_1 = floor(angle_1 * 180 / QW_PI);

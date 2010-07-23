@@ -9,7 +9,7 @@ class WOpenGL : public QGLWidget
 	Q_OBJECT
 public:
 	explicit WOpenGL(QWidget *parent = 0);
-	void UpdateAngles(qreal a_x, qreal a_y, qreal a_z);
+	void updateAngles(qreal a_x, qreal a_y, qreal a_z);
 
 signals:
 
