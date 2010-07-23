@@ -257,9 +257,9 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 		qDebug() << "Y zero acceleration: " << this->y_zero_acceleration;
 		qDebug() << "Z zero acceleration: " << this->z_zero_acceleration;
 
-		this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4);
-		this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2);
-		this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03);
+		this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4) - this->x_zero_acceleration;
+		this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2) - this->y_zero_acceleration;
+		this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03) - this->z_zero_acceleration;
 		qDebug() << "X gravity: " << this->x_gravity;
 		qDebug() << "Y gravity: " << this->y_gravity;
 		qDebug() << "Z gravity: " << this->z_gravity;
