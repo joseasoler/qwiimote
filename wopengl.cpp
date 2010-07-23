@@ -2,6 +2,9 @@
 
 WOpenGL::WOpenGL(QWidget *parent) : QGLWidget(parent)
 {
+	angle_x = 0;
+	angle_y = 0;
+	angle_z = 0;
 }
 
 void WOpenGL::initializeGL()
@@ -13,14 +16,21 @@ void WOpenGL::initializeGL()
 	glEnable(GL_CULL_FACE);
 }
 
+void WOpenGL::UpdateAngles(qreal a_x, qreal a_y, qreal a_z)
+{
+	this->angle_x = a_x;
+	this->angle_y = a_y;
+	this->angle_z = a_z;
+}
+
 void WOpenGL::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	glTranslatef(0.0, 0.0, -10.0);
-	glRotatef( 0, 1.0, 0.0, 0.0);
-	glRotatef(45, 0.0, 1.0, 0.0);
-	glRotatef(45, 0.0, 0.0, 1.0);
+	glRotatef(this->angle_x, 1.0, 0.0, 0.0);
+	glRotatef(this->angle_y, 0.0, 1.0, 0.0);
+	glRotatef(this->angle_z, 0.0, 0.0, 1.0);
 
 	float size = 0.1;
 	float vertex[8][3] = {
