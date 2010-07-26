@@ -10,9 +10,11 @@ const quint16 QIOWiimote::WIIMOTE_VENDOR_ID  = 0x057E;
 const quint16 QIOWiimote::WIIMOTE_PRODUCT_ID = 0x0306;
 
 /* HidD_SetOutputReport is not defined in MinGW w32api. */
+#if defined(__MINGW32__) && defined(_WIN32)
 extern "C"{
 	WINHIDSDI BOOL WINAPI HidD_SetOutputReport (HANDLE, PVOID, ULONG);
 }
+#endif
 
 /* Public functions */
 
