@@ -49,6 +49,9 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->battery_level = 0;
 		this->battery_empty = false;
 		this->motionplus_polling = NULL;
+		this->pitch_speed = 0;
+		this->roll_speed = 0;
+		this->yaw_speed = 0;
 
 		return true;
 	}
@@ -340,8 +343,6 @@ void QWiimote::getReport(QWiimoteReport report)
 						}
 					}
 				} else {
-					qreal yaw_speed, roll_speed, pitch_speed;
-
 					pitch_speed = abs(raw_pitch - this->pitch_zero_orientation) > QWiimote::MOTIONPLUS_THRESHOLD ?
 									  raw_pitch - this->pitch_zero_orientation : 0;
 					pitch_speed /= (fast_pitch) ?	QWiimote::DEGREES_PER_SECOND_FAST :
@@ -357,38 +358,9 @@ void QWiimote::getReport(QWiimoteReport report)
 					yaw_speed /= (fast_yaw) ?		QWiimote::DEGREES_PER_SECOND_FAST :
 															QWiimote::DEGREES_PER_SECOND_SLOW;
 
-					quint32 elapsed_time = this->last_report.elapsed() - report.time.elapsed();
-					qDebug() << "Elapsed time: " << elapsed_time;
-					qreal pitch_angle, roll_angle, yaw_angle;
-					pitch_angle = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
-					roll_angle = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
-					yaw_angle = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
-
-					qDebug() << "Angles: "
-							<< pitch_angle << "\t"
-							<< roll_angle << "\t"
-							<< yaw_angle;
-
-					qreal c_1 = cos(pitch_angle / 2);
-					qreal c_2 = cos(roll_angle / 2);
-					qreal c_3 = cos(yaw_angle / 2);
-					qreal s_1 = sin(pitch_angle / 2);
-					qreal s_2 = sin(roll_angle / 2);
-					qreal s_3 = sin(yaw_angle / 2);
-					QQuaternion new_orientation;
-
-					new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-					new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-					new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
-					new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
-					new_orientation.normalize();
-
-					this->motionplus_orientation *= new_orientation;
-					this->motionplus_orientation.normalize();
-
+					elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					this->last_report = report.time;
-
-					emit this->updatedOrientation();
+					qDebug() << "Elapsed time: " << elapsed_time;
 				}
 			}
 			/* Fallthrough. */
@@ -427,6 +399,7 @@ void QWiimote::getReport(QWiimoteReport report)
 																		 << this->z_calibrated_acceleration;
 					emit this->updatedAcceleration();
 				}
+				this->processOrientationData();
 			}
 		break;
 
@@ -489,6 +462,41 @@ void QWiimote::getReport(QWiimoteReport report)
 		emit this->updatedButtons();
 	}
 	this->last_report = QTime::currentTime();
+}
+
+/**
+  * Turns raw data into a quaternion that measures current orientation of the wiimote.
+  */
+void QWiimote::processOrientationData()
+{
+	qreal pitch_angle, roll_angle, yaw_angle;
+	pitch_angle = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
+	roll_angle = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
+	yaw_angle = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
+
+	qDebug() << "Angles: "
+			<< pitch_angle << "\t"
+			<< roll_angle << "\t"
+			<< yaw_angle;
+
+	qreal c_1 = cos(pitch_angle / 2);
+	qreal c_2 = cos(roll_angle / 2);
+	qreal c_3 = cos(yaw_angle / 2);
+	qreal s_1 = sin(pitch_angle / 2);
+	qreal s_2 = sin(roll_angle / 2);
+	qreal s_3 = sin(yaw_angle / 2);
+	QQuaternion new_orientation;
+
+	new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+	new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+	new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+	new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+	new_orientation.normalize();
+
+	this->motionplus_orientation *= new_orientation;
+	this->motionplus_orientation.normalize();
+
+	emit this->updatedOrientation();
 }
 
 /**

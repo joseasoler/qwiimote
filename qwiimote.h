@@ -115,6 +115,7 @@ private:
 	void resetAccelerationData();
 	void enableMotionPlus();
 	void disableMotionPlus();
+	void processOrientationData();
 
 	static const quint16 MOTIONPLUS_TIME;       ///< Time required to calibrate the MotionPlus.
 	static const qreal DEGREES_PER_SECOND_SLOW; ///< MotionPlus speed (slow).
@@ -152,6 +153,10 @@ private:
 	qint32 roll_zero_orientation;         ///< Zero angle for roll.
 	qint32 yaw_zero_orientation;          ///< Zero angle for yaw.
 	QQuaternion motionplus_orientation;   ///< Orientation of the MotionPlus.
+	qreal pitch_speed;                    ///< Pitch speed (in degrees per second).
+	qreal roll_speed;                     ///< Roll speed (in degrees per second).
+	qreal yaw_speed;                      ///< Yaw speed (in degrees per second).
+	quint32 elapsed_time;                 ///< Elapsed time from last report (in milliseconds).
 
 	QTimer * status_polling;              ///< Timer that polls wiimote status reports.
 	bool status_requested;                ///< True if a status report is expected.
