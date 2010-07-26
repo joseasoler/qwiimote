@@ -478,23 +478,25 @@ void QWiimote::processOrientationData()
 			<< pitch_angle << "\t"
 			<< roll_angle << "\t"
 			<< yaw_angle;
+	/* Process data only if required. */
+	if (pitch_angle != 0 || roll_angle != 0 || yaw_angle != 0) {
+		qreal c_1 = cos(pitch_angle / 2);
+		qreal c_2 = cos(roll_angle / 2);
+		qreal c_3 = cos(yaw_angle / 2);
+		qreal s_1 = sin(pitch_angle / 2);
+		qreal s_2 = sin(roll_angle / 2);
+		qreal s_3 = sin(yaw_angle / 2);
+		QQuaternion new_orientation;
 
-	qreal c_1 = cos(pitch_angle / 2);
-	qreal c_2 = cos(roll_angle / 2);
-	qreal c_3 = cos(yaw_angle / 2);
-	qreal s_1 = sin(pitch_angle / 2);
-	qreal s_2 = sin(roll_angle / 2);
-	qreal s_3 = sin(yaw_angle / 2);
-	QQuaternion new_orientation;
+		new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+		new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+		new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+		new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+		new_orientation.normalize();
 
-	new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-	new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-	new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
-	new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
-	new_orientation.normalize();
-
-	this->motionplus_orientation *= new_orientation;
-	this->motionplus_orientation.normalize();
+		this->motionplus_orientation *= new_orientation;
+		this->motionplus_orientation.normalize();
+	}
 
 	emit this->updatedOrientation();
 }
