@@ -388,15 +388,6 @@ void QWiimote::getReport(QWiimoteReport report)
 												 (qreal)this->y_gravity);
 					this->z_calibrated_acceleration = ((qreal)(this->z_acceleration - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
-					qDebug() << "Raw acceleration: " << this->x_acceleration << " "
-																<< this->y_acceleration << " "
-																<< this->z_acceleration;
-					qDebug() << "Zeroed acceleration: " << this->x_acceleration - this->x_zero_acceleration << " "
-																	<< this->y_acceleration - this->y_zero_acceleration << " "
-																	<< this->z_acceleration - this->z_zero_acceleration;
-					qDebug() << "Calibrated acceleration: " << this->x_calibrated_acceleration << " "
-																		 << this->y_calibrated_acceleration << " "
-																		 << this->z_calibrated_acceleration;
 					emit this->updatedAcceleration();
 				}
 				this->processOrientationData();
@@ -466,6 +457,7 @@ void QWiimote::getReport(QWiimoteReport report)
 
 /**
   * Turns raw data into a quaternion that measures current orientation of the wiimote.
+  * @todo Using acceleration data to process orientation is probably not working correctly.
   */
 void QWiimote::processOrientationData()
 {
@@ -474,10 +466,6 @@ void QWiimote::processOrientationData()
 	roll_angle = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
 	yaw_angle = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
 
-	qDebug() << "Angles: "
-			<< pitch_angle << "\t"
-			<< roll_angle << "\t"
-			<< yaw_angle;
 	/* Process data only if required. */
 	if (pitch_angle != 0 || roll_angle != 0 || yaw_angle != 0) {
 		qreal c_1 = cos(pitch_angle / 2);
@@ -495,6 +483,36 @@ void QWiimote::processOrientationData()
 		new_orientation.normalize();
 
 		this->motionplus_orientation *= new_orientation;
+		this->motionplus_orientation.normalize();
+	}
+
+	qreal mod_acceleration = sqrt(pow(this->accelerationX(), 2) + pow(this->accelerationY(), 2) + pow(this->accelerationZ(), 2));
+	if (pitch_angle == 0 && roll_angle == 0 && // The MotionPlus is either still on the required axis or not working.
+		 mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
+		/* Take yaw value from the quaternion. */
+		qreal q0 = this->motionplus_orientation.x();
+		qreal q1 = this->motionplus_orientation.y();
+		qreal q2 = this->motionplus_orientation.z();
+		qreal q3 = this->motionplus_orientation.scalar();
+		yaw_angle = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
+		qDebug() << "Value: " << floor(yaw_angle * 180 / QW_PI);
+
+		/* Use accelerometer data to determine pitch and roll. */
+		pitch_angle = atan2(this->accelerationX(), this->accelerationZ());
+		roll_angle  = atan2(this->accelerationY(), this->accelerationZ());
+
+		/* Set the new orientation. */
+		qreal c_1 = cos(pitch_angle / 2);
+		qreal c_2 = cos(roll_angle / 2);
+		qreal c_3 = cos(yaw_angle / 2);
+		qreal s_1 = sin(pitch_angle / 2);
+		qreal s_2 = sin(roll_angle / 2);
+		qreal s_3 = sin(yaw_angle / 2);
+
+		this->motionplus_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
+		this->motionplus_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
+		this->motionplus_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
+		this->motionplus_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
 		this->motionplus_orientation.normalize();
 	}
 

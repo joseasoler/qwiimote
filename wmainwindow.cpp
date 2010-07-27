@@ -141,8 +141,6 @@ void WMainWindow::changeOrientation()
 	roll_angle  = floor(roll_angle * 180 / QW_PI);
 	yaw_angle   = floor(yaw_angle * 180 / QW_PI);
 
-	qDebug() << "Resulting angles: " << pitch_angle << " " << roll_angle << " " << yaw_angle;
-
 	ui->angle_x->display(pitch_angle);
 	ui->angle_y->display(yaw_angle);
 	ui->angle_z->display(roll_angle);
