@@ -31,6 +31,23 @@ void WOpenGL::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	glTranslatef(0.0, 0.0, -10.0);
+	glRotatef(180, 0, 0, 1);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBegin(GL_LINES);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(100.0, 0.0, 0.0);
+
+		glColor3f(0.0, 1.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 100.0, 0.0);
+
+		glColor3f(0.0, 0.0, 1.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 100.0);
+	glEnd();
+
 	glRotatef(this->angle_x, 1.0, 0.0, 0.0);
 	glRotatef(this->angle_y, 0.0, 1.0, 0.0);
 	glRotatef(this->angle_z, 0.0, 0.0, 1.0);
