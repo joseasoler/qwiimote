@@ -2,10 +2,7 @@
 
 WOpenGL::WOpenGL(QWidget *parent) : QGLWidget(parent)
 {
-	angle_x = 0;
-	angle_y = 0;
-	angle_z = 0;
-
+	this->rotation.setToIdentity();
 	connect(&this->update_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
 	this->update_timer.start(100);
 }
@@ -19,11 +16,10 @@ void WOpenGL::initializeGL()
 	glEnable(GL_CULL_FACE);
 }
 
-void WOpenGL::updateAngles(qreal a_x, qreal a_y, qreal a_z)
+void WOpenGL::updateRotation(QQuaternion new_rotation)
 {
-	this->angle_x = a_x;
-	this->angle_y = a_y;
-	this->angle_z = a_z;
+	this->rotation.setToIdentity();
+	this->rotation.rotate(new_rotation);
 }
 
 void WOpenGL::paintGL()
@@ -48,9 +44,8 @@ void WOpenGL::paintGL()
 		glVertex3f(0.0, 0.0, 100.0);
 	glEnd();
 
-	glRotatef(this->angle_x, 1.0, 0.0, 0.0);
-	glRotatef(this->angle_y, 0.0, 1.0, 0.0);
-	glRotatef(this->angle_z, 0.0, 0.0, 1.0);
+	glPushMatrix();
+	glMultMatrixd(rotation.constData());
 
 	float size = 0.1;
 	float vertex[8][3] = {

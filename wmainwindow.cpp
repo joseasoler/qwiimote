@@ -145,5 +145,5 @@ void WMainWindow::changeOrientation()
 	ui->angle_y->display(yaw_angle);
 	ui->angle_z->display(roll_angle);
 
-	ui->glwidget->updateAngles(pitch_angle, yaw_angle, roll_angle);
+	ui->glwidget->updateRotation(orientation);
 }

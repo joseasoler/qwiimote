@@ -4,13 +4,15 @@
 #include <QWidget>
 #include <QGLWidget>
 #include <QTimer>
+#include <QQuaternion>
+#include <QMatrix4x4>
 
 class WOpenGL : public QGLWidget
 {
 	Q_OBJECT
 public:
 	explicit WOpenGL(QWidget *parent = 0);
-	void updateAngles(qreal a_x, qreal a_y, qreal a_z);
+	void updateRotation(QQuaternion new_rotation);
 
 signals:
 
@@ -22,9 +24,7 @@ protected:
 	void resizeGL(int width, int height);
 
 private:
-	qreal angle_x;
-	qreal angle_y;
-	qreal angle_z;
+	QMatrix4x4 rotation;
 
 	QTimer update_timer;
 };
