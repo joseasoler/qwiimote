@@ -210,7 +210,7 @@ qreal QWiimote::accelerationY() const
   */
 qreal QWiimote::accelerationZ() const
 {
-	return this->y_calibrated_acceleration;
+	return this->z_calibrated_acceleration;
 }
 
 /**
@@ -487,20 +487,26 @@ void QWiimote::processOrientationData()
 	}
 
 	qreal mod_acceleration = sqrt(pow(this->accelerationX(), 2) + pow(this->accelerationY(), 2) + pow(this->accelerationZ(), 2));
-	if (pitch_angle == 0 && roll_angle == 0 && // The MotionPlus is either still on the required axis or not working.
-		 mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
+	if (pitch_angle == 0 && roll_angle == 0){// && // The MotionPlus is either still on the required axis or not working.
+		 //mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
 		/* Take yaw value from the quaternion. */
 		qreal q0 = this->motionplus_orientation.x();
 		qreal q1 = this->motionplus_orientation.y();
 		qreal q2 = this->motionplus_orientation.z();
 		qreal q3 = this->motionplus_orientation.scalar();
 		yaw_angle = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
-		qDebug() << "Value: " << floor(yaw_angle * 180 / QW_PI);
 
 		/* Use accelerometer data to determine pitch and roll. */
-		pitch_angle = atan2(this->accelerationX(), this->accelerationZ());
-		roll_angle  = atan2(this->accelerationY(), this->accelerationZ());
+		qreal acceleration_x = qBound(-1.0, this->accelerationX(), 1.0);
+		qreal acceleration_y = qBound(-1.0, this->accelerationY(), 1.0);
+		qreal acceleration_z = qBound(-1.0, this->accelerationZ(), 1.0);
+		qDebug() << "ACCELERATION:\t" << acceleration_x << "\t" << acceleration_y << "\t" << acceleration_z;
+		pitch_angle = atan2(acceleration_x, acceleration_z);
+		roll_angle  = atan2(acceleration_y, acceleration_z);
 
+		qDebug() << "PITCH:\t" << floor(pitch_angle * 180 / QW_PI);
+		qDebug() << "ROLL:\t" << floor(roll_angle * 180 / QW_PI);
+		qDebug() << "YAW:\t" << floor(yaw_angle * 180 / QW_PI);
 		/* Set the new orientation. */
 		qreal c_1 = cos(pitch_angle / 2);
 		qreal c_2 = cos(roll_angle / 2);
