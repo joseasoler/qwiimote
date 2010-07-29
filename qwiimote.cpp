@@ -487,8 +487,8 @@ void QWiimote::processOrientationData()
 	}
 
 	qreal mod_acceleration = sqrt(pow(this->accelerationX(), 2) + pow(this->accelerationY(), 2) + pow(this->accelerationZ(), 2));
-	if (pitch_angle == 0 && roll_angle == 0){// && // The MotionPlus is either still on the required axis or not working.
-		 //mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
+	if (pitch_angle == 0 && roll_angle == 0 && // The MotionPlus is either still on the required axis or not working.
+		 mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
 		/* Take yaw value from the quaternion. */
 		qreal q0 = this->motionplus_orientation.x();
 		qreal q1 = this->motionplus_orientation.y();
@@ -500,25 +500,16 @@ void QWiimote::processOrientationData()
 		qreal acceleration_x = qBound(-1.0, this->accelerationX(), 1.0);
 		qreal acceleration_y = qBound(-1.0, this->accelerationY(), 1.0);
 		qreal acceleration_z = qBound(-1.0, this->accelerationZ(), 1.0);
-		qDebug() << "ACCELERATION:\t" << acceleration_x << "\t" << acceleration_y << "\t" << acceleration_z;
-		pitch_angle = atan2(acceleration_x, acceleration_z);
-		roll_angle  = atan2(acceleration_y, acceleration_z);
 
-		qDebug() << "PITCH:\t" << floor(pitch_angle * 180 / QW_PI);
-		qDebug() << "ROLL:\t" << floor(roll_angle * 180 / QW_PI);
-		qDebug() << "YAW:\t" << floor(yaw_angle * 180 / QW_PI);
-		/* Set the new orientation. */
-		qreal c_1 = cos(pitch_angle / 2);
-		qreal c_2 = cos(roll_angle / 2);
-		qreal c_3 = cos(yaw_angle / 2);
-		qreal s_1 = sin(pitch_angle / 2);
-		qreal s_2 = sin(roll_angle / 2);
-		qreal s_3 = sin(yaw_angle / 2);
+		QVector3D acceleration = QVector3D(acceleration_x, acceleration_y, acceleration_z);
+		QVector3D reference    = QVector3D(0, 0, 1);
+		QVector3D axis = QVector3D::crossProduct(reference, acceleration);
+		qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
 
-		this->motionplus_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-		this->motionplus_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-		this->motionplus_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
-		this->motionplus_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
+		this->motionplus_orientation = QQuaternion::fromAxisAndAngle(axis, angle);
+
+		/* Use original yaw: MISSING */
+
 		this->motionplus_orientation.normalize();
 	}
 
