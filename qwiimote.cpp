@@ -18,7 +18,7 @@ const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
   */
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
-	this->motionplus_orientation = QQuaternion::fromAxisAndAngle(0, 0, 1, 0);
+	this->motionplus_orientation.setToIdentity();
 }
 
 /**

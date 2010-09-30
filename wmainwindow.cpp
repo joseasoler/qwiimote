@@ -123,22 +123,6 @@ void WMainWindow::on_report_motionplus_clicked(bool checked)
 
 void WMainWindow::changeOrientation()
 {
-	QQuaternion orientation = this->wiimote.orientation();
-	qreal q0 = orientation.x();
-	qreal q1 = orientation.y();
-	qreal q2 = orientation.z();
-	qreal q3 = orientation.scalar();
-	qreal pitch_angle = atan2(2 * (q0 * q1 + q2 * q3) , 1 - 2 * (q1 * q1 + q2 * q2));
-	qreal roll_angle  = asin (2 * (q0 * q2 - q3 * q1));
-	qreal yaw_angle   = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
-
-	pitch_angle = floor(pitch_angle * 180 / QW_PI);
-	roll_angle  = floor(roll_angle * 180 / QW_PI);
-	yaw_angle   = floor(yaw_angle * 180 / QW_PI);
-
-	ui->angle_x->display(pitch_angle);
-	ui->angle_y->display(yaw_angle);
-	ui->angle_z->display(roll_angle);
-
+	QMatrix4x4 orientation = this->wiimote.orientation();
 	ui->glwidget->updateRotation(orientation);
 }

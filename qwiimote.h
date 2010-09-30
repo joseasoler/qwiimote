@@ -12,7 +12,7 @@
 #include <QObject>
 #include <QFlags>
 #include <QTimer>
-#include <QQuaternion>
+#include <QMatrix4x4>
 #include "qiowiimote.h"
 
 #define QW_PI 3.141592653589793238462643 ///< Pi constant.
@@ -92,7 +92,7 @@ public:
 	qreal accelerationY() const;
 	qreal accelerationZ() const;
 
-	QQuaternion orientation() const { return motionplus_orientation; }
+	QMatrix4x4 orientation() const { return motionplus_orientation; }
 
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
@@ -152,7 +152,7 @@ private:
 	qint32 pitch_zero_orientation;        ///< Zero angle for pitch.
 	qint32 roll_zero_orientation;         ///< Zero angle for roll.
 	qint32 yaw_zero_orientation;          ///< Zero angle for yaw.
-	QQuaternion motionplus_orientation;   ///< Orientation of the MotionPlus.
+	QMatrix4x4 motionplus_orientation;    ///< Orientation of the MotionPlus.
 	qreal pitch_speed;                    ///< Pitch speed (in degrees per second).
 	qreal roll_speed;                     ///< Roll speed (in degrees per second).
 	qreal yaw_speed;                      ///< Yaw speed (in degrees per second).
