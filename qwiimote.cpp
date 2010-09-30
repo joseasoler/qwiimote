@@ -367,11 +367,11 @@ void QWiimote::getReport(QWiimoteReport report)
 		case 0x31: // Acceleration report.
 			if (this->data_types & QWiimote::AccelerometerData) {
 				quint16 x_new, y_new, z_new;
-				x_new =  (report.data[3] & 0xFF) * 4;
+				x_new =  (report.data[3] & 0xFF) << 2;
 				x_new += (report.data[1] & 0x60) >> 5;
-				y_new =  (report.data[4] & 0xFF) * 4;
+				y_new =  (report.data[4] & 0xFF) << 2;
 				y_new += (report.data[2] & 0x20) >> 4;
-				z_new =  (report.data[5] & 0xFF) * 4;
+				z_new =  (report.data[5] & 0xFF) << 2;
 				z_new += (report.data[2] & 0x40) >> 5;
 
 				/* Process acceleration info only if the new values are different than the old ones. */
@@ -457,63 +457,23 @@ void QWiimote::getReport(QWiimoteReport report)
 
 /**
   * Turns raw data into a quaternion that measures current orientation of the wiimote.
-  * @todo Using acceleration data to process orientation is probably not working correctly.
   */
 void QWiimote::processOrientationData()
 {
-	qreal pitch_angle, roll_angle, yaw_angle;
-	pitch_angle = (elapsed_time * pitch_speed * QW_PI / 180) / 1000;
-	roll_angle = (elapsed_time * roll_speed  * QW_PI / 180) / 1000;
-	yaw_angle = (elapsed_time * yaw_speed   * QW_PI / 180) / 1000;
+	/* Use accelerometer data to determine pitch and roll. */
+	QVector3D acceleration = QVector3D(this->accelerationX(), this->accelerationY(), this->accelerationZ());
+	acceleration.normalize();
 
-	/* Process data only if required. */
-	if (pitch_angle != 0 || roll_angle != 0 || yaw_angle != 0) {
-		qreal c_1 = cos(pitch_angle / 2);
-		qreal c_2 = cos(roll_angle / 2);
-		qreal c_3 = cos(yaw_angle / 2);
-		qreal s_1 = sin(pitch_angle / 2);
-		qreal s_2 = sin(roll_angle / 2);
-		qreal s_3 = sin(yaw_angle / 2);
-		QQuaternion new_orientation;
+	QVector3D reference    = QVector3D(0, 0, 1);
+	QVector3D axis = QVector3D::crossProduct(reference, acceleration);
+	qreal pitch = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
+	pitch = axis.x() > 0 ? pitch : -pitch;
 
-		new_orientation.setX(c_1 * c_2 * c_3 + s_1 * s_2 * s_3);
-		new_orientation.setY(s_1 * c_2 * c_3 + c_1 * s_2 * s_3);
-		new_orientation.setZ(c_1 * s_2 * c_3 + s_1 * c_2 * s_3);
-		new_orientation.setScalar(c_1 * c_2 * s_3 + s_1 * s_2 * c_3);
-		new_orientation.normalize();
-
-		this->motionplus_orientation *= new_orientation;
-		this->motionplus_orientation.normalize();
-	}
-
-	qreal mod_acceleration = sqrt(pow(this->accelerationX(), 2) + pow(this->accelerationY(), 2) + pow(this->accelerationZ(), 2));
-	if (pitch_angle == 0 && roll_angle == 0 && // The MotionPlus is either still on the required axis or not working.
-		 mod_acceleration <= 1.3 && mod_acceleration >= 0.7) { // The accelerometer is relatively still.
-		/* Take yaw value from the quaternion. */
-		qreal q0 = this->motionplus_orientation.x();
-		qreal q1 = this->motionplus_orientation.y();
-		qreal q2 = this->motionplus_orientation.z();
-		qreal q3 = this->motionplus_orientation.scalar();
-		yaw_angle = atan2(2 * (q0 * q3 + q1 * q2) , 1 - 2 * (q2 * q2 + q3 * q3));
-
-		/* Use accelerometer data to determine pitch and roll. */
-		qreal acceleration_x = qBound(-1.0, this->accelerationX(), 1.0);
-		qreal acceleration_y = qBound(-1.0, this->accelerationY(), 1.0);
-		qreal acceleration_z = qBound(-1.0, this->accelerationZ(), 1.0);
-
-		QVector3D acceleration = QVector3D(acceleration_x, acceleration_y, acceleration_z);
-		QVector3D reference    = QVector3D(0, 0, 1);
-		QVector3D axis = QVector3D::crossProduct(reference, acceleration);
-		qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
-
-		this->motionplus_orientation = QQuaternion::fromAxisAndAngle(axis, angle);
-
-		/* Use original yaw: MISSING */
-
-		this->motionplus_orientation.normalize();
-	}
-
-	emit this->updatedOrientation();
+	reference = QVector3D(1, 0, 0);
+	axis = QVector3D::crossProduct(reference, acceleration);
+	qreal roll = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
+	roll = axis.y() > 0 ? roll : -roll;
+	// emit this->updatedOrientation();
 }
 
 /**
