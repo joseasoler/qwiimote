@@ -87,13 +87,8 @@ void WMainWindow::changeButtons()
 		leds_changed = true;
 	}
 
-	if (button_data & QWiimote::ButtonA) {
-		ui->radio_a->setChecked(true);
-		this->led_state ^= QWiimote::Rumble;
-		leds_changed = true;
-	}
-
-	if (button_data & QWiimote::ButtonB)	 ui->radio_b->setChecked(true);
+	if (button_data & QWiimote::ButtonA)	  ui->radio_a->setChecked(true);
+	if (button_data & QWiimote::ButtonB)	  ui->radio_b->setChecked(true);
 	if (button_data & QWiimote::ButtonMinus) ui->radio_minus->setChecked(true);
 	if (button_data & QWiimote::ButtonHome)  ui->radio_home->setChecked(true);
 	if (button_data & QWiimote::ButtonPlus)  ui->radio_plus->setChecked(true);
