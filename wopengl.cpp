@@ -16,10 +16,9 @@ void WOpenGL::initializeGL()
 	glEnable(GL_CULL_FACE);
 }
 
-void WOpenGL::updateRotation(QQuaternion new_rotation)
+void WOpenGL::updateRotation(QMatrix4x4 new_rotation)
 {
-	this->rotation.setToIdentity();
-	this->rotation.rotate(new_rotation);
+	this->rotation = new_rotation;
 }
 
 void WOpenGL::paintGL()

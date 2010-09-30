@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QGLWidget>
 #include <QTimer>
-#include <QQuaternion>
 #include <QMatrix4x4>
 
 class WOpenGL : public QGLWidget
@@ -12,7 +11,7 @@ class WOpenGL : public QGLWidget
 	Q_OBJECT
 public:
 	explicit WOpenGL(QWidget *parent = 0);
-	void updateRotation(QQuaternion new_rotation);
+	void updateRotation(QMatrix4x4 new_rotation);
 
 signals:
 
