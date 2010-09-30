@@ -12,14 +12,14 @@ WMainWindow::WMainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::WMainWindow)
 {
 	ui->setupUi(this);
-	ui->acceleration_x->setMinimum(0);
-	ui->acceleration_x->setMaximum(0x3FF);
+	ui->acceleration_x->setMinimum(-4000);
+	ui->acceleration_x->setMaximum( 4000);
 	ui->acceleration_x->setValue(0);
-	ui->acceleration_y->setMinimum(0);
-	ui->acceleration_y->setMaximum(0x3FF);
+	ui->acceleration_y->setMinimum(-4000);
+	ui->acceleration_y->setMaximum( 4000);
 	ui->acceleration_y->setValue(0);
-	ui->acceleration_z->setMinimum(0);
-	ui->acceleration_z->setMaximum(0x3FF);
+	ui->acceleration_z->setMinimum(-4000);
+	ui->acceleration_z->setMaximum( 4000);
 	ui->acceleration_z->setValue(0);
 
 	wiimote.start(0);
@@ -41,9 +41,9 @@ WMainWindow::~WMainWindow()
 
 void WMainWindow::changeAcceleration()
 {
-	ui->acceleration_x->setValue(this->wiimote.rawAccelerationX());
-	ui->acceleration_y->setValue(this->wiimote.rawAccelerationY());
-	ui->acceleration_z->setValue(this->wiimote.rawAccelerationZ());
+	ui->acceleration_x->setValue(this->wiimote.accelerationX() * 1000);
+	ui->acceleration_y->setValue(this->wiimote.accelerationY() * 1000);
+	ui->acceleration_z->setValue(this->wiimote.accelerationZ() * 1000);
 }
 
 void WMainWindow::changeButtons()
