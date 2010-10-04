@@ -360,7 +360,6 @@ void QWiimote::getReport(QWiimoteReport report)
 
 					elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					this->last_report = report.time;
-					qDebug() << "Elapsed time: " << elapsed_time;
 				}
 			}
 			/* Fallthrough. */
@@ -460,18 +459,30 @@ void QWiimote::getReport(QWiimoteReport report)
   */
 void QWiimote::processOrientationData()
 {
-	/* Use accelerometer data to determine pitch and roll. */
-	QVector3D acceleration = QVector3D(this->accelerationX(), this->accelerationY(), this->accelerationZ());
-	acceleration.normalize();
-	this->motionplus_orientation.setToIdentity();
+	qreal pitch_angle, roll_angle, yaw_angle = 0;
+	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
+		pitch_angle = (elapsed_time * pitch_speed) / 1000;
+		roll_angle  = (elapsed_time * roll_speed) / 1000;
+		yaw_angle   = (elapsed_time * yaw_speed) / 1000;
+		this->motionplus_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
+		this->motionplus_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
+		this->motionplus_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
+	}
 
-	QVector3D reference    = QVector3D(0, 0, 1);
-	QVector3D axis = QVector3D::crossProduct(reference, acceleration);
-	qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
-	qreal value = axis.z();
-	axis.setZ(axis.y());
-	axis.setY(value);
-	this->motionplus_orientation.rotate(angle, axis);
+	if (!(this->data_types & QWiimote::MotionPlusData)) {
+		/* Use accelerometer data to determine pitch and roll. */
+		QVector3D acceleration = QVector3D(this->accelerationX(), this->accelerationY(), this->accelerationZ());
+		acceleration.normalize();
+		this->motionplus_orientation.setToIdentity();
+
+		QVector3D reference    = QVector3D(0, 0, 1);
+		QVector3D axis = QVector3D::crossProduct(reference, acceleration);
+		qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
+		qreal value = axis.z();
+		axis.setZ(axis.y());
+		axis.setY(value);
+		this->motionplus_orientation.rotate(angle, axis);
+	}
 
 	emit this->updatedOrientation();
 }
