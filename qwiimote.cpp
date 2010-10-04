@@ -468,6 +468,9 @@ void QWiimote::processOrientationData()
 	QVector3D reference    = QVector3D(0, 0, 1);
 	QVector3D axis = QVector3D::crossProduct(reference, acceleration);
 	qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
+	qreal value = axis.z();
+	axis.setZ(axis.y());
+	axis.setY(value);
 	this->motionplus_orientation.rotate(angle, axis);
 
 	emit this->updatedOrientation();
