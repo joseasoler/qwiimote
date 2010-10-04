@@ -137,6 +137,53 @@ void WOpenGL::paintGL()
 		glVertex3fv(vertex[4]);
 
 	glEnd();
+
+	for (int i = 0; i < 8; i++) {
+		vertex[i][0] *= 0.5;
+		vertex[i][1] *= 0.5;
+	}
+
+	/* Draw the camera. */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+		glColor3f(0.0, 0.0, 0.0);
+
+		glVertex3fv(vertex[6]);
+		glVertex3fv(vertex[7]);
+		glVertex3fv(vertex[3]);
+		glVertex3fv(vertex[2]);
+	glEnd();
+
+	for (int i = 0; i < 8; i++) {
+		vertex[i][1] *= 0.5;
+	}
+
+	/* Draw the connector. */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+		glColor3f(0.5, 0.5, 0.5);
+
+		glVertex3fv(vertex[4]);
+		glVertex3fv(vertex[5]);
+		glVertex3fv(vertex[1]);
+		glVertex3fv(vertex[0]);
+	glEnd();
+
+	for (int i = 0; i < 8; i++) {
+		vertex[i][1] *= 4.0;
+		vertex[i][2] *= 0.5;
+	}
+
+	/* Draw the "buttons". */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+		glColor3f(0.5, 0.5, 0.5);
+
+		glVertex3fv(vertex[0]);
+		glVertex3fv(vertex[1]);
+		glVertex3fv(vertex[2]);
+		glVertex3fv(vertex[3]);
+	glEnd();
 }
 
 void WOpenGL::resizeGL(int width, int height)
