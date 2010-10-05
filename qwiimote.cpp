@@ -8,7 +8,7 @@
 #include "debugcheck.h"
 
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
-const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 594.0;
+const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
 const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
 
@@ -461,9 +461,9 @@ void QWiimote::processOrientationData()
 {
 	qreal pitch_angle, roll_angle, yaw_angle = 0;
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
-		pitch_angle = (elapsed_time * pitch_speed) / 1000;
-		roll_angle  = (elapsed_time * roll_speed) / 1000;
-		yaw_angle   = (elapsed_time * yaw_speed) / 1000;
+		pitch_angle = 0.75 * (elapsed_time * pitch_speed) / 1000;
+		roll_angle  = 0.75 * (elapsed_time * roll_speed) / 1000;
+		yaw_angle   = 0.75 * (elapsed_time * yaw_speed) / 1000;
 		this->motionplus_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
 		this->motionplus_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
 		this->motionplus_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
