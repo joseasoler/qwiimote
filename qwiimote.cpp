@@ -107,8 +107,6 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 		}
 	}
 	this->data_types = new_data_types;
-	qDebug() << "Data types: " << this->data_types;
-	qDebug() << "MotionPlus state: " << this->motionplus_state;
 
 	send_buffer[0] = 0x12;
 
@@ -255,22 +253,16 @@ bool QWiimote::requestCalibrationData()
   */
 void QWiimote::getCalibrationReport(QWiimoteReport report)
 {
-	qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
+	// qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
 	if (report.data[0] == (char)0x21) {
 		/* Get the required calibration values from the report. */
 		this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
 		this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
 		this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
-		qDebug() << "X zero acceleration: " << this->x_zero_acceleration;
-		qDebug() << "Y zero acceleration: " << this->y_zero_acceleration;
-		qDebug() << "Z zero acceleration: " << this->z_zero_acceleration;
 
 		this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4) - this->x_zero_acceleration;
 		this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2) - this->y_zero_acceleration;
 		this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03) - this->z_zero_acceleration;
-		qDebug() << "X gravity: " << this->x_gravity;
-		qDebug() << "Y gravity: " << this->y_gravity;
-		qDebug() << "Z gravity: " << this->z_gravity;
 
 		/* Stop checking only calibration reports. */
 		disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
@@ -284,7 +276,6 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 		this->pollStatusReport();
 
 	} else {
-		qDebug() << "Report ignored.";
 		this->requestCalibrationData();
 	}
 }
@@ -394,7 +385,7 @@ void QWiimote::getReport(QWiimoteReport report)
 		break;
 
 	case 0x21: // Read memory data, assumed to be a MotionPlus check.
-			qDebug() << "Receiving a read memory report " << report.data.toHex() << " from the wiimote.";
+			// qDebug() << "Receiving a read memory report " << report.data.toHex() << " from the wiimote.";
 
 			if (((report.data[3] & 0xF0)  != 0xF0) && //There are no errors.
 					((report.data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in.
@@ -421,18 +412,19 @@ void QWiimote::getReport(QWiimoteReport report)
 		break;
 
 		case 0x20: // Status report.
-			qDebug() << "Receiving a status report " << report.data.toHex() << " from the wiimote.";
+			// qDebug() << "Receiving a status report " << report.data.toHex() << " from the wiimote.";
 
 			quint8 new_battery_level = (report.data[6] & 0xFF);
 			bool new_battery_empty = ((report.data[3] & 0x01) == 0x01);
+			/* Check if the battery level has changed. */
 			if (new_battery_level != this->battery_level) {
 				this->battery_level = new_battery_level;
-				qDebug() << "Battery level: " << this->battery_level;
 				emit this->updatedBattery();
 			}
+
+			/* Check if the battery is almost empty. */
 			if (new_battery_empty != this->battery_empty) {
 				this->battery_empty = new_battery_empty;
-				qDebug() << "The battery is now empty.";
 				emit this->emptyBattery();
 			}
 
