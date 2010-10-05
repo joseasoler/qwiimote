@@ -1,5 +1,7 @@
 #include "qprecisetime.h"
 
+/* Public functions. */
+
 /**
   * Creates a new #QPreciseTime object.
   */
@@ -36,6 +38,7 @@ QPreciseTime QPreciseTime::currentTime()
 
 /**
   * Copies another #QPreciseTime instance.
+  * @param other Instance to be copied.
   *
   * @return Reference to the copy.
   */

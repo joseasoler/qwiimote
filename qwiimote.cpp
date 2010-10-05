@@ -31,7 +31,6 @@ QWiimote::~QWiimote()
 
 /**
   * The QWiimote starts working.
-  * @todo This is just a preliminary version of start.
   * @return true if the QWiimote started correctly.
   */
 bool QWiimote::start(QWiimote::DataTypes new_data_types)
@@ -229,7 +228,6 @@ bool QWiimote::batteryEmpty() const
 	return this->battery_empty;
 }
 
-
 /**
   * Request the calibration data from the Wiimote.
   * @return True if the report was sent correctly.
@@ -274,7 +272,6 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 		connect(status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
 		status_polling->start(12000);
 		this->pollStatusReport();
-
 	} else {
 		this->requestCalibrationData();
 	}
@@ -403,11 +400,7 @@ void QWiimote::getReport(QWiimoteReport report)
 					this->last_report = QPreciseTime::currentTime();
 					emit motionPlusState();
 				}
-			}/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
-				qDebug() << "MotionPlus plugged out.";
-				this->motionplus_state = QWiimote::MotionPlusActivated;
-				emit motionPlusState(false);
-			}*/
+			}
 		break;
 
 		case 0x20: // Status report.

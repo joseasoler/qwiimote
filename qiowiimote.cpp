@@ -24,6 +24,7 @@ extern "C"{
   */
 QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
+	this->opened = false;
 }
 
 /**
@@ -127,6 +128,7 @@ void QIOWiimote::close()
 		CloseHandle(this->wiimote_handle);
 		free(overlapped);
 
+		/* Mark the connection as not open. */
 		opened = false;
 	}
 }
@@ -136,7 +138,7 @@ void QIOWiimote::close()
   * @param data Report that will be sent to the wiimote.
   * @param max_size Size of the report. Using a size greater than #MAX_REPORT_SIZE is not allowed.
   */
-bool QIOWiimote::writeReport(const char * data, qint64 max_size)
+bool QIOWiimote::writeReport(const char * data, const qint64 max_size)
 {
 	Q_ASSERT_X(max_size <= MAX_REPORT_SIZE, "QIOWiimote::writeReport", "A report can't have a size greater than 22.");
 	// qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
@@ -154,7 +156,7 @@ bool QIOWiimote::writeReport(const char * data, qint64 max_size)
   * Overloaded function.
   * @param data Report that will be sent to the wiimote.
   */
-bool QIOWiimote::writeReport(QByteArray data)
+bool QIOWiimote::writeReport(const QByteArray data)
 {
 	return this->writeReport(data.constData(), data.size());
 }
@@ -162,7 +164,7 @@ bool QIOWiimote::writeReport(QByteArray data)
 /* Private functions */
 
 /**
-  * Starts asynchronous read of data.
+  * Starts asynchronous reading of data from the wiimote.
   */
 void QIOWiimote::readBegin()
 {

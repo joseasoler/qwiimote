@@ -40,8 +40,8 @@ public:
 	bool open();
 	bool isOpened() { return this->opened; }
 	void close();
-	bool writeReport(const char * data, qint64 max_size);
-	bool writeReport(QByteArray data);
+	bool writeReport(const char * data, const qint64 max_size);
+	bool writeReport(const QByteArray data);
 
 private:
 	static const quint16 WIIMOTE_VENDOR_ID;  ///< Wiimote vendor ID.

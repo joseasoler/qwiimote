@@ -13,7 +13,7 @@
 /**
   * Stores a received Wiimote report until it is processed.
   * QTime can't be used because its precision under Windows systems is too low (10-16 milliseconds).
-  * @see #QIOWiimote.
+  * @see #QIOWiimote and #QPreciseTime.
   */
 struct QWiimoteReport {
 	QPreciseTime time; ///< Time of arrival of the report.

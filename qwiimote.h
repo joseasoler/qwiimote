@@ -16,7 +16,7 @@
 #include <QMatrix4x4>
 #include "qiowiimote.h"
 
-#define QW_PI 3.141592653589793238462643 ///< Pi constant.
+#define QW_PI (3.141592653589793238462643) ///< Pi constant.
 
 /**
   * QWiimote represents the state of a Wiimote and any connected extensions.
@@ -30,25 +30,26 @@ class QWiimote : public QObject
 public:
 	/** Defines all data reporting types available. Button data is always active. */
 	enum DataType {
+		DefaultData       = 0x00, ///< Get only default data (buttons).
 		AccelerometerData = 0x01, ///< Get Accelerometer data.
 		MotionPlusData    = 0x02, ///< MotionPlus always activates AccelerometerData.
 	};
 
 	Q_DECLARE_FLAGS(DataTypes, DataType)
 
-	/** Flags to check if one of the Wiimote buttons has been pressed. */
+	/** Flags that show if one of the Wiimote buttons has been pressed. */
 	enum WiimoteButton {
-		ButtonLeft  = 0x0001,
-		ButtonRight = 0x0002,
-		ButtonDown  = 0x0004,
-		ButtonUp    = 0x0008,
-		ButtonPlus  = 0x0010,
-		ButtonTwo   = 0x0100,
-		ButtonOne   = 0x0200,
-		ButtonB     = 0x0400,
-		ButtonA     = 0x0800,
-		ButtonMinus = 0x1000,
-		ButtonHome  = 0x8000,
+		ButtonLeft  = 0x0001, ///< Left button of the D-pad.
+		ButtonRight = 0x0002, ///< Right button of the D-pad.
+		ButtonDown  = 0x0004, ///< Down button of the D-pad.
+		ButtonUp    = 0x0008, ///< Up button of the D-pad.
+		ButtonPlus  = 0x0010, ///< Plus button.
+		ButtonTwo   = 0x0100, ///< Two button.
+		ButtonOne   = 0x0200, ///< One button.
+		ButtonB     = 0x0400, ///< B button.
+		ButtonA     = 0x0800, ///< A button.
+		ButtonMinus = 0x1000, ///< Minus button.
+		ButtonHome  = 0x8000, ///< Home button.
 	};
 
 	Q_DECLARE_FLAGS(WiimoteButtons, WiimoteButton)
@@ -63,20 +64,20 @@ public:
 
 	Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
 
-	/** Flags to check if one of the Wiimote buttons has been pressed. */
+	/** Flags that show if the Wiimote leds / rumble are active. */
 	enum WiimoteLed {
-		Rumble = 0x01,
-		Led1   = 0x10,
-		Led2   = 0x20,
-		Led3   = 0x40,
-		Led4   = 0x80,
+		Rumble = 0x01, ///< Rumble is on.
+		Led1   = 0x10, ///< Led 1 is on.
+		Led2   = 0x20, ///< Led 2 is on.
+		Led3   = 0x40, ///< Led 3 is on.
+		Led4   = 0x80, ///< Led 4 is on.
 	};
 
 	Q_DECLARE_FLAGS(WiimoteLeds, WiimoteLed)
 
 	QWiimote(QObject * parent = NULL);
 	~QWiimote();
-	bool start(QWiimote::DataTypes new_data_types = 0);
+	bool start(QWiimote::DataTypes new_data_types = QWiimote::DefaultData);
 	void stop();
 
 	void setDataTypes(QWiimote::DataTypes new_data_types);
@@ -146,7 +147,8 @@ private:
 	qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
 
 	QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
-	QWiimote::MotionPlusStates motionplus_state;
+	QWiimote::MotionPlusStates
+					motionplus_state;         ///< Current state of the MotionPlus.
 
 	QTime calibration_time;               ///< Used to calibrate orientation for a certain amount of time.
 	quint16 num_samples;                  ///< Number of samples taken for calibrating the orientation.
