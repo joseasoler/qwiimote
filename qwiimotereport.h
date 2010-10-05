@@ -8,15 +8,16 @@
 #define QWIIMOTEREPORT_H
 
 #include <QByteArray>
-#include <QTime>
+#include "qprecisetime.h"
 
 /**
   * Stores a received Wiimote report until it is processed.
+  * QTime can't be used because its precision under Windows systems is too low (10-16 milliseconds).
   * @see #QIOWiimote.
   */
 struct QWiimoteReport {
-	QTime time;      ///< Time of arrival of the report.
-	QByteArray data; ///< Data of the report.
+	QPreciseTime time; ///< Time of arrival of the report.
+	QByteArray data;   ///< Data of the report.
 };
 
 #endif // QWIIMOTEREPORT_H

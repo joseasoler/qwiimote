@@ -199,7 +199,7 @@ void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 	if (error_code == 0) {
 		QWiimoteReport new_report;
 		/* Set the time to the current time. */
-		new_report.time = QTime::currentTime();
+		new_report.time = QPreciseTime::currentTime();
 		/* Set the data. */
 		new_report.data = QByteArray::fromRawData(this->read_buffer, bytes_transferred);
 		/* Schedule the next read. */

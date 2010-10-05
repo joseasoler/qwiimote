@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QFlags>
 #include <QTimer>
+#include <QTime>
 #include <QMatrix4x4>
 #include "qiowiimote.h"
 
@@ -129,7 +130,7 @@ private:
 	QWiimote::WiimoteButtons button_data; ///< Button status.
 	QWiimote::WiimoteLeds led_data;       ///< Led status.
 
-	QTime last_report;                    ///< Time when the last report was received.
+	QPreciseTime last_report;             ///< Time when the last report was received.
 
 	quint16 x_acceleration;               ///< Raw acceleration in the x axis.
 	quint16 y_acceleration;               ///< Raw acceleration in the y axis.
@@ -156,7 +157,7 @@ private:
 	qreal pitch_speed;                    ///< Pitch speed (in degrees per second).
 	qreal roll_speed;                     ///< Roll speed (in degrees per second).
 	qreal yaw_speed;                      ///< Yaw speed (in degrees per second).
-	quint32 elapsed_time;                 ///< Elapsed time from last report (in milliseconds).
+	qreal elapsed_time;                   ///< Elapsed time from last report (in milliseconds).
 
 	QTimer * status_polling;              ///< Timer that polls wiimote status reports.
 	bool status_requested;                ///< True if a status report is expected.

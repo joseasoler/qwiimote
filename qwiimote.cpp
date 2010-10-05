@@ -349,7 +349,7 @@ void QWiimote::getReport(QWiimoteReport report)
 					yaw_speed /= (fast_yaw) ?		QWiimote::DEGREES_PER_SECOND_FAST :
 															QWiimote::DEGREES_PER_SECOND_SLOW;
 
-					elapsed_time = this->last_report.elapsed() - report.time.elapsed();
+					this->elapsed_time = this->last_report.elapsed() - report.time.elapsed();
 					this->last_report = report.time;
 				}
 			}
@@ -393,7 +393,6 @@ void QWiimote::getReport(QWiimoteReport report)
 					((report.data[8] & 0xFF)  == 0xA6) &&
 					((report.data[9] & 0xFF)  == 0x20) &&
 					((report.data[11] & 0xFF) == 0x05)) {
-				qDebug() << "MotionPlus plugged in.";
 				if (this->motionplus_state == QWiimote::MotionPlusActivated) {
 					this->enableMotionPlus();
 					this->motionplus_state = QWiimote::MotionPlusWorking;
@@ -401,7 +400,7 @@ void QWiimote::getReport(QWiimoteReport report)
 					this->pitch_zero_orientation = 0;
 					this->roll_zero_orientation  = 0;
 					this->yaw_zero_orientation   = 0;
-					this->last_report = QTime::currentTime();
+					this->last_report = QPreciseTime::currentTime();
 					emit motionPlusState();
 				}
 			}/* else if (this->motionplus_state == QWiimote::MotionPlusWorking) {
@@ -443,7 +442,7 @@ void QWiimote::getReport(QWiimoteReport report)
 		button_data = button_new;
 		emit this->updatedButtons();
 	}
-	this->last_report = QTime::currentTime();
+	this->last_report = QPreciseTime::currentTime();
 }
 
 /**

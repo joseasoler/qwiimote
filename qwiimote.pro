@@ -8,13 +8,15 @@ SOURCES += main.cpp \
     wmainwindow.cpp \
     qwiimote.cpp \
     qiowiimote.cpp \
-    wopengl.cpp
+    wopengl.cpp \
+    qprecisetime.cpp
 HEADERS += wmainwindow.h \
     qwiimote.h \
     debugcheck.h \
     qiowiimote.h \
     qwiimotereport.h \
-    wopengl.h
+    wopengl.h \
+    qprecisetime.h
 FORMS += wmainwindow.ui
 LIBS += libsetupapi \
     libhid
