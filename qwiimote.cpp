@@ -23,10 +23,10 @@ QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 
 /**
   * Destructor of QWiimote.
-  * @todo Check if it should call to close.
   */
 QWiimote::~QWiimote()
 {
+	this->stop();
 }
 
 /**
@@ -60,10 +60,10 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 
 /**
   * The QWiimote stops working and disconnects.
-  * @todo This is just a preliminary version of stop.
   */
 void QWiimote::stop()
 {
+	this->setDataTypes(QWiimote::DefaultData);
 	this->io_wiimote.close();
 }
 
