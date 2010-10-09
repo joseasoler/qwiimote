@@ -68,6 +68,14 @@ public:
 
 	Q_DECLARE_FLAGS(WiimoteButtons, WiimoteButton)
 
+	/** Smoothing method used for determining acceleration. */
+	enum AccelerationSmoothing {
+		SmoothingNone, ///< Use the last sample.
+		SmoothingEMA,  ///< Apply Exponential Moving Average to the list of samples.
+	};
+
+	Q_DECLARE_FLAGS(AccSmoothing, AccelerationSmoothing)
+
 	/** State of the MotionPlus extension. */
 	enum MotionPlusState {
 		MotionPlusInactive,   ///< Initial state.
@@ -96,6 +104,8 @@ public:
 
 	void setDataTypes(QWiimote::DataTypes new_data_types);
 	void setLeds(QWiimote::WiimoteLeds leds);
+
+	void setAccelerationSmoothing(QWiimote::AccelerationSmoothing acc_s);
 
 	QWiimote::DataTypes dataTypes() const;
 	QWiimote::WiimoteLeds leds() const;
@@ -129,11 +139,12 @@ private:
 	void disableMotionPlus();
 	void processOrientationData();
 
-	static const quint8 ACCELERATION_THRESHOLD; ///< Raw acceleration threshold.
-	static const quint16 MOTIONPLUS_TIME;       ///< Time required to calibrate the MotionPlus.
-	static const qreal DEGREES_PER_SECOND_SLOW; ///< MotionPlus speed (slow).
-	static const qreal DEGREES_PER_SECOND_FAST; ///< MotionPlus speed (fast).
-	static const quint8 MOTIONPLUS_THRESHOLD;   ///< MotionPlus speed threshold.
+	static const quint8 SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.
+	static const qreal  SMOOTHING_EMA_THRESHOLD;  ///< Calibrated acceleration threshold for EMA.
+	static const quint16 MOTIONPLUS_TIME;         ///< Time required to calibrate the MotionPlus.
+	static const qreal DEGREES_PER_SECOND_SLOW;   ///< MotionPlus speed (slow).
+	static const qreal DEGREES_PER_SECOND_FAST;   ///< MotionPlus speed (fast).
+	static const quint8 MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
 
 	QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
 	char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
@@ -151,6 +162,8 @@ private:
 	QVector3D gravity;                    ///< Gravity calibration for the accelerometer.
 	/* Acceleration samples. */
 	QAccelerationSampleList sample_list;  ///< List of acceleration samples.
+	QWiimote::AccelerationSmoothing
+					acceleration_smoothing;   ///< Method used for smoothing the acceleration value.
 	quint8 max_acceleration_samples;      ///< Maximum number of acceleration samples to store.
 	/* Current acceleration values. */
 	QVector3D calibrated_acceleration;    ///< Acceleration vector.

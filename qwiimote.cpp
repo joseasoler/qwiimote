@@ -7,7 +7,8 @@
 #include "qwiimote.h"
 #include "debugcheck.h"
 
-const quint8  QWiimote::ACCELERATION_THRESHOLD = 3;
+const quint8  QWiimote::SMOOTHING_NONE_THRESHOLD = 3;
+const qreal   QWiimote::SMOOTHING_EMA_THRESHOLD = 0.01;
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
 const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
@@ -44,15 +45,16 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->requestCalibrationData();
 		/* Initialize internal values. */
 		data_types = 0;
-		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->status_requested = false;
 		this->battery_level = 0;
 		this->battery_empty = false;
+		this->acceleration_smoothing = QWiimote::SmoothingEMA;
+		this->max_acceleration_samples = 24;
+		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
 		this->roll_speed = 0;
 		this->yaw_speed = 0;
-		this->max_acceleration_samples = 8;
 
 		return true;
 	}
@@ -145,6 +147,19 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 	send_buffer[1] = leds; // LED status.
 	this->io_wiimote.writeReport(send_buffer, 2);
 }
+
+/**
+  * Changes the method used for smoothing acceleration samples.
+  * @param acc_s Smoothing method to use.
+  */
+void QWiimote::setAccelerationSmoothing(QWiimote::AccelerationSmoothing acc_s)
+{
+	if (this->acceleration_smoothing == acc_s) return;
+
+	this->sample_list.clear();
+	this->acceleration_smoothing = acc_s;
+}
+
 
 /**
   * Check what buttons are pressed now.
@@ -334,12 +349,10 @@ void QWiimote::getReport(QWiimoteReport report)
 				z_new =  (report.data[5] & 0xFF) << 2;
 				z_new += (report.data[2] & 0x40) >> 5;
 
-				/* Process acceleration info only if the new values are different than the old ones. */
-				if (	(abs(x_new - this->raw_acceleration.x()) > QWiimote::ACCELERATION_THRESHOLD) ||
-						(abs(y_new - this->raw_acceleration.y()) > QWiimote::ACCELERATION_THRESHOLD) ||
-						(abs(z_new - this->raw_acceleration.z()) > QWiimote::ACCELERATION_THRESHOLD)) {
+				if (this->acceleration_smoothing != QWiimote::SmoothingNone) {
 					this->raw_acceleration = QVector3D(x_new, y_new, z_new);
 
+					/* Add the new sample to the beginning of the list of samples. */
 					QAccelerationSample sample;
 					sample.time = report.time;
 					/* Calibrated values. */
@@ -347,15 +360,56 @@ void QWiimote::getReport(QWiimoteReport report)
 					sample.calibrated_acceleration.setX(sample.calibrated_acceleration.x() / this->gravity.x());
 					sample.calibrated_acceleration.setY(sample.calibrated_acceleration.y() / this->gravity.y());
 					sample.calibrated_acceleration.setZ(sample.calibrated_acceleration.z() / this->gravity.z());
-
 					this->sample_list.prepend(sample);
+
+					/* Remove the last sample if required. */
 					if (this->sample_list.size() > this->max_acceleration_samples) this->sample_list.removeLast();
-
-					/** @todo Smoothing methods. For now, just use the last sample. */
-					this->calibrated_acceleration = sample.calibrated_acceleration;
-
-					emit this->updatedAcceleration();
 				}
+
+
+				switch (this->acceleration_smoothing) {
+					case QWiimote::SmoothingNone:
+						/* Process acceleration info only if the new values are different than the old ones. */
+						if (	(abs(x_new - this->raw_acceleration.x()) > QWiimote::SMOOTHING_NONE_THRESHOLD) ||
+								(abs(y_new - this->raw_acceleration.y()) > QWiimote::SMOOTHING_NONE_THRESHOLD) ||
+								(abs(z_new - this->raw_acceleration.z()) > QWiimote::SMOOTHING_NONE_THRESHOLD)) {
+							this->raw_acceleration = QVector3D(x_new, y_new, z_new);
+							this->calibrated_acceleration = this->raw_acceleration - this->zero_acceleration;
+							this->calibrated_acceleration.setX(this->calibrated_acceleration.x() / this->gravity.x());
+							this->calibrated_acceleration.setY(this->calibrated_acceleration.y() / this->gravity.y());
+							this->calibrated_acceleration.setZ(this->calibrated_acceleration.z() / this->gravity.z());
+
+							emit this->updatedAcceleration();
+						}
+						break;
+
+					case QWiimote::SmoothingEMA:
+						/* Exponential Moving Average method. */
+						qreal alpha = 2.0 / (this->max_acceleration_samples + 1.0);
+						qreal one_minus_alpha = 1.0 - alpha;
+						qreal alpha_pow = 1;
+
+						QVector3D EMA_acceleration(0.0, 0.0, 0.0);
+
+						for (QAccelerationSampleList::iterator i = this->sample_list.begin();
+								i != this->sample_list.end();
+								i++) {
+							EMA_acceleration += i->calibrated_acceleration * alpha_pow;
+							alpha_pow *= one_minus_alpha;
+						}
+
+						EMA_acceleration *= alpha;
+						EMA_acceleration.normalize();
+
+						if (	(fabs(EMA_acceleration.x() - this->calibrated_acceleration.x()) > QWiimote::SMOOTHING_EMA_THRESHOLD) ||
+								(fabs(EMA_acceleration.y() - this->calibrated_acceleration.y()) > QWiimote::SMOOTHING_EMA_THRESHOLD) ||
+								(fabs(EMA_acceleration.z() - this->calibrated_acceleration.z()) > QWiimote::SMOOTHING_EMA_THRESHOLD)) {
+							this->calibrated_acceleration = EMA_acceleration;
+							emit this->updatedAcceleration();
+						}
+						break;
+				}
+
 				this->processOrientationData();
 			}
 		break;
