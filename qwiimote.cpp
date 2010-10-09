@@ -167,7 +167,7 @@ QWiimote::WiimoteLeds QWiimote::leds() const
   */
 quint16 QWiimote::rawAccelerationX() const
 {
-	return this->x_acceleration;
+	return this->x_raw_acceleration;
 }
 
 /**
@@ -175,7 +175,7 @@ quint16 QWiimote::rawAccelerationX() const
   */
 quint16 QWiimote::rawAccelerationY() const
 {
-	return this->y_acceleration;
+	return this->y_raw_acceleration;
 }
 
 /**
@@ -183,7 +183,7 @@ quint16 QWiimote::rawAccelerationY() const
   */
 quint16 QWiimote::rawAccelerationZ() const
 {
-	return this->z_acceleration;
+	return this->z_raw_acceleration;
 }
 
 /**
@@ -362,18 +362,18 @@ void QWiimote::getReport(QWiimoteReport report)
 				z_new += (report.data[2] & 0x40) >> 5;
 
 				/* Process acceleration info only if the new values are different than the old ones. */
-				if ((x_new != this->x_acceleration) ||
-					 (y_new != this->y_acceleration) ||
-					 (z_new != this->z_acceleration)) {
-					this->x_acceleration = x_new;
-					this->y_acceleration = y_new;
-					this->z_acceleration = z_new;
+				if ((x_new != this->x_raw_acceleration) ||
+					 (y_new != this->y_raw_acceleration) ||
+					 (z_new != this->z_raw_acceleration)) {
+					this->x_raw_acceleration = x_new;
+					this->y_raw_acceleration = y_new;
+					this->z_raw_acceleration = z_new;
 					/* Calibrated values. */
-					this->x_calibrated_acceleration = ((qreal)(this->x_acceleration - this->x_zero_acceleration) /
+					this->x_calibrated_acceleration = ((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);
-					this->y_calibrated_acceleration = ((qreal)(this->y_acceleration - this->y_zero_acceleration) /
+					this->y_calibrated_acceleration = ((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
 												 (qreal)this->y_gravity);
-					this->z_calibrated_acceleration = ((qreal)(this->z_acceleration - this->z_zero_acceleration) /
+					this->z_calibrated_acceleration = ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
 					emit this->updatedAcceleration();
 				}
@@ -505,9 +505,9 @@ void QWiimote::pollStatusReport()
   */
 void QWiimote::resetAccelerationData()
 {
-	this->x_acceleration = 0;
-	this->y_acceleration = 0;
-	this->z_acceleration = 0;
+	this->x_raw_acceleration = 0;
+	this->y_raw_acceleration = 0;
+	this->z_raw_acceleration = 0;
 	this->x_calibrated_acceleration = 0;
 	this->y_calibrated_acceleration = 0;
 	this->z_calibrated_acceleration = 0;

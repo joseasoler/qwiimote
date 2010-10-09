@@ -133,9 +133,11 @@ private:
 
 	QPreciseTime last_report;             ///< Time when the last report was received.
 
-	quint16 x_acceleration;               ///< Raw acceleration in the x axis.
-	quint16 y_acceleration;               ///< Raw acceleration in the y axis.
-	quint16 z_acceleration;               ///< Raw acceleration in the z axis.
+	/* Raw acceleration values. */
+	quint16 x_raw_acceleration;           ///< Raw acceleration in the x axis.
+	quint16 y_raw_acceleration;           ///< Raw acceleration in the y axis.
+	quint16 z_raw_acceleration;           ///< Raw acceleration in the z axis.
+	/* Acceleration calibration values. */
 	quint16 x_zero_acceleration;          ///< Zero position for the x axis.
 	quint16 y_zero_acceleration;          ///< Zero position for the y axis.
 	quint16 z_zero_acceleration;          ///< Zero position for the z axis.
