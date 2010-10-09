@@ -7,6 +7,7 @@
 #include "qwiimote.h"
 #include "debugcheck.h"
 
+const quint8  QWiimote::ACCELERATION_THRESHOLD = 3;
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
 const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
@@ -280,7 +281,7 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 /**
   * Gets a report from the wiimote.
   * @param report Received report.
-  * @todo Check possible report errors. Use a threshold while reporting acceleration changes.
+  * @todo Check possible report errors.
   */
 void QWiimote::getReport(QWiimoteReport report)
 {
@@ -362,12 +363,13 @@ void QWiimote::getReport(QWiimoteReport report)
 				z_new += (report.data[2] & 0x40) >> 5;
 
 				/* Process acceleration info only if the new values are different than the old ones. */
-				if ((x_new != this->x_raw_acceleration) ||
-					 (y_new != this->y_raw_acceleration) ||
-					 (z_new != this->z_raw_acceleration)) {
+				if (	(abs(x_new - this->x_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD) ||
+						(abs(y_new - this->y_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD) ||
+						(abs(z_new - this->z_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD)) {
 					this->x_raw_acceleration = x_new;
 					this->y_raw_acceleration = y_new;
 					this->z_raw_acceleration = z_new;
+
 					/* Calibrated values. */
 					this->x_calibrated_acceleration = ((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);

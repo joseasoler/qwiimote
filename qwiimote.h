@@ -119,6 +119,7 @@ private:
 	void disableMotionPlus();
 	void processOrientationData();
 
+	static const quint8 ACCELERATION_THRESHOLD; ///< Raw acceleration threshold.
 	static const quint16 MOTIONPLUS_TIME;       ///< Time required to calibrate the MotionPlus.
 	static const qreal DEGREES_PER_SECOND_SLOW; ///< MotionPlus speed (slow).
 	static const qreal DEGREES_PER_SECOND_FAST; ///< MotionPlus speed (fast).
