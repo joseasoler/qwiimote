@@ -488,16 +488,17 @@ void QWiimote::processOrientationData()
 
 	if (!(this->data_types & QWiimote::MotionPlusData)) {
 		/* Use accelerometer data to determine pitch and roll. */
-		QVector3D acc = this->acceleration();
+		QVector3D acc = -this->acceleration();
 		acc.normalize();
+		qreal value = acc.z();
+		acc.setZ(acc.y());
+		acc.setY(value);
 		this->mat_orientation.setToIdentity();
 
-		QVector3D reference    = QVector3D(0, 0, 1);
-		QVector3D axis = QVector3D::crossProduct(reference, acc);
-		qreal angle = acos(QVector3D::dotProduct(reference, acc)) * 180 / QW_PI;
-		qreal value = axis.z();
-		axis.setZ(axis.y());
-		axis.setY(value);
+		/* This is the acceleration for a wiimote in the default position. */
+		QVector3D reference(0.0, -1.0, 0.0);
+		QVector3D axis = QVector3D::crossProduct(acc, reference);
+		qreal angle = acos(QVector3D::dotProduct(acc, reference)) * 180 / QW_PI;
 		this->mat_orientation.rotate(angle, axis);
 	}
 
