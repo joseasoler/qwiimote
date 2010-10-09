@@ -20,7 +20,6 @@ const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
   */
 QWiimote::QWiimote(QObject * parent) : QObject(parent), io_wiimote(this)
 {
-	this->motionplus_orientation.setToIdentity();
 }
 
 /**
@@ -50,6 +49,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->battery_empty = false;
 		this->acceleration_smoothing = QWiimote::SmoothingEMA;
 		this->max_acceleration_samples = 24;
+		this->mat_orientation.setToIdentity();
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
@@ -472,7 +472,7 @@ void QWiimote::getReport(QWiimoteReport report)
 }
 
 /**
-  * Turns raw data into a quaternion that measures current orientation of the wiimote.
+  * Turns raw data into a matrix that measures current orientation of the wiimote.
   */
 void QWiimote::processOrientationData()
 {
@@ -481,16 +481,16 @@ void QWiimote::processOrientationData()
 		pitch_angle = 0.75 * (elapsed_time * pitch_speed) / 1000;
 		roll_angle  = 0.75 * (elapsed_time * roll_speed) / 1000;
 		yaw_angle   = 0.75 * (elapsed_time * yaw_speed) / 1000;
-		this->motionplus_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
-		this->motionplus_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
-		this->motionplus_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
+		this->mat_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
+		this->mat_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
+		this->mat_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
 	}
 
 	if (!(this->data_types & QWiimote::MotionPlusData)) {
 		/* Use accelerometer data to determine pitch and roll. */
 		QVector3D acc = this->acceleration();
 		acc.normalize();
-		this->motionplus_orientation.setToIdentity();
+		this->mat_orientation.setToIdentity();
 
 		QVector3D reference    = QVector3D(0, 0, 1);
 		QVector3D axis = QVector3D::crossProduct(reference, acc);
@@ -498,7 +498,7 @@ void QWiimote::processOrientationData()
 		qreal value = axis.z();
 		axis.setZ(axis.y());
 		axis.setY(value);
-		this->motionplus_orientation.rotate(angle, axis);
+		this->mat_orientation.rotate(angle, axis);
 	}
 
 	emit this->updatedOrientation();
