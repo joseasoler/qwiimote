@@ -14,9 +14,25 @@
 #include <QTimer>
 #include <QTime>
 #include <QMatrix4x4>
+#include <QList>
+#include "qprecisetime.h"
 #include "qiowiimote.h"
 
 #define QW_PI (3.141592653589793238462643) ///< Pi constant.
+
+/**
+  * Stores an acceleration sample.
+  * @see #QPreciseTime.
+  */
+struct QAccelerationSample
+{
+	QPreciseTime time;                  ///< Time of arrival of the report.
+	qreal x_calibrated_acceleration;    ///< Acceleration in the x axis.
+	qreal y_calibrated_acceleration;    ///< Acceleration in the y axis.
+	qreal z_calibrated_acceleration;    ///< Acceleration in the z axis.
+};
+
+typedef QList<QAccelerationSample> QAccelerationSampleList;
 
 /**
   * QWiimote represents the state of a Wiimote and any connected extensions.
@@ -145,6 +161,10 @@ private:
 	quint16 x_gravity;                    ///< Gravity calibration for the x axis.
 	quint16 y_gravity;                    ///< Gravity calibration for the y axis.
 	quint16 z_gravity;                    ///< Gravity calibration for the z axis.
+	/* Acceleration samples. */
+	QAccelerationSampleList sample_list;  ///< List of acceleration samples.
+	quint8 max_acceleration_samples;      ///< Maximum number of acceleration samples to store.
+	/* Current acceleration values. */
 	qreal   x_calibrated_acceleration;    ///< Acceleration in the x axis.
 	qreal   y_calibrated_acceleration;    ///< Acceleration in the y axis.
 	qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
@@ -154,7 +174,7 @@ private:
 					motionplus_state;         ///< Current state of the MotionPlus.
 
 	QTime calibration_time;               ///< Used to calibrate orientation for a certain amount of time.
-	quint16 num_samples;                  ///< Number of samples taken for calibrating the orientation.
+	quint16 calibration_samples;          ///< Number of samples taken for calibrating the orientation.
 	qint32 pitch_zero_orientation;        ///< Zero angle for pitch.
 	qint32 roll_zero_orientation;         ///< Zero angle for roll.
 	qint32 yaw_zero_orientation;          ///< Zero angle for yaw.

@@ -52,6 +52,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->pitch_speed = 0;
 		this->roll_speed = 0;
 		this->yaw_speed = 0;
+		this->max_acceleration_samples = 8;
 
 		return true;
 	}
@@ -318,15 +319,15 @@ void QWiimote::getReport(QWiimoteReport report)
 						this->pitch_zero_orientation += raw_pitch;
 						this->roll_zero_orientation  += raw_roll;
 						this->yaw_zero_orientation   += raw_yaw;
-						this->num_samples++;
+						this->calibration_samples++;
 
 						if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
 
 							this->motionplus_state = QWiimote::MotionPlusCalibrated;
 
-							this->pitch_zero_orientation /= this->num_samples;
-							this->roll_zero_orientation  /= this->num_samples;
-							this->yaw_zero_orientation   /= this->num_samples;
+							this->pitch_zero_orientation /= this->calibration_samples;
+							this->roll_zero_orientation  /= this->calibration_samples;
+							this->yaw_zero_orientation   /= this->calibration_samples;
 
 							emit motionPlusState();
 						}
@@ -370,13 +371,24 @@ void QWiimote::getReport(QWiimoteReport report)
 					this->y_raw_acceleration = y_new;
 					this->z_raw_acceleration = z_new;
 
+					QAccelerationSample sample;
+					sample.time = report.time;
 					/* Calibrated values. */
-					this->x_calibrated_acceleration = ((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
+					sample.x_calibrated_acceleration = ((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);
-					this->y_calibrated_acceleration = ((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
+					sample.y_calibrated_acceleration = ((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
 												 (qreal)this->y_gravity);
-					this->z_calibrated_acceleration = ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
+					sample.z_calibrated_acceleration = ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
+
+					this->sample_list.prepend(sample);
+					if (this->sample_list.size() > this->max_acceleration_samples) this->sample_list.removeLast();
+
+					/** @todo Smoothing methods. For now, just use the last sample. */
+					this->x_calibrated_acceleration = sample.x_calibrated_acceleration;
+					this->y_calibrated_acceleration = sample.y_calibrated_acceleration;
+					this->z_calibrated_acceleration = sample.z_calibrated_acceleration;
+
 					emit this->updatedAcceleration();
 				}
 				this->processOrientationData();
@@ -507,6 +519,7 @@ void QWiimote::pollStatusReport()
   */
 void QWiimote::resetAccelerationData()
 {
+	this->sample_list.clear();
 	this->x_raw_acceleration = 0;
 	this->y_raw_acceleration = 0;
 	this->z_raw_acceleration = 0;
@@ -531,7 +544,7 @@ void QWiimote::enableMotionPlus()
 	// Write 0x04 to register 0xA600FE.
 	this->io_wiimote.writeReport(send_buffer, 7);
 
-	this->num_samples = 0;
+	this->calibration_samples = 0;
 	this->calibration_time = QTime::currentTime();
 }
 
