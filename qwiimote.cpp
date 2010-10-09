@@ -226,13 +226,14 @@ void QWiimote::getCalibrationReport(QWiimoteReport report)
 	// qDebug() << "Receiving the report " << report.data.toHex() << " from the wiimote.";
 	if (report.data[0] == (char)0x21) {
 		/* Get the required calibration values from the report. */
-		this->x_zero_acceleration = ((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4);
-		this->y_zero_acceleration = ((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2);
-		this->z_zero_acceleration = ((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03);
+		this->zero_acceleration.setX(((report.data[6] & 0xFF) << 2) + ((report.data[9] & 0x30) >> 4));
+		this->zero_acceleration.setY(((report.data[7] & 0xFF) << 2) + ((report.data[9] & 0x0C) >> 2));
+		this->zero_acceleration.setZ(((report.data[8] & 0xFF) << 2) + (report.data[9] & 0x03));
 
-		this->x_gravity = ((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4) - this->x_zero_acceleration;
-		this->y_gravity = ((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2) - this->y_zero_acceleration;
-		this->z_gravity = ((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03) - this->z_zero_acceleration;
+		this->gravity.setX(((report.data[10] & 0xFF) << 2) + ((report.data[13] & 0x30) >> 4));
+		this->gravity.setY(((report.data[11] & 0xFF) << 2) + ((report.data[13] & 0x0C) >> 2));
+		this->gravity.setZ(((report.data[12] & 0xFF) << 2) + (report.data[13] & 0x03));
+		this->gravity -= this->zero_acceleration;
 
 		/* Stop checking only calibration reports. */
 		disconnect(&io_wiimote, SIGNAL(reportReady(QWiimoteReport)), this, SLOT(getCalibrationReport(QWiimoteReport)));
@@ -342,12 +343,10 @@ void QWiimote::getReport(QWiimoteReport report)
 					QAccelerationSample sample;
 					sample.time = report.time;
 					/* Calibrated values. */
-					sample.calibrated_acceleration.setX((qreal)(this->raw_acceleration.x() - this->x_zero_acceleration) /
-												 (qreal)this->x_gravity);
-					sample.calibrated_acceleration.setY((qreal)(this->raw_acceleration.y() - this->y_zero_acceleration) /
-												 (qreal)this->y_gravity);
-					sample.calibrated_acceleration.setZ((qreal)(this->raw_acceleration.z() - this->z_zero_acceleration) /
-												 (qreal)this->z_gravity);
+					sample.calibrated_acceleration = this->raw_acceleration - this->zero_acceleration;
+					sample.calibrated_acceleration.setX(sample.calibrated_acceleration.x() / this->gravity.x());
+					sample.calibrated_acceleration.setY(sample.calibrated_acceleration.y() / this->gravity.y());
+					sample.calibrated_acceleration.setZ(sample.calibrated_acceleration.z() / this->gravity.z());
 
 					this->sample_list.prepend(sample);
 					if (this->sample_list.size() > this->max_acceleration_samples) this->sample_list.removeLast();

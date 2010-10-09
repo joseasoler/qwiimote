@@ -147,12 +147,8 @@ private:
 	/* Raw acceleration values. */
 	QVector3D raw_acceleration;           ///< Raw acceleration vector.
 	/* Acceleration calibration values. */
-	quint16 x_zero_acceleration;          ///< Zero position for the x axis.
-	quint16 y_zero_acceleration;          ///< Zero position for the y axis.
-	quint16 z_zero_acceleration;          ///< Zero position for the z axis.
-	quint16 x_gravity;                    ///< Gravity calibration for the x axis.
-	quint16 y_gravity;                    ///< Gravity calibration for the y axis.
-	quint16 z_gravity;                    ///< Gravity calibration for the z axis.
+	QVector3D zero_acceleration;          ///< Zero position for the accelerometer.
+	QVector3D gravity;                    ///< Gravity calibration for the accelerometer.
 	/* Acceleration samples. */
 	QAccelerationSampleList sample_list;  ///< List of acceleration samples.
 	quint8 max_acceleration_samples;      ///< Maximum number of acceleration samples to store.
