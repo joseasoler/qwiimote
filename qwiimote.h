@@ -101,9 +101,7 @@ public:
 	QWiimote::WiimoteLeds leds() const;
 	QWiimote::WiimoteButtons buttonData() const;
 
-	quint16 rawAccelerationX() const;
-	quint16 rawAccelerationY() const;
-	quint16 rawAccelerationZ() const;
+	QVector3D rawAcceleration() const;
 	QVector3D acceleration() const;
 
 	QMatrix4x4 orientation() const { return motionplus_orientation; }
@@ -147,9 +145,7 @@ private:
 	QPreciseTime last_report;             ///< Time when the last report was received.
 
 	/* Raw acceleration values. */
-	quint16 x_raw_acceleration;           ///< Raw acceleration in the x axis.
-	quint16 y_raw_acceleration;           ///< Raw acceleration in the y axis.
-	quint16 z_raw_acceleration;           ///< Raw acceleration in the z axis.
+	QVector3D raw_acceleration;           ///< Raw acceleration vector.
 	/* Acceleration calibration values. */
 	quint16 x_zero_acceleration;          ///< Zero position for the x axis.
 	quint16 y_zero_acceleration;          ///< Zero position for the y axis.

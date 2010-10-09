@@ -165,31 +165,16 @@ QWiimote::WiimoteLeds QWiimote::leds() const
 }
 
 /**
-  * @return Raw acceleration on the X axis.
+  * Gets the current raw acceleration value.
+  * @return Raw acceleration vector.
   */
-quint16 QWiimote::rawAccelerationX() const
+QVector3D QWiimote::rawAcceleration() const
 {
-	return this->x_raw_acceleration;
+	return this->raw_acceleration;
 }
 
 /**
-  * @return Raw acceleration on the Y axis.
-  */
-quint16 QWiimote::rawAccelerationY() const
-{
-	return this->y_raw_acceleration;
-}
-
-/**
-  * @return Raw acceleration on the Z axis.
-  */
-quint16 QWiimote::rawAccelerationZ() const
-{
-	return this->z_raw_acceleration;
-}
-
-/**
-  * Gets the current acceleration value.
+  * Gets the current calibrated acceleration value.
   * @return Calibrated acceleration.
   */
 QVector3D QWiimote::acceleration() const
@@ -349,21 +334,19 @@ void QWiimote::getReport(QWiimoteReport report)
 				z_new += (report.data[2] & 0x40) >> 5;
 
 				/* Process acceleration info only if the new values are different than the old ones. */
-				if (	(abs(x_new - this->x_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD) ||
-						(abs(y_new - this->y_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD) ||
-						(abs(z_new - this->z_raw_acceleration) > QWiimote::ACCELERATION_THRESHOLD)) {
-					this->x_raw_acceleration = x_new;
-					this->y_raw_acceleration = y_new;
-					this->z_raw_acceleration = z_new;
+				if (	(abs(x_new - this->raw_acceleration.x()) > QWiimote::ACCELERATION_THRESHOLD) ||
+						(abs(y_new - this->raw_acceleration.y()) > QWiimote::ACCELERATION_THRESHOLD) ||
+						(abs(z_new - this->raw_acceleration.z()) > QWiimote::ACCELERATION_THRESHOLD)) {
+					this->raw_acceleration = QVector3D(x_new, y_new, z_new);
 
 					QAccelerationSample sample;
 					sample.time = report.time;
 					/* Calibrated values. */
-					sample.calibrated_acceleration.setX((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
+					sample.calibrated_acceleration.setX((qreal)(this->raw_acceleration.x() - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);
-					sample.calibrated_acceleration.setY((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
+					sample.calibrated_acceleration.setY((qreal)(this->raw_acceleration.y() - this->y_zero_acceleration) /
 												 (qreal)this->y_gravity);
-					sample.calibrated_acceleration.setZ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
+					sample.calibrated_acceleration.setZ((qreal)(this->raw_acceleration.z() - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
 
 					this->sample_list.prepend(sample);
@@ -503,9 +486,7 @@ void QWiimote::pollStatusReport()
 void QWiimote::resetAccelerationData()
 {
 	this->sample_list.clear();
-	this->x_raw_acceleration = 0;
-	this->y_raw_acceleration = 0;
-	this->z_raw_acceleration = 0;
+	this->raw_acceleration = QVector3D(0.0, 0.0, 0.0);
 	this->calibrated_acceleration = QVector3D(0.0, 0.0, 0.0);
 }
 
