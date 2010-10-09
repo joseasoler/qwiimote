@@ -41,9 +41,10 @@ WMainWindow::~WMainWindow()
 
 void WMainWindow::changeAcceleration()
 {
-	ui->acceleration_x->setValue(this->wiimote.accelerationX() * 1000);
-	ui->acceleration_y->setValue(this->wiimote.accelerationY() * 1000);
-	ui->acceleration_z->setValue(this->wiimote.accelerationZ() * 1000);
+	QVector3D acc = this->wiimote.acceleration();
+	ui->acceleration_x->setValue(acc.x() * 1000);
+	ui->acceleration_y->setValue(acc.y() * 1000);
+	ui->acceleration_z->setValue(acc.z() * 1000);
 }
 
 void WMainWindow::changeButtons()

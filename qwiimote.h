@@ -27,9 +27,7 @@
 struct QAccelerationSample
 {
 	QPreciseTime time;                  ///< Time of arrival of the report.
-	qreal x_calibrated_acceleration;    ///< Acceleration in the x axis.
-	qreal y_calibrated_acceleration;    ///< Acceleration in the y axis.
-	qreal z_calibrated_acceleration;    ///< Acceleration in the z axis.
+	QVector3D calibrated_acceleration;  ///< Acceleration values.
 };
 
 typedef QList<QAccelerationSample> QAccelerationSampleList;
@@ -106,9 +104,7 @@ public:
 	quint16 rawAccelerationX() const;
 	quint16 rawAccelerationY() const;
 	quint16 rawAccelerationZ() const;
-	qreal accelerationX() const;
-	qreal accelerationY() const;
-	qreal accelerationZ() const;
+	QVector3D acceleration() const;
 
 	QMatrix4x4 orientation() const { return motionplus_orientation; }
 
@@ -165,9 +161,7 @@ private:
 	QAccelerationSampleList sample_list;  ///< List of acceleration samples.
 	quint8 max_acceleration_samples;      ///< Maximum number of acceleration samples to store.
 	/* Current acceleration values. */
-	qreal   x_calibrated_acceleration;    ///< Acceleration in the x axis.
-	qreal   y_calibrated_acceleration;    ///< Acceleration in the y axis.
-	qreal   z_calibrated_acceleration;    ///< Acceleration in the z axis.
+	QVector3D calibrated_acceleration;    ///< Acceleration vector.
 
 	QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
 	QWiimote::MotionPlusStates

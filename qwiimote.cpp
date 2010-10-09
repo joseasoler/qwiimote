@@ -189,27 +189,12 @@ quint16 QWiimote::rawAccelerationZ() const
 }
 
 /**
-  * @return Calibrated acceleration on the X axis.
+  * Gets the current acceleration value.
+  * @return Calibrated acceleration.
   */
-qreal QWiimote::accelerationX() const
+QVector3D QWiimote::acceleration() const
 {
-	return this->x_calibrated_acceleration;
-}
-
-/**
-  * @return Calibrated acceleration on the Y axis.
-  */
-qreal QWiimote::accelerationY() const
-{
-	return this->y_calibrated_acceleration;
-}
-
-/**
-  * @return Calibrated acceleration on the Z axis.
-  */
-qreal QWiimote::accelerationZ() const
-{
-	return this->z_calibrated_acceleration;
+	return this->calibrated_acceleration;
 }
 
 /**
@@ -374,20 +359,18 @@ void QWiimote::getReport(QWiimoteReport report)
 					QAccelerationSample sample;
 					sample.time = report.time;
 					/* Calibrated values. */
-					sample.x_calibrated_acceleration = ((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
+					sample.calibrated_acceleration.setX((qreal)(this->x_raw_acceleration - this->x_zero_acceleration) /
 												 (qreal)this->x_gravity);
-					sample.y_calibrated_acceleration = ((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
+					sample.calibrated_acceleration.setY((qreal)(this->y_raw_acceleration - this->y_zero_acceleration) /
 												 (qreal)this->y_gravity);
-					sample.z_calibrated_acceleration = ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
+					sample.calibrated_acceleration.setZ((qreal)(this->z_raw_acceleration - this->z_zero_acceleration) /
 												 (qreal)this->z_gravity);
 
 					this->sample_list.prepend(sample);
 					if (this->sample_list.size() > this->max_acceleration_samples) this->sample_list.removeLast();
 
 					/** @todo Smoothing methods. For now, just use the last sample. */
-					this->x_calibrated_acceleration = sample.x_calibrated_acceleration;
-					this->y_calibrated_acceleration = sample.y_calibrated_acceleration;
-					this->z_calibrated_acceleration = sample.z_calibrated_acceleration;
+					this->calibrated_acceleration = sample.calibrated_acceleration;
 
 					emit this->updatedAcceleration();
 				}
@@ -469,13 +452,13 @@ void QWiimote::processOrientationData()
 
 	if (!(this->data_types & QWiimote::MotionPlusData)) {
 		/* Use accelerometer data to determine pitch and roll. */
-		QVector3D acceleration = QVector3D(this->accelerationX(), this->accelerationY(), this->accelerationZ());
-		acceleration.normalize();
+		QVector3D acc = this->acceleration();
+		acc.normalize();
 		this->motionplus_orientation.setToIdentity();
 
 		QVector3D reference    = QVector3D(0, 0, 1);
-		QVector3D axis = QVector3D::crossProduct(reference, acceleration);
-		qreal angle = acos(QVector3D::dotProduct(reference, acceleration)) * 180 / QW_PI;
+		QVector3D axis = QVector3D::crossProduct(reference, acc);
+		qreal angle = acos(QVector3D::dotProduct(reference, acc)) * 180 / QW_PI;
 		qreal value = axis.z();
 		axis.setZ(axis.y());
 		axis.setY(value);
@@ -523,9 +506,7 @@ void QWiimote::resetAccelerationData()
 	this->x_raw_acceleration = 0;
 	this->y_raw_acceleration = 0;
 	this->z_raw_acceleration = 0;
-	this->x_calibrated_acceleration = 0;
-	this->y_calibrated_acceleration = 0;
-	this->z_calibrated_acceleration = 0;
+	this->calibrated_acceleration = QVector3D(0.0, 0.0, 0.0);
 }
 
 /**
