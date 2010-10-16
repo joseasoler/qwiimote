@@ -476,14 +476,15 @@ void QWiimote::getReport(QWiimoteReport report)
 
 /**
   * Turns raw data into a matrix that measures current orientation of the wiimote.
+  * @todo The constant 0.65 has just been tweaked until it seems to work, but it is not exact at all. Proper measurements should be made.
   */
 void QWiimote::processOrientationData()
 {
 	qreal pitch_angle, roll_angle, yaw_angle = 0;
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
-		pitch_angle = 0.75 * (elapsed_time * pitch_speed) / 1000;
-		roll_angle  = 0.75 * (elapsed_time * roll_speed) / 1000;
-		yaw_angle   = 0.75 * (elapsed_time * yaw_speed) / 1000;
+		pitch_angle = 0.65 * (elapsed_time * pitch_speed) / 1000;
+		roll_angle  = 0.65 * (elapsed_time * roll_speed) / 1000;
+		yaw_angle   = 0.65 * (elapsed_time * yaw_speed) / 1000;
 		this->mat_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
 		this->mat_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
 		this->mat_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
