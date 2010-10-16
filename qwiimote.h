@@ -18,8 +18,6 @@
 #include "qprecisetime.h"
 #include "qiowiimote.h"
 
-#define QW_PI (3.141592653589793238462643) ///< Pi constant.
-
 /**
   * Stores an acceleration sample.
   * @see #QPreciseTime.

@@ -14,6 +14,9 @@ const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
 const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
 
+#define QW_PI (3.141592653589793238462643) ///< Pi constant.
+#define QW_RAD_TO_DEGREES(angle) (angle * 180 / QW_PI)
+
 /**
   * Creates a new QWiimote instance.
   * @param parent The parent of this instance.
@@ -498,7 +501,7 @@ void QWiimote::processOrientationData()
 		/* This is the acceleration for a wiimote in the default position. */
 		QVector3D reference(0.0, -1.0, 0.0);
 		QVector3D axis = QVector3D::crossProduct(acc, reference);
-		qreal angle = acos(QVector3D::dotProduct(acc, reference)) * 180 / QW_PI;
+		qreal angle = QW_RAD_TO_DEGREES(acos(QVector3D::dotProduct(acc, reference)));
 		this->mat_orientation.rotate(angle, axis);
 	}
 
