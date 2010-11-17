@@ -225,7 +225,7 @@ void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 		/* Schedule the next read. */
 		this->readBegin();
 		/* Emit this report. */
-		emit this->reportReady(new_report);
+		emit this->reportReady(&new_report);
 	} else {
 		emit this->reportError();
 	}

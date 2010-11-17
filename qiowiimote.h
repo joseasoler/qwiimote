@@ -78,7 +78,7 @@ signals:
 	/**
 	  * This signal is emmited whenever a new report is ready for being processed.
 	  */
-	void reportReady(QWiimoteReport report);
+	void reportReady(QWiimoteReport *report);
 	/**
 	  * This signal is emmited whenever an error is found at a received report.
 	  */

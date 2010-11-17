@@ -33,18 +33,11 @@
 #include <QTime>
 #include <QMatrix4x4>
 #include <QList>
-#include "qprecisetime.h"
-#include "qiowiimote.h"
 
-/**
-  * Stores an acceleration sample.
-  * @see #QPreciseTime.
-  */
-struct QAccelerationSample
-{
-	QPreciseTime time;                  ///< Time of arrival of the report.
-	QVector3D calibrated_acceleration;  ///< Acceleration values.
-};
+class  QPreciseTime;
+struct QAccelerationSample;
+class  QIOWiimote;
+class  QWiimoteReport;
 
 typedef QList<QAccelerationSample> QAccelerationSampleList;
 
@@ -162,14 +155,14 @@ private:
 	static const qreal DEGREES_PER_SECOND_FAST;   ///< MotionPlus speed (fast).
 	static const quint8 MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
 
-	QIOWiimote io_wiimote;                ///< Instance of QIOWiimote used to send / receive wiimote data.
+	QIOWiimote *io_wiimote;               ///< Instance of QIOWiimote used to send / receive wiimote data.
 	char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
 
 	QWiimote::DataTypes data_types;       ///< Current data type status.
 	QWiimote::WiimoteButtons button_data; ///< Button status.
 	QWiimote::WiimoteLeds led_data;       ///< Led status.
 
-	QPreciseTime last_report;             ///< Time when the last report was received.
+	QPreciseTime *last_report;            ///< Time when the last report was received.
 
 	/* Raw acceleration values. */
 	QVector3D raw_acceleration;           ///< Raw acceleration vector.
@@ -206,8 +199,8 @@ private:
 
 
 private slots:
-	void getCalibrationReport(QWiimoteReport report);
-	void getReport(QWiimoteReport report);
+	void getCalibrationReport(QWiimoteReport *report);
+	void getReport(QWiimoteReport *report);
 	void pollMotionPlus();
 	void pollStatusReport();
 };
