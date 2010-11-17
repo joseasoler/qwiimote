@@ -1,0 +1,9 @@
+# Use glob syntax.
+syntax: glob
+
+#Ignore the user file.
+*.pro.user
+
+#Ignore files created by patch
+*.orig
+*.rej
