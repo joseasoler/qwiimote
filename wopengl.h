@@ -15,6 +15,12 @@
  * along with QWiimote. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file wopengl.h
+  *
+  * Header file for the testing QGLWidget.
+  */
+
 #ifndef WOPENGL_H
 #define WOPENGL_H
 

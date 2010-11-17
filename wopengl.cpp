@@ -15,6 +15,12 @@
  * along with QWiimote. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file wopengl.cpp
+  *
+  * Source file for the testing QGLWidget.
+  */
+
 #include "wopengl.h"
 
 WOpenGL::WOpenGL(QWidget *parent) : QGLWidget(parent)

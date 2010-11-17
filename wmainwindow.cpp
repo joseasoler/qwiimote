@@ -17,6 +17,7 @@
 
 /**
   * @file wmainwindow.cpp
+  *
   * Source file for the testing GUI main window.
   */
 

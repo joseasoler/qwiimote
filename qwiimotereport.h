@@ -17,7 +17,9 @@
 
 /**
   * @file qwiimotereport.h
+  *
   * Header file for the QWiimoteReport struct.
+  *
   * This data structure stores a report along with its arrival time.
   */
 
