@@ -15,6 +15,12 @@
  * along with QWiimote. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file qiowiimote.cpp
+  *
+  * Source file for the QPreciseTime class.
+  */
+
 #include "qprecisetime.h"
 
 /* Public functions. */

@@ -17,6 +17,7 @@
 
 /**
   * @file qwiimote.cpp
+  *
   * Source file for the QWiimote class.
   */
 

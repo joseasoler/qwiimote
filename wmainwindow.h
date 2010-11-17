@@ -17,6 +17,7 @@
 
 /**
   * @file wmainwindow.h
+  *
   * Header file for the testing GUI main window.
   */
 

@@ -15,6 +15,14 @@
  * along with QWiimote. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file qprecisetime.h
+  *
+  * Header file for the QPreciseTime class.
+  *
+  * This class allows to measure time more precisely.
+  */
+
 #ifndef QPRECISETIME_H
 #define QPRECISETIME_H
 

@@ -17,7 +17,9 @@
 
 /**
   * @file qiowiimote.h
+  *
   * Header file for the QIOWiimote class.
+  *
   * QIOWiimote handles direct communication with the wiimote.
   */
 
