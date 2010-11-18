@@ -16,13 +16,13 @@
  */
 
 /**
-  * @file qwiimote.h
-  *
-  * Header file for the QWiimote class.
-  *
-  * QWiimote is an API for the Wiimote which follows the Qt Object model.
-  * The QWiimote class maintains the state of a single Wiimote.
-  */
+ * @file qwiimote.h
+ *
+ * Header file for the QWiimote class.
+ *
+ * QWiimote is an API for the Wiimote which follows the Qt Object model.
+ * The QWiimote class maintains the state of a single Wiimote.
+ */
 
 #ifndef QWIIMOTE_H
 #define QWIIMOTE_H
@@ -42,11 +42,11 @@ class  QWiimoteReport;
 typedef QList<QAccelerationSample> QAccelerationSampleList;
 
 /**
-  * QWiimote represents the state of a Wiimote and any connected extensions.
-  * @see #QIOWiimote.
-  *
-  * @todo Using more than one instance of this class is untested.
-  */
+ * QWiimote represents the state of a Wiimote and any connected extensions.
+ * @see #QIOWiimote.
+ *
+ * @todo Using more than one instance of this class is untested.
+ */
 class QWiimote : public QObject
 {
 	Q_OBJECT

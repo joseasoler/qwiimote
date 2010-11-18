@@ -16,10 +16,10 @@
  */
 
 /**
-  * @file wopengl.h
-  *
-  * Header file for the testing QGLWidget.
-  */
+ * @file wopengl.h
+ *
+ * Header file for the testing QGLWidget.
+ */
 
 #ifndef WOPENGL_H
 #define WOPENGL_H

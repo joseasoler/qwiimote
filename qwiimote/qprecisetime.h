@@ -16,12 +16,12 @@
  */
 
 /**
-  * @file qprecisetime.h
-  *
-  * Header file for the QPreciseTime class.
-  *
-  * This class allows to measure time more precisely.
-  */
+ * @file qprecisetime.h
+ *
+ * Header file for the QPreciseTime class.
+ *
+ * This class allows to measure time more precisely.
+ */
 
 #ifndef QPRECISETIME_H
 #define QPRECISETIME_H
@@ -30,8 +30,8 @@
 #include <windows.h>
 
 /**
-  * This class is a rewrite of QTime which has increased precision.
-  */
+ * This class is a simplified rewrite of QTime with increased precision.
+ */
 class QPreciseTime
 {
 public:
@@ -41,52 +41,53 @@ public:
 	QPreciseTime &operator=(const QPreciseTime &other);
 
 	/**
-	  * Equality operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Equality operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator==(const QPreciseTime &other) const { return starting_time == other.starting_time; }
 
 	/**
-	  * Unequality operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Unequality operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator!=(const QPreciseTime &other) const { return starting_time != other.starting_time; }
 
 	/**
-	  * Lesser than operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Lesser than operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator< (const QPreciseTime &other) const { return starting_time <  other.starting_time; }
 
 	/**
-	  * Lesser or equal than operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Lesser or equal than operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator<=(const QPreciseTime &other) const { return starting_time <= other.starting_time; }
 
 	/**
-	  * Greater than operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Greater than operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator> (const QPreciseTime &other) const { return starting_time >  other.starting_time; }
 
 	/**
-	  * Greater or equal than operator.
-	  * @param other Instance to be compared.
-	  *
-	  * @return Comparison result.
-	  */
+	 * Greater or equal than operator.
+	 * @param other Instance to be compared.
+	 *
+	 * @return Comparison result.
+	 */
 	bool operator>=(const QPreciseTime &other) const { return starting_time >= other.starting_time; }
+
 private:
 	__int64 starting_time; ///< Starting time for this instance.
 };

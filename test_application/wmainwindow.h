@@ -16,10 +16,10 @@
  */
 
 /**
-  * @file wmainwindow.h
-  *
-  * Header file for the testing GUI main window.
-  */
+ * @file wmainwindow.h
+ *
+ * Header file for the testing GUI main window.
+ */
 
 #ifndef WMAINWINDOW_H
 #define WMAINWINDOW_H

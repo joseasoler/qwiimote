@@ -16,28 +16,28 @@
  */
 
 /**
-  * @file qiowiimote.cpp
-  *
-  * Source file for the QPreciseTime class.
-  */
+ * @file qiowiimote.cpp
+ *
+ * Source file for the QPreciseTime class.
+ */
 
 #include "qprecisetime.h"
 
 /* Public functions. */
 
 /**
-  * Creates a new #QPreciseTime object.
-  */
+ * Creates a new #QPreciseTime object.
+ */
 QPreciseTime::QPreciseTime()
 {
 	this->starting_time = -1;
 }
 
 /**
-  * Allows to know the elapsed time since this #QPreciseTime instance was started.
-  *
-  * @return Number of milliseconds elapsed since start.
-  */
+ * Allows to know the elapsed time since this #QPreciseTime instance was started.
+ *
+ * @return Number of milliseconds elapsed since start.
+ */
 qreal QPreciseTime::elapsed()
 {
 	__int64 ticks_per_second;
@@ -48,10 +48,10 @@ qreal QPreciseTime::elapsed()
 }
 
 /**
-  * Gets the current time.
-  *
-  * @return #QPreciseTime starting at the current time.
-  */
+ * Gets the current time.
+ *
+ * @return #QPreciseTime starting at the current time.
+ */
 QPreciseTime QPreciseTime::currentTime()
 {
 	QPreciseTime current_time;
@@ -60,11 +60,11 @@ QPreciseTime QPreciseTime::currentTime()
 }
 
 /**
-  * Copies another #QPreciseTime instance.
-  * @param other Instance to be copied.
-  *
-  * @return Reference to the copy.
-  */
+ * Copies another #QPreciseTime instance.
+ * @param other Instance to be copied.
+ *
+ * @return Reference to the copy.
+ */
 QPreciseTime &QPreciseTime::operator=(const QPreciseTime &other)
 {
 	 this->starting_time = other.starting_time;

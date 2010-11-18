@@ -16,12 +16,12 @@
  */
 
 /**
-  * @file qiowiimote.h
-  *
-  * Header file for the QIOWiimote class.
-  *
-  * QIOWiimote handles direct communication with the wiimote.
-  */
+ * @file qiowiimote.h
+ *
+ * Header file for the QIOWiimote class.
+ *
+ * QIOWiimote handles direct communication with the wiimote.
+ */
 
 #ifndef QIOWIIMOTE_H
 #define QIOWIIMOTE_H
@@ -37,19 +37,19 @@
 class QIOWiimote;
 
 /**
-  * Struct used with asynchronous reading from the wiimote.
-  */
+ * Struct used with asynchronous reading from the wiimote.
+ */
 struct OverlappedQIOWiimote {
 	OVERLAPPED overlapped;  ///< Used for asynchronous reading.
 	QIOWiimote * iowiimote; ///< Pointer to the QIOWiimote instance that should receive this reading.
 };
 
 /**
-  * Class that handles asynchronous reading and synchronous writing to a wiimote.
-  * @see #OverlappedQIOWiimote.
-  *
-  * @todo Using more than one instance of this class is untested.
-  */
+ * Class that handles asynchronous reading and synchronous writing to a wiimote.
+ * @see #OverlappedQIOWiimote.
+ *
+ * @todo Using more than one instance of this class is untested.
+ */
 class QIOWiimote : public QObject
 {
 	Q_OBJECT
@@ -75,13 +75,9 @@ private:
 	OverlappedQIOWiimote * overlapped;
 
 signals:
-	/**
-	  * This signal is emmited whenever a new report is ready for being processed.
-	  */
+	/** This signal is emmited whenever a new report is ready for being processed. */
 	void reportReady(QWiimoteReport *report);
-	/**
-	  * This signal is emmited whenever an error is found at a received report.
-	  */
+	/** This signal is emmited whenever an error is found at a received report. */
 	void reportError();
 };
 

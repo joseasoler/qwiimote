@@ -16,10 +16,10 @@
  */
 
 /**
-  * @file wopengl.cpp
-  *
-  * Source file for the testing QGLWidget.
-  */
+ * @file wopengl.cpp
+ *
+ * Source file for the testing QGLWidget.
+ */
 
 #include "wopengl.h"
 

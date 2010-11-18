@@ -16,10 +16,10 @@
  */
 
 /**
-  * @file qwiimote.cpp
-  *
-  * Source file for the QWiimote class.
-  */
+ * @file qwiimote.cpp
+ *
+ * Source file for the QWiimote class.
+ */
 
 #include <cmath>
 #include "qwiimote.h"
@@ -29,9 +29,9 @@
 #include "qwiimotereport.h"
 
 /**
-  * Stores an acceleration sample.
-  * @see #QPreciseTime.
-  */
+ * Stores an acceleration sample.
+ * @see #QPreciseTime.
+ */
 struct QAccelerationSample
 {
 	QPreciseTime time;                  ///< Time of arrival of the report.
@@ -49,9 +49,9 @@ const quint8  QWiimote::MOTIONPLUS_THRESHOLD = 30;
 #define QW_RAD_TO_DEGREES(angle) (angle * 180 / QW_PI)
 
 /**
-  * Creates a new QWiimote instance.
-  * @param parent The parent of this instance.
-  */
+ * Creates a new QWiimote instance.
+ * @param parent The parent of this instance.
+ */
 QWiimote::QWiimote(QObject * parent) : QObject(parent)
 {
 	io_wiimote  = new QIOWiimote(this);
@@ -59,17 +59,17 @@ QWiimote::QWiimote(QObject * parent) : QObject(parent)
 }
 
 /**
-  * Destructor of QWiimote.
-  */
+ * Destructor of QWiimote.
+ */
 QWiimote::~QWiimote()
 {
 	this->stop();
 }
 
 /**
-  * The QWiimote starts working.
-  * @return true if the QWiimote started correctly.
-  */
+ * The QWiimote starts working.
+ * @return true if the QWiimote started correctly.
+ */
 bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
 	if (this->io_wiimote->open()) {
@@ -99,8 +99,8 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 }
 
 /**
-  * The QWiimote stops working and disconnects.
-  */
+ * The QWiimote stops working and disconnects.
+ */
 void QWiimote::stop()
 {
 	this->setDataTypes(QWiimote::DefaultData);
@@ -108,18 +108,18 @@ void QWiimote::stop()
 }
 
 /**
-  * Check what data types are currently being reported.
-  * @return Flags of the current data types.
-  */
+ * Check what data types are currently being reported.
+ * @return Flags of the current data types.
+ */
 QWiimote::DataTypes QWiimote::dataTypes() const
 {
 	return this->data_types;
 }
 
 /**
-  * Sets what data types will be reported.
-  * @param new_data_types Flags of the data types to report.
-  */
+ * Sets what data types will be reported.
+ * @param new_data_types Flags of the data types to report.
+ */
 void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 {
 	if (new_data_types & QWiimote::MotionPlusData && this->motionplus_state == QWiimote::MotionPlusInactive) {
@@ -173,9 +173,9 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 }
 
 /**
-  * Sets what leds will be turned on.
-  * @param leds Flags of the leds to turn on.
-  */
+ * Sets what leds will be turned on.
+ * @param leds Flags of the leds to turn on.
+ */
 void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 {
 	this->led_data = leds;
@@ -185,9 +185,9 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 }
 
 /**
-  * Changes the method used for smoothing acceleration samples.
-  * @param acc_s Smoothing method to use.
-  */
+ * Changes the method used for smoothing acceleration samples.
+ * @param acc_s Smoothing method to use.
+ */
 void QWiimote::setAccelerationSmoothing(QWiimote::AccelerationSmoothing acc_s)
 {
 	if (this->acceleration_smoothing == acc_s) return;
@@ -198,63 +198,63 @@ void QWiimote::setAccelerationSmoothing(QWiimote::AccelerationSmoothing acc_s)
 
 
 /**
-  * Check what buttons are pressed now.
-  * @return Flags of the currently pressed buttons.
-  */
+ * Check what buttons are pressed now.
+ * @return Flags of the currently pressed buttons.
+ */
 QWiimote::WiimoteButtons QWiimote::buttonData() const
 {
 	return this->button_data;
 }
 
 /**
-  * Allows to know what leds are on right now.
-  * @return Flags of the used leds.
-  */
+ * Allows to know what leds are on right now.
+ * @return Flags of the used leds.
+ */
 QWiimote::WiimoteLeds QWiimote::leds() const
 {
 	return this->led_data;
 }
 
 /**
-  * Gets the current raw acceleration value.
-  * @return Raw acceleration vector.
-  */
+ * Gets the current raw acceleration value.
+ * @return Raw acceleration vector.
+ */
 QVector3D QWiimote::rawAcceleration() const
 {
 	return this->raw_acceleration;
 }
 
 /**
-  * Gets the current calibrated acceleration value.
-  * @return Calibrated acceleration.
-  */
+ * Gets the current calibrated acceleration value.
+ * @return Calibrated acceleration.
+ */
 QVector3D QWiimote::acceleration() const
 {
 	return this->calibrated_acceleration;
 }
 
 /**
-  * Get the current battery level of this Wiimote.
-  * @return Battery level of the Wiimote.
-  */
+ * Get the current battery level of this Wiimote.
+ * @return Battery level of the Wiimote.
+ */
 quint8 QWiimote::batteryLevel() const
 {
 	return this->battery_level;
 }
 
 /**
-  * Allows to know if the battery is empty or not.
-  * @return True if the battery is empty, false otherwise.
-  */
+ * Allows to know if the battery is empty or not.
+ * @return True if the battery is empty, false otherwise.
+ */
 bool QWiimote::batteryEmpty() const
 {
 	return this->battery_empty;
 }
 
 /**
-  * Request the calibration data from the Wiimote.
-  * @return True if the report was sent correctly.
-  */
+ * Request the calibration data from the Wiimote.
+ * @return True if the report was sent correctly.
+ */
 bool QWiimote::requestCalibrationData()
 {
 	send_buffer[0] = 0x17; // Report type.
@@ -269,9 +269,9 @@ bool QWiimote::requestCalibrationData()
 }
 
 /**
-  * This function processes all incoming reports until a report with the acceleration data is received.
-  * @param report Received report.
-  */
+ * This function processes all incoming reports until a report with the acceleration data is received.
+ * @param report Received report.
+ */
 void QWiimote::getCalibrationReport(QWiimoteReport *report)
 {
 	// qDebug() << "Receiving the report " << report->data.toHex() << " from the wiimote.";
@@ -302,10 +302,10 @@ void QWiimote::getCalibrationReport(QWiimoteReport *report)
 }
 
 /**
-  * Gets a report from the wiimote.
-  * @param report Received report.
-  * @todo Check possible report errors.
-  */
+ * Gets a report from the wiimote.
+ * @param report Received report.
+ * @todo Check possible report errors.
+ */
 void QWiimote::getReport(QWiimoteReport *report)
 {
 	int report_type = report->data[0] & 0xFF;
@@ -508,9 +508,9 @@ void QWiimote::getReport(QWiimoteReport *report)
 }
 
 /**
-  * Turns raw data into a matrix that measures current orientation of the wiimote.
-  * @todo The constant 0.65 has just been tweaked until it seems to work, but it is not exact at all. Proper measurements should be made.
-  */
+ * Turns raw data into a matrix that measures current orientation of the wiimote.
+ * @todo The constant 0.65 has just been tweaked until it seems to work, but it is not exact at all. Proper measurements should be made.
+ */
 void QWiimote::processOrientationData()
 {
 	qreal pitch_angle, roll_angle, yaw_angle = 0;
@@ -543,8 +543,8 @@ void QWiimote::processOrientationData()
 }
 
 /**
-  * Checks if a MotionPlus is connected.
-  */
+ * Checks if a MotionPlus is connected.
+ */
 void QWiimote::pollMotionPlus()
 {
 	send_buffer[0] = 0x17; // Report type.
@@ -560,8 +560,8 @@ void QWiimote::pollMotionPlus()
 }
 
 /**
-  * Polls a status report from the Wiimote.
-  */
+ * Polls a status report from the Wiimote.
+ */
 void QWiimote::pollStatusReport()
 {
 	send_buffer[0] = 0x15; // Report type.
@@ -572,8 +572,8 @@ void QWiimote::pollStatusReport()
 }
 
 /**
-  * Resets all stored acceleration data.
-  */
+ * Resets all stored acceleration data.
+ */
 void QWiimote::resetAccelerationData()
 {
 	this->sample_list.clear();
@@ -582,8 +582,8 @@ void QWiimote::resetAccelerationData()
 }
 
 /**
-  * Enable the MotionPlus extension.
-  */
+ * Enable the MotionPlus extension.
+ */
 void QWiimote::enableMotionPlus()
 {
 	send_buffer[0] = 0x16;									   // Report type.
@@ -602,8 +602,8 @@ void QWiimote::enableMotionPlus()
 }
 
 /**
-  * Disable the MotionPlus extension.
-  */
+ * Disable the MotionPlus extension.
+ */
 void QWiimote::disableMotionPlus()
 {
 	send_buffer[0] = 0x16;									   // Report type.

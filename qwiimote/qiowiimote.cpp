@@ -37,26 +37,26 @@ extern "C"{
 /* Public functions */
 
 /**
-  * Creates a new QIOWiimote object.
-  * @param parent The parent of this instance. Usually it will be a #QWiimote.
-  */
+ * Creates a new QIOWiimote object.
+ * @param parent The parent of this instance. Usually it will be a #QWiimote.
+ */
 QIOWiimote::QIOWiimote(QObject * parent) : QObject(parent)
 {
 	this->opened = false;
 }
 
 /**
-  * Ensures that the wiimote connection is correctly closed before destroying the QIOWiimote object.
-  */
+ * Ensures that the wiimote connection is correctly closed before destroying the QIOWiimote object.
+ */
 QIOWiimote::~QIOWiimote()
 {
 	this->close();
 }
 
 /**
-  * Opens the connection to a wiimote.
-  * @return true if the connection was successfully opened. false otherwise.
-  */
+ * Opens the connection to a wiimote.
+ * @return true if the connection was successfully opened. false otherwise.
+ */
 bool QIOWiimote::open()
 {
 	/* Get the GUID of the HID class. */
@@ -129,9 +129,9 @@ bool QIOWiimote::open()
 }
 
 /**
-  * Closes the connection to the Wiimote.
-  * @todo Change reporting type before closing the connection. Does not seem necessary, though.
-  */
+ * Closes the connection to the Wiimote.
+ * @todo Change reporting type before closing the connection. Does not seem necessary, though.
+ */
 void QIOWiimote::close()
 {
 	if (opened) {
@@ -152,10 +152,10 @@ void QIOWiimote::close()
 }
 
 /**
-  * Sends a report to the Wiimote. Writing is done synchronously.
-  * @param data Report that will be sent to the wiimote.
-  * @param max_size Size of the report. Using a size greater than #MAX_REPORT_SIZE is not allowed.
-  */
+ * Sends a report to the Wiimote. Writing is done synchronously.
+ * @param data Report that will be sent to the wiimote.
+ * @param max_size Size of the report. Using a size greater than #MAX_REPORT_SIZE is not allowed.
+ */
 bool QIOWiimote::writeReport(const char * data, const qint64 max_size)
 {
 	Q_ASSERT_X(max_size <= MAX_REPORT_SIZE, "QIOWiimote::writeReport", "A report can't have a size greater than 22.");
@@ -170,10 +170,10 @@ bool QIOWiimote::writeReport(const char * data, const qint64 max_size)
 }
 
 /**
-  * Sends a report to the Wiimote. Writing is done synchronously.
-  * Overloaded function.
-  * @param data Report that will be sent to the wiimote.
-  */
+ * Sends a report to the Wiimote. Writing is done synchronously.
+ * Overloaded function.
+ * @param data Report that will be sent to the wiimote.
+ */
 bool QIOWiimote::writeReport(const QByteArray data)
 {
 	return this->writeReport(data.constData(), data.size());
@@ -182,8 +182,8 @@ bool QIOWiimote::writeReport(const QByteArray data)
 /* Private functions */
 
 /**
-  * Starts asynchronous reading of data from the wiimote.
-  */
+ * Starts asynchronous reading of data from the wiimote.
+ */
 void QIOWiimote::readBegin()
 {
 	ReadFileEx(this->wiimote_handle,
@@ -194,11 +194,11 @@ void QIOWiimote::readBegin()
 }
 
 /**
-  * This callback is called whenever a read operation is finished.
-  * @param error_code The I/O completion status. This parameter can be one of the system error codes.
-  * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
-  * @param overlapped A pointer to the OVERLAPPED structure specified by the asynchronous I/O function.
-  */
+ * This callback is called whenever a read operation is finished.
+ * @param error_code The I/O completion status. This parameter can be one of the system error codes.
+ * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
+ * @param overlapped A pointer to the OVERLAPPED structure specified by the asynchronous I/O function.
+ */
 void CALLBACK QIOWiimote::readCallback(DWORD error_code,
 									   DWORD bytes_transferred,
 									   LPOVERLAPPED overlapped)
@@ -209,11 +209,11 @@ void CALLBACK QIOWiimote::readCallback(DWORD error_code,
 }
 
 /**
-  * Takes the raw report and makes it ready for processing.
-  * The report format is time|report.
-  * @param error_code The I/O completion status. This parameter can be one of the system error codes.
-  * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
-  */
+ * Takes the raw report and makes it ready for processing.
+ * The report format is time|report.
+ * @param error_code The I/O completion status. This parameter can be one of the system error codes.
+ * @param bytes_transferred The number of bytes transferred. If an error occurs, this parameter is zero.
+ */
 void QIOWiimote::readEnd(DWORD error_code, DWORD bytes_transferred)
 {
 	if (error_code == 0) {

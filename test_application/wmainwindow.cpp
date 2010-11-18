@@ -16,10 +16,10 @@
  */
 
 /**
-  * @file wmainwindow.cpp
-  *
-  * Source file for the testing GUI main window.
-  */
+ * @file wmainwindow.cpp
+ *
+ * Source file for the testing GUI main window.
+ */
 
 #include <cmath>
 #include "wmainwindow.h"
