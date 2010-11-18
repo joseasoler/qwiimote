@@ -24,7 +24,6 @@
 #include <cmath>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "debugcheck.h"
 
 WMainWindow::WMainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::WMainWindow)

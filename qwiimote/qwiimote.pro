@@ -13,28 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with QWiimote. If not, see <http://www.gnu.org/licenses/>.
 
-TARGET = qwiimote
+# Compile QWiimote as a library.
+TEMPLATE = lib
+CONFIG += dll
 
-TEMPLATE = app
+# Build both debug and release versions.
+CONFIG += debug_and_release
+CONFIG += build_all
+TARGET = $$qtLibraryTarget(QWiimote)
 
-QT += opengl
+SOURCES += \
+    qwiimote.cpp \
+    qiowiimote.cpp \
+    qprecisetime.cpp
 
-SOURCES += main.cpp \
-	wmainwindow.cpp \
-	qwiimote.cpp \
-	qiowiimote.cpp \
-	wopengl.cpp \
-	qprecisetime.cpp
-
-HEADERS += wmainwindow.h \
-	qwiimote.h \
-	debugcheck.h \
-	qiowiimote.h \
-	qwiimotereport.h \
-	wopengl.h \
-	qprecisetime.h
-
-FORMS += wmainwindow.ui
+HEADERS += \
+    qwiimote.h \
+    debugcheck.h \
+    qiowiimote.h \
+    qwiimotereport.h \
+    qprecisetime.h
 
 LIBS += libsetupapi \
-	libhid
+    libhid
