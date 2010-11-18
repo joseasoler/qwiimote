@@ -36,3 +36,13 @@ HEADERS += \
 
 LIBS += libsetupapi \
     libhid
+
+headers.files = qwiimote.h
+headers.path = $$[QT_INSTALL_HEADERS]/qwiimote
+INSTALLS += headers
+
+target.path = $$[QT_INSTALL_LIBS]
+INSTALLS += target
+
+dlltarget.path = $$[QT_INSTALL_BINS]
+INSTALLS += dlltarget
