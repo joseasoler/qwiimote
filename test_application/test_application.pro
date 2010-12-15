@@ -30,7 +30,7 @@ LIBS += libsetupapi \
 	libhid
 
 # Use a different library for Debug/Release.
-debug {
+if debug {
 	LIBS += libQWiimoted
 } else {
 	LIBS += libQWiimote
