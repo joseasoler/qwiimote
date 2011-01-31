@@ -73,8 +73,6 @@ QWiimote::~QWiimote()
 bool QWiimote::start(QWiimote::DataTypes new_data_types)
 {
 	if (this->io_wiimote->open()) {
-		this->setDataTypes(new_data_types);
-
 		/* All reports are ignored until the calibration data is received. */
 		connect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getCalibrationReport(QWiimoteReport *)));
 		this->requestCalibrationData();
@@ -91,6 +89,8 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->pitch_speed = 0;
 		this->roll_speed = 0;
 		this->yaw_speed = 0;
+
+		this->setDataTypes(new_data_types);
 
 		return true;
 	}
