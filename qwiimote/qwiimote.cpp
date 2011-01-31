@@ -519,8 +519,8 @@ void QWiimote::processOrientationData()
 		roll_angle  = 0.65 * (elapsed_time * roll_speed) / 1000;
 		yaw_angle   = 0.65 * (elapsed_time * yaw_speed) / 1000;
 		this->mat_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
-		this->mat_orientation.rotate(-roll_angle, QVector3D(0, 0, 1));
-		this->mat_orientation.rotate(-yaw_angle, QVector3D(0, 1, 0));
+		this->mat_orientation.rotate(roll_angle, QVector3D(0, 0, 1));
+		this->mat_orientation.rotate(yaw_angle, QVector3D(0, 1, 0));
 	}
 
 	if (!(this->data_types & QWiimote::MotionPlusData)) {
