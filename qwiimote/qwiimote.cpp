@@ -351,7 +351,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 							this->roll_zero_orientation  /= this->calibration_samples;
 							this->yaw_zero_orientation   /= this->calibration_samples;
 
-							emit motionPlusState();
+							emit motionPlusState(this->motionplus_state);
 						}
 					}
 				} else {
@@ -467,7 +467,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 					this->roll_zero_orientation  = 0;
 					this->yaw_zero_orientation   = 0;
 					(*this->last_report) = QPreciseTime::currentTime();
-					emit motionPlusState();
+					emit motionPlusState(this->motionplus_state);
 				}
 			}
 		break;

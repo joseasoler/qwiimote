@@ -138,7 +138,7 @@ signals:
 	/** Emitted when the battery is empty. */
 	void emptyBattery();
 	/** Emitted when the MotionPlus changes its state. */
-	void motionPlusState();
+	void motionPlusState(QWiimote::MotionPlusStates);
 	/** Emitted when the orientation values change. */
 	void updatedOrientation();
 private:
