@@ -513,7 +513,9 @@ void QWiimote::getReport(QWiimoteReport *report)
  */
 void QWiimote::processOrientationData()
 {
-	qreal pitch_angle, roll_angle, yaw_angle = 0;
+	qreal pitch_angle = 0;
+	qreal roll_angle  = 0;
+	qreal yaw_angle   = 0;
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
 		pitch_angle = 0.65 * (elapsed_time * pitch_speed) / 1000;
 		roll_angle  = 0.65 * (elapsed_time * roll_speed) / 1000;
