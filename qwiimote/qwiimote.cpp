@@ -252,6 +252,19 @@ bool QWiimote::batteryEmpty() const
 }
 
 /**
+ * Is the wiimote still?
+ * @return True iff the wiimote accelerometer is still.
+ */
+bool QWiimote::isStill() const
+{
+	QVector3D raw_still = this->raw_acceleration - this->zero_acceleration;
+
+	return (abs(raw_still.x()) <= QWiimote::SMOOTHING_NONE_THRESHOLD &&
+			abs(raw_still.y()) <= QWiimote::SMOOTHING_NONE_THRESHOLD &&
+			abs(raw_still.z()) <= QWiimote::SMOOTHING_NONE_THRESHOLD);
+}
+
+/**
  * Request the calibration data from the Wiimote.
  * @return True if the report was sent correctly.
  */

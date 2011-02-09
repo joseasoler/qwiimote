@@ -127,6 +127,7 @@ public:
 
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
+	bool isStill() const;
 
 signals:
 	/** Emitted when the state of the buttons changes. */
@@ -148,12 +149,12 @@ private:
 	void disableMotionPlus();
 	void processOrientationData();
 
-	static const quint8 SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.
-	static const qreal  SMOOTHING_EMA_THRESHOLD;  ///< Calibrated acceleration threshold for EMA.
-	static const quint16 MOTIONPLUS_TIME;         ///< Time required to calibrate the MotionPlus.
-	static const qreal DEGREES_PER_SECOND_SLOW;   ///< MotionPlus speed (slow).
-	static const qreal DEGREES_PER_SECOND_FAST;   ///< MotionPlus speed (fast).
-	static const quint8 MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
+	static const quint8  SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.
+	static const qreal   SMOOTHING_EMA_THRESHOLD;  ///< Calibrated acceleration threshold for EMA.
+	static const quint16 MOTIONPLUS_TIME;          ///< Time required to calibrate the MotionPlus.
+	static const qreal   DEGREES_PER_SECOND_SLOW;  ///< MotionPlus speed (slow).
+	static const qreal   DEGREES_PER_SECOND_FAST;  ///< MotionPlus speed (fast).
+	static const quint8  MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
 
 	QIOWiimote *io_wiimote;               ///< Instance of QIOWiimote used to send / receive wiimote data.
 	char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
