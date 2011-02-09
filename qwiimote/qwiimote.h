@@ -85,6 +85,15 @@ public:
 
 	Q_DECLARE_FLAGS(AccSmoothing, AccelerationSmoothing)
 
+	/** State of the accelerometer extension. */
+	enum AccelerometerState {
+		AccelerometerInactive,   ///< Initial state.
+		AccelerometerWorking,    ///< The accelerometer is activated but it is not calibrated.
+		AccelerometerCalibrated, ///< The accelerometer is calibrated and its data is now used.
+	};
+
+	Q_DECLARE_FLAGS(AccelerometerStates, AccelerometerState)
+
 	/** State of the MotionPlus extension. */
 	enum MotionPlusState {
 		MotionPlusInactive,   ///< Initial state.
@@ -138,6 +147,8 @@ signals:
 	void updatedBattery();
 	/** Emitted when the battery is empty. */
 	void emptyBattery();
+	/** Emitted when the accelerometer changes its state. */
+	void accelerometerState(QWiimote::AccelerometerStates);
 	/** Emitted when the MotionPlus changes its state. */
 	void motionPlusState(QWiimote::MotionPlusStates);
 	/** Emitted when the orientation values change. */
@@ -151,6 +162,7 @@ private:
 
 	static const quint8  SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.
 	static const qreal   SMOOTHING_EMA_THRESHOLD;  ///< Calibrated acceleration threshold for EMA.
+	static const quint16 ACCELEROMETER_TIME;       ///< Time required to calibrate the accelerometer.
 	static const quint16 MOTIONPLUS_TIME;          ///< Time required to calibrate the MotionPlus.
 	static const qreal   DEGREES_PER_SECOND_SLOW;  ///< MotionPlus speed (slow).
 	static const qreal   DEGREES_PER_SECOND_FAST;  ///< MotionPlus speed (fast).
@@ -168,6 +180,7 @@ private:
 	/* Raw acceleration values. */
 	QVector3D raw_acceleration;             ///< Raw acceleration vector.
 	/* Acceleration calibration values. */
+	QVector3D original_gravity;             ///< Gravity calibration as read from the wiimote.
 	QVector3D zero_acceleration;            ///< Zero position for the accelerometer.
 	QVector3D gravity;                      ///< Gravity calibration for the accelerometer.
 	/* Acceleration samples. */
@@ -178,12 +191,16 @@ private:
 	/* Current acceleration values. */
 	QVector3D calibrated_acceleration;      ///< Acceleration vector.
 
+	QWiimote::AccelerometerStates
+					accelerometer_state;    ///< Current state of the accelerometer.
 	QTimer * motionplus_polling;            ///< Timer that checks the MotionPlus state.
 	QWiimote::MotionPlusStates
 					motionplus_state;       ///< Current state of the MotionPlus.
 
 	QMatrix4x4 mat_orientation;             ///< Orientation of the Wiimote.
-	QTime motionplus_calibration_time;      ///< Used to calibrate orientation for a certain amount of time.
+	quint16 acc_calibration_samples;        ///< Number of samples taken for calibrating the accelerometer.
+ 	QTime acc_calibration_time;             ///< Used to calibrate accelerometer orientation for a certain amount of time.
+ 	QTime motionplus_calibration_time;      ///< Used to calibrate motionplus orientation for a certain amount of time.
 	quint16 motionplus_calibration_samples; ///< Number of samples taken for calibrating the orientation.
 	qint32 pitch_zero_orientation;          ///< Zero angle for pitch.
 	qint32 roll_zero_orientation;           ///< Zero angle for roll.
@@ -211,6 +228,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::DataTypes)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteButtons)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::WiimoteLeds)
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::AccelerometerStates)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWiimote::MotionPlusStates)
 
