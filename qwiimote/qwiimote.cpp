@@ -269,11 +269,17 @@ bool QWiimote::batteryEmpty() const
  */
 bool QWiimote::isStill() const
 {
-	QVector3D raw_still = this->raw_acceleration - this->zero_acceleration;
+	/* We cannot know if the wiimote is still in this mode. */
+	if (this->acceleration_smoothing == QWiimote::SmoothingNone) return false;
 
-	return (abs(raw_still.x()) <= QWiimote::SMOOTHING_NONE_THRESHOLD &&
-			abs(raw_still.y()) <= QWiimote::SMOOTHING_NONE_THRESHOLD &&
-			abs(raw_still.z()) <= QWiimote::SMOOTHING_NONE_THRESHOLD);
+	QAccelerationSampleList::const_iterator last = this->sample_list.end();
+	last--;
+
+	QVector3D still = this->calibrated_acceleration - last->calibrated_acceleration;
+
+	return (abs(still.x()) <= QWiimote::SMOOTHING_EMA_THRESHOLD &&
+			abs(still.y()) <= QWiimote::SMOOTHING_EMA_THRESHOLD &&
+			abs(still.z()) <= QWiimote::SMOOTHING_EMA_THRESHOLD);
 }
 
 /**
