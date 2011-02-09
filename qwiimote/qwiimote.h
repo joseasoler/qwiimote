@@ -183,7 +183,7 @@ private:
 					motionplus_state;         ///< Current state of the MotionPlus.
 
 	QMatrix4x4 mat_orientation;           ///< Orientation of the Wiimote.
-	QTime calibration_time;               ///< Used to calibrate orientation for a certain amount of time.
+	QTime motionplus_calibration_time;    ///< Used to calibrate orientation for a certain amount of time.
 	quint16 calibration_samples;          ///< Number of samples taken for calibrating the orientation.
 	qint32 pitch_zero_orientation;        ///< Zero angle for pitch.
 	qint32 roll_zero_orientation;         ///< Zero angle for roll.

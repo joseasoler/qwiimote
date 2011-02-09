@@ -356,7 +356,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 						this->yaw_zero_orientation   += raw_yaw;
 						this->calibration_samples++;
 
-						if (this->calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
+						if (this->motionplus_calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
 
 							this->motionplus_state = QWiimote::MotionPlusCalibrated;
 
@@ -613,7 +613,7 @@ void QWiimote::enableMotionPlus()
 	this->io_wiimote->writeReport(send_buffer, 7);
 
 	this->calibration_samples = 0;
-	this->calibration_time = QTime::currentTime();
+	this->motionplus_calibration_time = QTime::currentTime();
 }
 
 /**
