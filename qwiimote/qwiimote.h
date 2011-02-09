@@ -156,47 +156,47 @@ private:
 	static const qreal   DEGREES_PER_SECOND_FAST;  ///< MotionPlus speed (fast).
 	static const quint8  MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
 
-	QIOWiimote *io_wiimote;               ///< Instance of QIOWiimote used to send / receive wiimote data.
-	char send_buffer[22];                 ///< Buffer used to send reports to the wiimote.
+	QIOWiimote *io_wiimote;                 ///< Instance of QIOWiimote used to send / receive wiimote data.
+	char send_buffer[22];                   ///< Buffer used to send reports to the wiimote.
 
-	QWiimote::DataTypes data_types;       ///< Current data type status.
-	QWiimote::WiimoteButtons button_data; ///< Button status.
-	QWiimote::WiimoteLeds led_data;       ///< Led status.
+	QWiimote::DataTypes data_types;         ///< Current data type status.
+	QWiimote::WiimoteButtons button_data;   ///< Button status.
+	QWiimote::WiimoteLeds led_data;         ///< Led status.
 
-	QPreciseTime *last_report;            ///< Time when the last report was received.
+	QPreciseTime *last_report;              ///< Time when the last report was received.
 
 	/* Raw acceleration values. */
-	QVector3D raw_acceleration;           ///< Raw acceleration vector.
+	QVector3D raw_acceleration;             ///< Raw acceleration vector.
 	/* Acceleration calibration values. */
-	QVector3D zero_acceleration;          ///< Zero position for the accelerometer.
-	QVector3D gravity;                    ///< Gravity calibration for the accelerometer.
+	QVector3D zero_acceleration;            ///< Zero position for the accelerometer.
+	QVector3D gravity;                      ///< Gravity calibration for the accelerometer.
 	/* Acceleration samples. */
-	QAccelerationSampleList sample_list;  ///< List of acceleration samples.
+	QAccelerationSampleList sample_list;    ///< List of acceleration samples.
 	QWiimote::AccelerationSmoothing
-					acceleration_smoothing;   ///< Method used for smoothing the acceleration value.
-	quint8 max_acceleration_samples;      ///< Maximum number of acceleration samples to store.
+					acceleration_smoothing; ///< Method used for smoothing the acceleration value.
+	quint8 max_acceleration_samples;        ///< Maximum number of acceleration samples to store.
 	/* Current acceleration values. */
-	QVector3D calibrated_acceleration;    ///< Acceleration vector.
+	QVector3D calibrated_acceleration;      ///< Acceleration vector.
 
-	QTimer * motionplus_polling;          ///< Timer that checks the MotionPlus state.
+	QTimer * motionplus_polling;            ///< Timer that checks the MotionPlus state.
 	QWiimote::MotionPlusStates
-					motionplus_state;         ///< Current state of the MotionPlus.
+					motionplus_state;       ///< Current state of the MotionPlus.
 
-	QMatrix4x4 mat_orientation;           ///< Orientation of the Wiimote.
-	QTime motionplus_calibration_time;    ///< Used to calibrate orientation for a certain amount of time.
-	quint16 calibration_samples;          ///< Number of samples taken for calibrating the orientation.
-	qint32 pitch_zero_orientation;        ///< Zero angle for pitch.
-	qint32 roll_zero_orientation;         ///< Zero angle for roll.
-	qint32 yaw_zero_orientation;          ///< Zero angle for yaw.
-	qreal pitch_speed;                    ///< Pitch speed (in degrees per second).
-	qreal roll_speed;                     ///< Roll speed (in degrees per second).
-	qreal yaw_speed;                      ///< Yaw speed (in degrees per second).
-	qreal elapsed_time;                   ///< Elapsed time from last report (in milliseconds).
+	QMatrix4x4 mat_orientation;             ///< Orientation of the Wiimote.
+	QTime motionplus_calibration_time;      ///< Used to calibrate orientation for a certain amount of time.
+	quint16 motionplus_calibration_samples; ///< Number of samples taken for calibrating the orientation.
+	qint32 pitch_zero_orientation;          ///< Zero angle for pitch.
+	qint32 roll_zero_orientation;           ///< Zero angle for roll.
+	qint32 yaw_zero_orientation;            ///< Zero angle for yaw.
+	qreal pitch_speed;                      ///< Pitch speed (in degrees per second).
+	qreal roll_speed;                       ///< Roll speed (in degrees per second).
+	qreal yaw_speed;                        ///< Yaw speed (in degrees per second).
+	qreal elapsed_time;                     ///< Elapsed time from last report (in milliseconds).
 
-	QTimer * status_polling;              ///< Timer that polls wiimote status reports.
-	bool status_requested;                ///< True if a status report is expected.
-	quint8 battery_level;                 ///< Battery level of the wiimote.
-	bool battery_empty;                   ///< True if the battery is almost empty.
+	QTimer * status_polling;                ///< Timer that polls wiimote status reports.
+	bool status_requested;                  ///< True if a status report is expected.
+	quint8 battery_level;                   ///< Battery level of the wiimote.
+	bool battery_empty;                     ///< True if the battery is almost empty.
 
 
 private slots:

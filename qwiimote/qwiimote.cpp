@@ -354,15 +354,15 @@ void QWiimote::getReport(QWiimoteReport *report)
 						this->pitch_zero_orientation += raw_pitch;
 						this->roll_zero_orientation  += raw_roll;
 						this->yaw_zero_orientation   += raw_yaw;
-						this->calibration_samples++;
+						this->motionplus_calibration_samples++;
 
 						if (this->motionplus_calibration_time.elapsed() > QWiimote::MOTIONPLUS_TIME) {
 
 							this->motionplus_state = QWiimote::MotionPlusCalibrated;
 
-							this->pitch_zero_orientation /= this->calibration_samples;
-							this->roll_zero_orientation  /= this->calibration_samples;
-							this->yaw_zero_orientation   /= this->calibration_samples;
+							this->pitch_zero_orientation /= this->motionplus_calibration_samples;
+							this->roll_zero_orientation  /= this->motionplus_calibration_samples;
+							this->yaw_zero_orientation   /= this->motionplus_calibration_samples;
 
 							emit motionPlusState(this->motionplus_state);
 						}
@@ -612,7 +612,7 @@ void QWiimote::enableMotionPlus()
 	// Write 0x04 to register 0xA600FE.
 	this->io_wiimote->writeReport(send_buffer, 7);
 
-	this->calibration_samples = 0;
+	this->motionplus_calibration_samples = 0;
 	this->motionplus_calibration_time = QTime::currentTime();
 }
 
