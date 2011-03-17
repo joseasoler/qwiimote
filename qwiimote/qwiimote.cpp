@@ -40,7 +40,6 @@ struct QAccelerationSample
 
 const quint8  QWiimote::SMOOTHING_NONE_THRESHOLD = 3;
 const qreal   QWiimote::SMOOTHING_EMA_THRESHOLD = 0.01;
-const quint16 QWiimote::ACCELEROMETER_TIME = 1000;
 const quint16 QWiimote::MOTIONPLUS_TIME = 8000;
 const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
@@ -85,7 +84,6 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->acceleration_smoothing = QWiimote::SmoothingEMA;
 		this->max_acceleration_samples = 24;
 		this->mat_orientation.setToIdentity();
-		this->accelerometer_state = QWiimote::AccelerometerInactive;
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
@@ -147,16 +145,6 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 			motionplus_polling = NULL;
 		}
 	}
-	if (new_data_types & QWiimote::AccelerometerData && this->accelerometer_state == QWiimote::AccelerometerInactive) {
-		this->accelerometer_state = QWiimote::AccelerometerWorking;
-		/* Start accelerometer calibration. */
-		this->acc_calibration_time = QTime::currentTime();
-		this->acc_calibration_samples = 0;
-	} else if (!(new_data_types & QWiimote::AccelerometerData) &&
-				this->accelerometer_state != QWiimote::AccelerometerInactive) {
-		this->accelerometer_state = QWiimote::AccelerometerInactive;
-	}
-
 	this->data_types = new_data_types;
 
 	send_buffer[0] = 0x12;
@@ -305,15 +293,21 @@ bool QWiimote::requestCalibrationData()
  */
 void QWiimote::getCalibrationReport(QWiimoteReport *report)
 {
+	// qDebug() << "Receiving the report " << report->data.toHex() << " from the wiimote.";
 	if (report->data[0] == (char)0x21) {
 		/* Get the required calibration values from the report. */
-		this->original_gravity.setX(((report->data[10] & 0xFF) << 2) + ((report->data[13] & 0x30) >> 4));
-		this->original_gravity.setY(((report->data[11] & 0xFF) << 2) + ((report->data[13] & 0x0C) >> 2));
-		this->original_gravity.setZ(((report->data[12] & 0xFF) << 2) +  (report->data[13] & 0x03));
+		this->zero_acceleration.setX(((report->data[6] & 0xFF) << 2) + ((report->data[9] & 0x30) >> 4));
+		this->zero_acceleration.setY(((report->data[7] & 0xFF) << 2) + ((report->data[9] & 0x0C) >> 2));
+		this->zero_acceleration.setZ(((report->data[8] & 0xFF) << 2) +  (report->data[9] & 0x03));
+
+		this->gravity.setX(((report->data[10] & 0xFF) << 2) + ((report->data[13] & 0x30) >> 4));
+		this->gravity.setY(((report->data[11] & 0xFF) << 2) + ((report->data[13] & 0x0C) >> 2));
+		this->gravity.setZ(((report->data[12] & 0xFF) << 2) +  (report->data[13] & 0x03));
+		this->gravity -= this->zero_acceleration;
 
 		/* Stop checking only calibration reports. */
 		disconnect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getCalibrationReport(QWiimoteReport *)));
-		/* Start checking all other reports. */
+		// Start checking all other reports.
 		connect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getReport(QWiimoteReport *)));
 
 		/* Start status report polling. */
@@ -409,18 +403,6 @@ void QWiimote::getReport(QWiimoteReport *report)
 				y_new += (report->data[2] & 0x20) >> 4;
 				z_new =  (report->data[5] & 0xFF) << 2;
 				z_new += (report->data[2] & 0x40) >> 5;
-				if (this->accelerometer_state == QWiimote::AccelerometerWorking) {
-					this->zero_acceleration += QVector3D(x_new, y_new, z_new);
-					this->acc_calibration_samples++;
-					if (this->acc_calibration_time.elapsed() > QWiimote::ACCELEROMETER_TIME) {
-						this->zero_acceleration /= this->acc_calibration_samples;
-
-						this->gravity = this->original_gravity - this->zero_acceleration;
-						this->accelerometer_state = QWiimote::AccelerometerCalibrated;
-						emit accelerometerState(this->accelerometer_state);
-					}
-				}
-
 
 				if (this->acceleration_smoothing != QWiimote::SmoothingNone) {
 					this->raw_acceleration = QVector3D(x_new, y_new, z_new);
