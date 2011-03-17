@@ -15,6 +15,7 @@
 
 TARGET = test_application
 TEMPLATE = app
+CONFIG += console
 QT += opengl
 
 SOURCES += main.cpp \
