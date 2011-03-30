@@ -83,7 +83,9 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->battery_empty = false;
 		this->acceleration_smoothing = QWiimote::SmoothingEMA;
 		this->max_acceleration_samples = 24;
-		this->mat_orientation.setToIdentity();
+		this->pitch_orientation = 0;
+		this->roll_orientation = 0;
+		this->yaw_orientation = 0;
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
@@ -532,35 +534,36 @@ void QWiimote::getReport(QWiimoteReport *report)
  */
 void QWiimote::processOrientationData()
 {
-	qreal pitch_angle = 0;
-	qreal roll_angle  = 0;
-	qreal yaw_angle   = 0;
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
-		pitch_angle = 0.65 * (elapsed_time * pitch_speed) / 1000;
-		roll_angle  = 0.65 * (elapsed_time * roll_speed) / 1000;
-		yaw_angle   = 0.65 * (elapsed_time * yaw_speed) / 1000;
-		this->mat_orientation.rotate(-pitch_angle, QVector3D(1, 0, 0));
-		this->mat_orientation.rotate(roll_angle, QVector3D(0, 0, 1));
-		this->mat_orientation.rotate(yaw_angle, QVector3D(0, 1, 0));
+		this->pitch_orientation -= 0.65 * (elapsed_time * pitch_speed) / 1000;
+		this->roll_orientation  += 0.65 * (elapsed_time * roll_speed) / 1000;
+		this->yaw_orientation   += 0.65 * (elapsed_time * yaw_speed) / 1000;
 	}
 
 	if (!(this->data_types & QWiimote::MotionPlusData)) {
 		/* Use accelerometer data to determine pitch and roll. */
 		QVector3D acc = -this->acceleration();
 		acc.normalize();
-		qreal value = acc.z();
-		acc.setZ(acc.y());
-		acc.setY(value);
-		this->mat_orientation.setToIdentity();
-
-		/* This is the acceleration for a wiimote in the default position. */
-		QVector3D reference(0.0, -1.0, 0.0);
-		QVector3D axis = QVector3D::crossProduct(acc, reference);
-		qreal angle = QW_RAD_TO_DEGREES(acos(QVector3D::dotProduct(acc, reference)));
-		this->mat_orientation.rotate(angle, axis);
+		this->pitch_orientation = QW_RAD_TO_DEGREES(atan2(acc.y(), acc.z()));
+		this->roll_orientation  = QW_RAD_TO_DEGREES(atan2(acc.x(), acc.z()));
 	}
 
 	emit this->updatedOrientation();
+}
+
+QMatrix4x4 QWiimote::orientation() const
+{
+	QMatrix4x4 mat_orientation;
+	mat_orientation.setToIdentity();
+	/* Order of application: http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm */
+	QVector3D axis = QVector3D(0.0, 1.0, 0.0);
+	mat_orientation.rotate(this->yaw_orientation, axis);
+	axis = QVector3D(1.0, 0.0, 0.0);
+	mat_orientation.rotate(this->pitch_orientation, axis);
+	axis = QVector3D(0.0, 0.0, 1.0);
+	mat_orientation.rotate(this->roll_orientation, axis);
+
+	return mat_orientation;
 }
 
 /**

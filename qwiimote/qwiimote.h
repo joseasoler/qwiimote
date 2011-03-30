@@ -123,7 +123,7 @@ public:
 	QVector3D rawAcceleration() const;
 	QVector3D acceleration() const;
 
-	QMatrix4x4 orientation() const { return mat_orientation; }
+	QMatrix4x4 orientation() const;
 
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
@@ -182,7 +182,9 @@ private:
 	QWiimote::MotionPlusStates
 					motionplus_state;       ///< Current state of the MotionPlus.
 
-	QMatrix4x4 mat_orientation;             ///< Orientation of the Wiimote.
+	qreal pitch_orientation;                ///< Pitch angle of the Wiimote.
+	qreal roll_orientation;                 ///< Roll angle of the Wiimote.
+	qreal yaw_orientation;                  ///< Yaw angle of the Wiimote.
 	QTime motionplus_calibration_time;      ///< Used to calibrate orientation for a certain amount of time.
 	quint16 motionplus_calibration_samples; ///< Number of samples taken for calibrating the orientation.
 	qint32 pitch_zero_orientation;          ///< Zero angle for pitch.
