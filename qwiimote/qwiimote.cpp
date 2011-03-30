@@ -280,11 +280,11 @@ bool QWiimote::requestCalibrationData()
 {
 	send_buffer[0] = 0x17; // Report type.
 	send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble); // Read from the EEPROM.
-	send_buffer[2] = 0x00; // Memory position.
+	send_buffer[2] = 0x16; // Memory position.
 	send_buffer[3] = 0x00;
-	send_buffer[4] = 0x16;
+	send_buffer[4] = 0x00;
 	send_buffer[5] = 0x00; // Data size.
-	send_buffer[6] = 0x08;
+	send_buffer[6] = 0x20;
 
 	return this->io_wiimote->writeReport(send_buffer, 7);
 }
@@ -297,14 +297,15 @@ void QWiimote::getCalibrationReport(QWiimoteReport *report)
 {
 	// qDebug() << "Receiving the report " << report->data.toHex() << " from the wiimote.";
 	if (report->data[0] == (char)0x21) {
+		qDebug() << "Calibration report:" << report->data.toHex();
 		/* Get the required calibration values from the report. */
-		this->zero_acceleration.setX(((report->data[6] & 0xFF) << 2) + ((report->data[9] & 0x30) >> 4));
-		this->zero_acceleration.setY(((report->data[7] & 0xFF) << 2) + ((report->data[9] & 0x0C) >> 2));
-		this->zero_acceleration.setZ(((report->data[8] & 0xFF) << 2) +  (report->data[9] & 0x03));
+		this->zero_acceleration.setX(((report->data[12] & 0xFF) << 2) + ((report->data[15] & 0x30) >> 4));
+		this->zero_acceleration.setY(((report->data[13] & 0xFF) << 2) + ((report->data[15] & 0x0C) >> 2));
+		this->zero_acceleration.setZ(((report->data[14] & 0xFF) << 2) +  (report->data[15] & 0x03));
 
-		this->gravity.setX(((report->data[10] & 0xFF) << 2) + ((report->data[13] & 0x30) >> 4));
-		this->gravity.setY(((report->data[11] & 0xFF) << 2) + ((report->data[13] & 0x0C) >> 2));
-		this->gravity.setZ(((report->data[12] & 0xFF) << 2) +  (report->data[13] & 0x03));
+		this->gravity.setX(((report->data[16] & 0xFF) << 2) + ((report->data[19] & 0x30) >> 4));
+		this->gravity.setY(((report->data[17] & 0xFF) << 2) + ((report->data[19] & 0x0C) >> 2));
+		this->gravity.setZ(((report->data[18] & 0xFF) << 2) +  (report->data[19] & 0x03));
 		this->gravity -= this->zero_acceleration;
 
 		/* Stop checking only calibration reports. */
@@ -408,7 +409,6 @@ void QWiimote::getReport(QWiimoteReport *report)
 
 				if (this->acceleration_smoothing != QWiimote::SmoothingNone) {
 					this->raw_acceleration = QVector3D(x_new, y_new, z_new);
-
 					/* Add the new sample to the beginning of the list of samples. */
 					QAccelerationSample sample;
 					sample.time = report->time;
