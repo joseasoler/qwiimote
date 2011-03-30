@@ -545,7 +545,7 @@ void QWiimote::processOrientationData()
 		QVector3D acc = -this->acceleration();
 		acc.normalize();
 		this->pitch_orientation = QW_RAD_TO_DEGREES(atan2(acc.y(), acc.z()));
-		this->roll_orientation  = QW_RAD_TO_DEGREES(atan2(acc.x(), acc.z()));
+		this->roll_orientation  = -QW_RAD_TO_DEGREES(atan2(acc.x(), acc.z()));
 	}
 
 	emit this->updatedOrientation();
