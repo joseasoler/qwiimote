@@ -534,6 +534,7 @@ void QWiimote::getReport(QWiimoteReport *report)
  */
 void QWiimote::processOrientationData()
 {
+
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
 		this->pitch_orientation -= 0.65 * (elapsed_time * pitch_speed) / 1000;
 		this->roll_orientation  += 0.65 * (elapsed_time * roll_speed) / 1000;
@@ -544,8 +545,47 @@ void QWiimote::processOrientationData()
 		/* Use accelerometer data to determine pitch and roll. */
 		QVector3D acc = -this->acceleration();
 		acc.normalize();
-		this->pitch_orientation = QW_RAD_TO_DEGREES(atan2(acc.y(), acc.z()));
-		this->roll_orientation  = -QW_RAD_TO_DEGREES(atan2(acc.x(), acc.z()));
+
+		/* http://code.google.com/p/giimote/wiki/Pitch */
+		qreal pitch = QW_RAD_TO_DEGREES(atan2(acc.y(), sqrt(acc.x() * acc.x() + acc.z() * acc.z())));
+		/* http://code.google.com/p/giimote/wiki/Roll */
+		qreal roll =  QW_RAD_TO_DEGREES(atan2(acc.x(), sqrt(acc.y() * acc.y() + acc.z() * acc.z())));
+
+		this->yaw_orientation = 0;
+
+		if        (acc.x() >= 0 && acc.y() >= 0 && acc.z() <  0) {
+			this->pitch_orientation = pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 1 (+, +, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() <  0) {
+			this->pitch_orientation = pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 2 (-, +, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() >= 0) {
+			this->pitch_orientation = 180.0 - pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 3 (-, +, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() >= 0 && acc.y() >= 0 && acc.z() >= 0) {
+			this->pitch_orientation = 180.0 - pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 4 (+, +, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() <  0 && acc.y() <  0 && acc.z() >= 0) {
+			this->pitch_orientation = 180.0 - pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 5 (-, -, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() >= 0) {
+			this->pitch_orientation = 180.0 - pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 6 (+, -, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() <  0) {
+			this->pitch_orientation = pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 7 (+, -, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		} else if (acc.x() <  0 && acc.y() <  0 && acc.z() <  0) {
+			this->pitch_orientation = pitch;
+			this->roll_orientation  = roll;
+			// printf("Case 8 (-, -, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
+		}
 	}
 
 	emit this->updatedOrientation();
