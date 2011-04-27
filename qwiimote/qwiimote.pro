@@ -15,12 +15,14 @@
 
 # Compile QWiimote as a library.
 TEMPLATE = lib
-CONFIG += dll
+CONFIG += staticlib
 
 # Build both debug and release versions.
 CONFIG += debug_and_release
 CONFIG += build_all
 TARGET = $$qtLibraryTarget(QWiimote)
+
+INCLUDEPATH += C:/WinDDK/inc
 
 SOURCES += \
     qwiimote.cpp \
@@ -34,8 +36,8 @@ HEADERS += \
     qwiimotereport.h \
     qprecisetime.h
 
-LIBS += libsetupapi \
-    libhid
+LIBS += C:/WinDDK/lib/wxp/i386/setupapi.lib
+LIBS += C:/WinDDK/lib/wxp/i386/hid.lib
 
 headers.files = qwiimote.h
 headers.path = $$[QT_INSTALL_HEADERS]/qwiimote

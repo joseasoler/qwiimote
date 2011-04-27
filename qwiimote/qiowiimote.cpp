@@ -166,7 +166,7 @@ bool QIOWiimote::writeReport(const char * data, const qint64 max_size)
 	for(register int i = 0; i < max_size; i++) data_copy[i] = data[i];
 	/* Pad the rest of the report with zeroes just to be sure. */
 	for(register int i = max_size; i < MAX_REPORT_SIZE; i++) data_copy[i] = 0;
-	return (HidD_SetOutputReport(this->wiimote_handle, data_copy, MAX_REPORT_SIZE) == TRUE);
+	return (HidD_SetOutputReport(this->wiimote_handle, data_copy, MAX_REPORT_SIZE) == (BOOLEAN)true);
 }
 
 /**

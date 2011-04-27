@@ -29,7 +29,13 @@
 #include <QObject>
 #include <windows.h>
 #include <setupapi.h>
-#include <ddk/hidsdi.h>
+#if defined(__MINGW32__)
+#	include <ddk/hidsdi.h>
+#else
+extern "C"{
+	#include <api/hidsdi.h>
+}
+#endif
 #include "qwiimotereport.h"
 
 #define MAX_REPORT_SIZE 22 ///< Maximum size of a report.

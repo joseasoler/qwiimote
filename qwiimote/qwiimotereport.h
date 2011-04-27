@@ -34,7 +34,8 @@
  * QTime can't be used because its precision under Windows systems is too low (10-16 milliseconds).
  * @see #QIOWiimote and #QPreciseTime.
  */
-struct QWiimoteReport {
+class QWiimoteReport {
+public:
 	QPreciseTime time; ///< Time of arrival of the report.
 	QByteArray data;   ///< Data of the report.
 };

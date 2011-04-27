@@ -611,13 +611,13 @@ QMatrix4x4 QWiimote::orientation() const
  */
 void QWiimote::pollMotionPlus()
 {
-	send_buffer[0] = 0x17; // Report type.
-	send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Read from the registers.
-	send_buffer[2] = 0xA6; // Memory position.
-	send_buffer[3] = 0x00;
-	send_buffer[4] = 0xFA;
-	send_buffer[5] = 0x00; // Data size.
-	send_buffer[6] = 0x06;
+	send_buffer[0] = (char)0x17; // Report type.
+	send_buffer[1] = (char)0x04 | (this->led_data & QWiimote::Rumble); // Read from the registers.
+	send_buffer[2] = (char)0xA6; // Memory position.
+	send_buffer[3] = (char)0x00;
+	send_buffer[4] = (char)0xFA;
+	send_buffer[5] = (char)0x00; // Data size.
+	send_buffer[6] = (char)0x06;
 
 	this->io_wiimote->writeReport(send_buffer, 7);
 	this->setDataTypes(this->data_types);
@@ -628,8 +628,8 @@ void QWiimote::pollMotionPlus()
  */
 void QWiimote::pollStatusReport()
 {
-	send_buffer[0] = 0x15; // Report type.
-	send_buffer[1] = 0x00 | (this->led_data & QWiimote::Rumble);
+	send_buffer[0] = (char)0x15; // Report type.
+	send_buffer[1] = (char)0x00 | (this->led_data & QWiimote::Rumble);
 
 	this->io_wiimote->writeReport(send_buffer, 2);
 	this->status_requested = true;
@@ -650,13 +650,13 @@ void QWiimote::resetAccelerationData()
  */
 void QWiimote::enableMotionPlus()
 {
-	send_buffer[0] = 0x16;									   // Report type.
-	send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
-	send_buffer[2] = 0xA6;									   // Memory position.
-	send_buffer[3] = 0x00;
-	send_buffer[4] = 0xFE;
-	send_buffer[5] = 0x01;									   // Data size.
-	send_buffer[6] = 0x04;									   // Activate the MotionPlus.
+	send_buffer[0] = (char)0x16;									   // Report type.
+	send_buffer[1] = (char)0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
+	send_buffer[2] = (char)0xA6;									   // Memory position.
+	send_buffer[3] = (char)0x00;
+	send_buffer[4] = (char)0xFE;
+	send_buffer[5] = (char)0x01;									   // Data size.
+	send_buffer[6] = (char)0x04;									   // Activate the MotionPlus.
 
 	// Write 0x04 to register 0xA600FE.
 	this->io_wiimote->writeReport(send_buffer, 7);
@@ -670,13 +670,13 @@ void QWiimote::enableMotionPlus()
  */
 void QWiimote::disableMotionPlus()
 {
-	send_buffer[0] = 0x16;									   // Report type.
-	send_buffer[1] = 0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
-	send_buffer[2] = 0xA4;									   // Memory position.
-	send_buffer[3] = 0x00;
-	send_buffer[4] = 0xF0;
-	send_buffer[5] = 0x01;									   // Data size.
-	send_buffer[6] = 0x55;									   // Disable the MotionPlus.
+	send_buffer[0] = (char)0x16;									   // Report type.
+	send_buffer[1] = (char)0x04 | (this->led_data & QWiimote::Rumble); // Write to the registers.
+	send_buffer[2] = (char)0xA4;									   // Memory position.
+	send_buffer[3] = (char)0x00;
+	send_buffer[4] = (char)0xF0;
+	send_buffer[5] = (char)0x01;									   // Data size.
+	send_buffer[6] = (char)0x55;									   // Disable the MotionPlus.
 
 	// Write 0x55 to register 0xA400F0.
 	this->io_wiimote->writeReport(send_buffer, 7);
