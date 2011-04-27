@@ -124,6 +124,9 @@ public:
 	QVector3D acceleration() const;
 
 	QMatrix4x4 orientation() const;
+	qreal orientationPitch() const { return this->pitch_orientation; }
+	qreal orientationRoll()  const { return this->roll_orientation; }
+	qreal orientationYaw()   const { return this->yaw_orientation; }
 
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
