@@ -396,7 +396,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 					(*this->last_report) = report->time;
 				}
 			}
-			/* Fallthrough. */
+			/* FALL THROUGH */
 		case 0x31: // Acceleration report.
 			if (this->data_types & QWiimote::AccelerometerData) {
 				quint16 x_new, y_new, z_new;
