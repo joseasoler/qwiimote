@@ -83,9 +83,13 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->acceleration_smoothing = QWiimote::SmoothingEMA;
 		this->max_acceleration_samples = 24;
 		this->motionplus_threshold = 30;
+
+		this->orientation_mode = QWiimote::OrientationModeNone;
+		this->orientation_matrix = NULL;
 		this->pitch_orientation = 0;
 		this->roll_orientation = 0;
 		this->yaw_orientation = 0;
+
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
@@ -529,63 +533,123 @@ void QWiimote::getReport(QWiimoteReport *report)
 }
 
 /**
+ * Set the current #OrientationMode.
+ * @param new_mode New mode to use.
+ */
+void QWiimote::setOrientationMode(QWiimote::OrientationMode new_mode)
+{
+	this->orientation_mode = new_mode;
+}
+
+/**
+ * Allows to know the current #OrientationMode.
+ * @return #OrientationMode currently in use.
+ */
+QWiimote::OrientationMode QWiimote::getOrientationMode() const
+{
+	return this->orientation_mode;
+}
+
+
+/**
+ * If necessary, prepare the orientation matrix for being used.
+ */
+void QWiimote::PrepareOrientationMatrix()
+{
+	if (this->orientation_matrix != NULL) return;
+
+	this->orientation_matrix = new QMatrix4x4();
+	this->orientation_matrix->setToIdentity();
+}
+
+/**
+ * Update the orientation matrix with the given data.
+ */
+void QWiimote::UpdateOrientationMatrix(qreal pitch_change, qreal roll_change, qreal yaw_change)
+{
+	/* Order of application: http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm */
+	this->orientation_matrix->rotate(-yaw_change,   0.0, 1.0, 0.0);
+	this->orientation_matrix->rotate( pitch_change, 1.0, 0.0, 0.0);
+	this->orientation_matrix->rotate(-roll_change,  0.0, 0.0, 1.0);
+}
+
+/**
+ * Get the pitch and roll angles from accelerometer data.
+ * @todo Currently, transition fails between some quadrants. This means
+ * that the method currently being used for calculating angles is wrong.
+ */
+void QWiimote::GetAnglesFromAccelerometer(qreal &final_pitch, qreal &final_roll)
+{
+	if (!(this->data_types & QWiimote::AccelerometerData)) return;
+
+	/* Use accelerometer data to determine pitch and roll. */
+	QVector3D acc = -this->acceleration();
+	acc.normalize();
+
+	/* http://code.google.com/p/giimote/wiki/Pitch */
+	qreal pitch = QW_RAD_TO_DEGREES(atan2(acc.y(), sqrt(acc.x() * acc.x() + acc.z() * acc.z())));
+	/* http://code.google.com/p/giimote/wiki/Roll */
+	qreal roll =  QW_RAD_TO_DEGREES(atan2(acc.x(), sqrt(acc.y() * acc.y() + acc.z() * acc.z())));
+
+	if        (acc.x() >= 0 && acc.y() >= 0 && acc.z() <  0) {
+		final_pitch = pitch;
+		final_roll  = roll;
+	} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() <  0) {
+		final_pitch = pitch;
+		final_roll  = roll;
+	} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() >= 0) {
+		final_pitch = 180.0 - pitch;
+		final_roll  = roll;
+	} else if (acc.x() >= 0 && acc.y() >= 0 && acc.z() >= 0) {
+		final_pitch = 180.0 - pitch;
+		final_roll  = roll;
+	} else if (acc.x() <  0 && acc.y() <  0 && acc.z() >= 0) {
+		final_pitch = 180.0 - pitch;
+		final_roll  = roll;
+	} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() >= 0) {
+		final_pitch = 180.0 - pitch;
+		final_roll  = roll;
+	} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() <  0) {
+		final_pitch = pitch;
+		final_roll  = roll;
+	} else if (acc.x() <  0 && acc.y() <  0 && acc.z() <  0) {
+		final_pitch = pitch;
+		final_roll  = roll;
+	}
+}
+
+/**
  * Turns raw data into a matrix that measures current orientation of the wiimote.
  * @todo The constant 0.65 has just been tweaked until it seems to work, but it is not exact at all. Proper measurements should be made.
  */
 void QWiimote::processOrientationData()
 {
+	this->pitch_orientation = 0;
+	this->roll_orientation  = 0;
+	this->yaw_orientation   = 0;
+	/* Do nothing. */
+	if (this->orientation_mode == QWiimote::OrientationModeNone) return;
+
+	qreal pitch_change = 0;
+	qreal roll_change  = 0;
+	qreal yaw_change   = 0;
 
 	if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
-		this->pitch_orientation -= 0.65 * (elapsed_time * pitch_speed) / 1000;
-		this->roll_orientation  += 0.65 * (elapsed_time * roll_speed) / 1000;
-		this->yaw_orientation   += 0.65 * (elapsed_time * yaw_speed) / 1000;
+		pitch_change = -0.65 * (elapsed_time * this->pitch_speed) / 1000;
+		roll_change  = -0.65 * (elapsed_time * this->roll_speed)  / 1000;
+		yaw_change   = -0.65 * (elapsed_time * this->yaw_speed)   / 1000;
 	}
 
-	if (!(this->data_types & QWiimote::MotionPlusData)) {
-		/* Use accelerometer data to determine pitch and roll. */
-		QVector3D acc = -this->acceleration();
-		acc.normalize();
+	this->PrepareOrientationMatrix();
 
-		/* http://code.google.com/p/giimote/wiki/Pitch */
-		qreal pitch = QW_RAD_TO_DEGREES(atan2(acc.y(), sqrt(acc.x() * acc.x() + acc.z() * acc.z())));
-		/* http://code.google.com/p/giimote/wiki/Roll */
-		qreal roll =  QW_RAD_TO_DEGREES(atan2(acc.x(), sqrt(acc.y() * acc.y() + acc.z() * acc.z())));
-
-		this->yaw_orientation = 0;
-
-		if        (acc.x() >= 0 && acc.y() >= 0 && acc.z() <  0) {
-			this->pitch_orientation = pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 1 (+, +, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() <  0) {
-			this->pitch_orientation = pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 2 (-, +, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() >= 0) {
-			this->pitch_orientation = 180.0 - pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 3 (-, +, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() >= 0 && acc.y() >= 0 && acc.z() >= 0) {
-			this->pitch_orientation = 180.0 - pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 4 (+, +, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() <  0 && acc.y() <  0 && acc.z() >= 0) {
-			this->pitch_orientation = 180.0 - pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 5 (-, -, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() >= 0) {
-			this->pitch_orientation = 180.0 - pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 6 (+, -, +): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() <  0) {
-			this->pitch_orientation = pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 7 (+, -, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		} else if (acc.x() <  0 && acc.y() <  0 && acc.z() <  0) {
-			this->pitch_orientation = pitch;
-			this->roll_orientation  = roll;
-			// printf("Case 8 (-, -, -): %f, %f\n", this->pitch_orientation, this->roll_orientation);
-		}
+	switch (this->orientation_mode) {
+		case QWiimote::OrientationModeRaw:
+			if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
+				this->UpdateOrientationMatrix(pitch_change, roll_change, yaw_change);
+			} else if (!(this->data_types & QWiimote::MotionPlusData)) {
+				this->GetAnglesFromAccelerometer(this->pitch_orientation, this->roll_orientation);
+			}
+			break;
 	}
 
 	emit this->updatedOrientation();
@@ -593,17 +657,7 @@ void QWiimote::processOrientationData()
 
 QMatrix4x4 QWiimote::orientation() const
 {
-	QMatrix4x4 mat_orientation;
-	mat_orientation.setToIdentity();
-	/* Order of application: http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm */
-	QVector3D axis = QVector3D(0.0, 1.0, 0.0);
-	mat_orientation.rotate(this->yaw_orientation, axis);
-	axis = QVector3D(1.0, 0.0, 0.0);
-	mat_orientation.rotate(this->pitch_orientation, axis);
-	axis = QVector3D(0.0, 0.0, 1.0);
-	mat_orientation.rotate(this->roll_orientation, axis);
-
-	return mat_orientation;
+	return (this->orientation_matrix != NULL) ? QMatrix4x4(*this->orientation_matrix) : QMatrix4x4();
 }
 
 /**

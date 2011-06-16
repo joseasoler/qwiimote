@@ -95,6 +95,18 @@ public:
 
 	Q_DECLARE_FLAGS(MotionPlusStates, MotionPlusState)
 
+	/** Method for processing orientation data. */
+	enum OrientationMode {
+		/** Orientation is not processed at all. */
+		OrientationModeNone,
+		/**
+		 * If the MotionPlus is being used, a matrix is used for storing
+		 * angle changes. Otherwise, pitch_orientation and roll_orientation
+		 * will contain angles measured by the accelerometer.
+		 */
+		OrientationModeRaw,
+	};
+
 	/** Flags that show if the Wiimote leds / rumble are active. */
 	enum WiimoteLed {
 		Rumble = 0x01, ///< Rumble is on.
@@ -123,9 +135,18 @@ public:
 	QVector3D rawAcceleration() const;
 	QVector3D acceleration() const;
 
+
+	void setOrientationMode(QWiimote::OrientationMode new_mode);
+	QWiimote::OrientationMode getOrientationMode() const;
+
+	/** Get a matrix with orientation data. See #OrientationMode. */
 	QMatrix4x4 orientation() const;
+
+	/** Get euler angle for pitch. See #OrientationMode. */
 	qreal orientationPitch() const { return this->pitch_orientation; }
+	/** Get euler angle for roll. See #OrientationMode. */
 	qreal orientationRoll()  const { return this->roll_orientation; }
+	/** Get euler angle for yaw. See #OrientationMode. */
 	qreal orientationYaw()   const { return this->yaw_orientation; }
 
 	void   SetMotionPlusThreshold(quint8 threshold) { this->motionplus_threshold = threshold; }
@@ -155,6 +176,9 @@ private:
 	void enableMotionPlus();
 	void disableMotionPlus();
 	void processOrientationData();
+	void PrepareOrientationMatrix();
+	void UpdateOrientationMatrix(qreal pitch_change, qreal roll_change, qreal yaw_change);
+	void GetAnglesFromAccelerometer(qreal &final_pitch, qreal &final_roll);
 
 	static const quint8  SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.
 	static const qreal   SMOOTHING_EMA_THRESHOLD;  ///< Calibrated acceleration threshold for EMA.
@@ -188,6 +212,10 @@ private:
 	QWiimote::MotionPlusStates
 					motionplus_state;       ///< Current state of the MotionPlus.
 
+	OrientationMode orientation_mode;       ///< Orientation mode being used.
+
+	QMatrix4x4 *orientation_matrix;         ///< Orientation matrix of the Wiimote.
+
 	qreal   pitch_orientation;              ///< Pitch angle of the Wiimote.
 	qreal   roll_orientation;               ///< Roll angle of the Wiimote.
 	qreal   yaw_orientation;                ///< Yaw angle of the Wiimote.
@@ -207,7 +235,6 @@ private:
 	bool status_requested;                  ///< True if a status report is expected.
 	quint8 battery_level;                   ///< Battery level of the wiimote.
 	bool battery_empty;                     ///< True if the battery is almost empty.
-
 
 private slots:
 	void getCalibrationReport(QWiimoteReport *report);
