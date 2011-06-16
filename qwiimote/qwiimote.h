@@ -128,6 +128,10 @@ public:
 	qreal orientationRoll()  const { return this->roll_orientation; }
 	qreal orientationYaw()   const { return this->yaw_orientation; }
 
+	void   SetMotionPlusThreshold(quint8 threshold) { this->motionplus_threshold = threshold; }
+	quint8 GetMotionPlusThreshold() const           { return this->motionplus_threshold; }
+
+
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
 	bool isStill() const;
@@ -157,7 +161,6 @@ private:
 	static const quint16 MOTIONPLUS_TIME;          ///< Time required to calibrate the MotionPlus.
 	static const qreal   DEGREES_PER_SECOND_SLOW;  ///< MotionPlus speed (slow).
 	static const qreal   DEGREES_PER_SECOND_FAST;  ///< MotionPlus speed (fast).
-	static const quint8  MOTIONPLUS_THRESHOLD;     ///< MotionPlus speed threshold.
 
 	QIOWiimote *io_wiimote;                 ///< Instance of QIOWiimote used to send / receive wiimote data.
 	char send_buffer[22];                   ///< Buffer used to send reports to the wiimote.
@@ -185,18 +188,20 @@ private:
 	QWiimote::MotionPlusStates
 					motionplus_state;       ///< Current state of the MotionPlus.
 
-	qreal pitch_orientation;                ///< Pitch angle of the Wiimote.
-	qreal roll_orientation;                 ///< Roll angle of the Wiimote.
-	qreal yaw_orientation;                  ///< Yaw angle of the Wiimote.
-	QTime motionplus_calibration_time;      ///< Used to calibrate orientation for a certain amount of time.
+	qreal   pitch_orientation;              ///< Pitch angle of the Wiimote.
+	qreal   roll_orientation;               ///< Roll angle of the Wiimote.
+	qreal   yaw_orientation;                ///< Yaw angle of the Wiimote.
+	QTime   motionplus_calibration_time;    ///< Used to calibrate orientation for a certain amount of time.
 	quint16 motionplus_calibration_samples; ///< Number of samples taken for calibrating the orientation.
-	qint32 pitch_zero_orientation;          ///< Zero angle for pitch.
-	qint32 roll_zero_orientation;           ///< Zero angle for roll.
-	qint32 yaw_zero_orientation;            ///< Zero angle for yaw.
-	qreal pitch_speed;                      ///< Pitch speed (in degrees per second).
-	qreal roll_speed;                       ///< Roll speed (in degrees per second).
-	qreal yaw_speed;                        ///< Yaw speed (in degrees per second).
-	qreal elapsed_time;                     ///< Elapsed time from last report (in milliseconds).
+	qint32  pitch_zero_orientation;         ///< Zero angle for pitch.
+	qint32  roll_zero_orientation;          ///< Zero angle for roll.
+	qint32  yaw_zero_orientation;           ///< Zero angle for yaw.
+	qreal   pitch_speed;                    ///< Pitch speed (in degrees per second).
+	qreal   roll_speed;                     ///< Roll speed (in degrees per second).
+	qreal   yaw_speed;                      ///< Yaw speed (in degrees per second).
+	qreal   elapsed_time;                   ///< Elapsed time from last report (in milliseconds).
+
+	quint8  motionplus_threshold;           ///< MotionPlus speed threshold.
 
 	QTimer * status_polling;                ///< Timer that polls wiimote status reports.
 	bool status_requested;                  ///< True if a status report is expected.
