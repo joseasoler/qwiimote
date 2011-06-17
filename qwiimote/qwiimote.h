@@ -105,6 +105,13 @@ public:
 		 * will contain angles measured by the accelerometer.
 		 */
 		OrientationModeRaw,
+		/**
+		 * This mode requires MotionPlus. It maintains a matrix for
+		 * storing MotionPlus angle changes. Absolute yaw is calculated
+		 * from this matrix. The other two angles are taken from
+		 * acceleration data.
+		 */
+		OrientationModeMixed,
 	};
 
 	/** Flags that show if the Wiimote leds / rumble are active. */
@@ -177,7 +184,6 @@ private:
 	void disableMotionPlus();
 	void processOrientationData();
 	void PrepareOrientationMatrix();
-	void UpdateOrientationMatrix(qreal pitch_change, qreal roll_change, qreal yaw_change);
 	void GetAnglesFromAccelerometer(qreal &final_pitch, qreal &final_roll);
 
 	static const quint8  SMOOTHING_NONE_THRESHOLD; ///< Raw acceleration threshold for non-smoothed data.

@@ -563,14 +563,14 @@ void QWiimote::PrepareOrientationMatrix()
 }
 
 /**
- * Update the orientation matrix with the given data.
+ * Update a orientation matrix with the given data.
  */
-void QWiimote::UpdateOrientationMatrix(qreal pitch_change, qreal roll_change, qreal yaw_change)
+void UpdateOrientationMatrix(QMatrix4x4 &matrix, qreal pitch_change, qreal roll_change, qreal yaw_change)
 {
 	/* Order of application: http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm */
-	this->orientation_matrix->rotate(-yaw_change,   0.0, 1.0, 0.0);
-	this->orientation_matrix->rotate( pitch_change, 1.0, 0.0, 0.0);
-	this->orientation_matrix->rotate(-roll_change,  0.0, 0.0, 1.0);
+	matrix.rotate(-yaw_change,   0.0, 1.0, 0.0);
+	matrix.rotate( pitch_change, 1.0, 0.0, 0.0);
+	matrix.rotate(-roll_change,  0.0, 0.0, 1.0);
 }
 
 /**
@@ -645,11 +645,33 @@ void QWiimote::processOrientationData()
 	switch (this->orientation_mode) {
 		case QWiimote::OrientationModeRaw:
 			if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
-				this->UpdateOrientationMatrix(pitch_change, roll_change, yaw_change);
+				UpdateOrientationMatrix(*this->orientation_matrix, pitch_change, roll_change, yaw_change);
 			} else if (!(this->data_types & QWiimote::MotionPlusData)) {
 				this->GetAnglesFromAccelerometer(this->pitch_orientation, this->roll_orientation);
 			}
 			break;
+
+		case QWiimote::OrientationModeMixed: {
+			if (this->motionplus_state != QWiimote::MotionPlusCalibrated) return;
+			this->GetAnglesFromAccelerometer(this->pitch_orientation, this->roll_orientation);
+			UpdateOrientationMatrix(*this->orientation_matrix, pitch_change, roll_change, yaw_change);
+			/* Conversion from matrix to angles: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm */
+			const qreal *matrix_data = this->orientation_matrix->constData();
+			qreal m10 = matrix_data[0 + 1 * 4];
+
+			if (m10 > 0.998 || m10 < -0.998) {
+				qreal m02 = matrix_data[2 + 0 * 4];
+				qreal m22 = matrix_data[2 + 2 * 4];
+				this->yaw_orientation = atan2( m02, m22);
+			} else {
+				qreal m20 = matrix_data[0 + 2 * 4];
+				qreal m00 = matrix_data[0 + 0 * 4];
+				this->yaw_orientation = atan2(-m20, m00);
+			}
+
+			this->yaw_orientation = QW_RAD_TO_DEGREES(this->yaw_orientation);
+			break;
+		}
 	}
 
 	emit this->updatedOrientation();
@@ -657,7 +679,18 @@ void QWiimote::processOrientationData()
 
 QMatrix4x4 QWiimote::orientation() const
 {
-	return (this->orientation_matrix != NULL) ? QMatrix4x4(*this->orientation_matrix) : QMatrix4x4();
+	if (this->orientation_matrix == NULL ||
+		this->orientation_mode == QWiimote::OrientationModeNone) return QMatrix4x4();
+
+	switch (this->orientation_mode) {
+		case QWiimote::OrientationModeRaw:
+			return QMatrix4x4(*this->orientation_matrix);
+
+		case QWiimote::OrientationModeMixed:
+			QMatrix4x4 calculated_matrix;
+			UpdateOrientationMatrix(calculated_matrix, this->pitch_orientation, this->roll_orientation, this->yaw_orientation);
+			return calculated_matrix;
+	}
 }
 
 /**
