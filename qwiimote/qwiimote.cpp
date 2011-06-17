@@ -446,7 +446,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 
 					case QWiimote::SmoothingEMA:
 						/* Exponential Moving Average method. */
-						qreal alpha = 2.0 / (this->max_acceleration_samples + 1.0);
+						qreal alpha = 0.1;
 						qreal one_minus_alpha = 1.0 - alpha;
 						qreal alpha_pow = 1;
 
