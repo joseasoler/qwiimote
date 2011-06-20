@@ -191,6 +191,16 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 }
 
 /**
+ * Modify the calibration values for the accelerometer.
+ * @param acc_s Smoothing method to use.
+ */
+void setAccelerationCalibration(QVector3D zero_acc, QVector3D grav)
+{
+	this->zero_acceleration = zero_acc;
+	this->gravity = grav;
+}
+
+/**
  * Changes the method used for smoothing acceleration samples.
  * @param acc_s Smoothing method to use.
  */

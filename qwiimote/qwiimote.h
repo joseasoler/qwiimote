@@ -133,6 +133,7 @@ public:
 	void setDataTypes(QWiimote::DataTypes new_data_types);
 	void setLeds(QWiimote::WiimoteLeds leds);
 
+	void setAccelerationCalibration(QVector3D zero_acc, QVector3D grav);
 	void setAccelerationSmoothing(QWiimote::AccelerationSmoothing acc_s);
 
 	QWiimote::DataTypes dataTypes() const;
