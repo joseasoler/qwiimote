@@ -273,7 +273,7 @@ bool QWiimote::batteryEmpty() const
  */
 bool QWiimote::isStill() const
 {
-	/* We cannot know if the wiimote is still in this mode. */
+	/* We cannot know if the Wiimote is still in this mode. */
 	if (this->acceleration_smoothing == QWiimote::SmoothingNone) return false;
 
 	QAccelerationSampleList::const_iterator last = this->sample_list.end();
@@ -314,12 +314,12 @@ void QWiimote::getCalibrationReport(QWiimoteReport *report)
 		qDebug() << "Calibration report:" << report->data.toHex();
 		/* Get the required calibration values from the report. */
 		this->zero_acceleration.setX(((report->data[12] & 0xFF) << 2) + ((report->data[15] & 0x30) >> 4));
-		this->zero_acceleration.setY(((report->data[13] & 0xFF) << 2) + ((report->data[15] & 0x0C) >> 2));
-		this->zero_acceleration.setZ(((report->data[14] & 0xFF) << 2) +  (report->data[15] & 0x03));
+		this->zero_acceleration.setY(((report->data[14] & 0xFF) << 2) +  (report->data[15] & 0x03));
+		this->zero_acceleration.setZ(((report->data[13] & 0xFF) << 2) + ((report->data[15] & 0x0C) >> 2));
 
 		this->gravity.setX(((report->data[16] & 0xFF) << 2) + ((report->data[19] & 0x30) >> 4));
-		this->gravity.setY(((report->data[17] & 0xFF) << 2) + ((report->data[19] & 0x0C) >> 2));
-		this->gravity.setZ(((report->data[18] & 0xFF) << 2) +  (report->data[19] & 0x03));
+		this->gravity.setY(((report->data[18] & 0xFF) << 2) +  (report->data[19] & 0x03));
+		this->gravity.setZ(((report->data[17] & 0xFF) << 2) + ((report->data[19] & 0x0C) >> 2));
 		this->gravity -= this->zero_acceleration;
 
 		/* Stop checking only calibration reports. */
@@ -416,10 +416,10 @@ void QWiimote::getReport(QWiimoteReport *report)
 				quint16 x_new, y_new, z_new;
 				x_new =  (report->data[3] & 0xFF) << 2;
 				x_new += (report->data[1] & 0x60) >> 5;
-				y_new =  (report->data[4] & 0xFF) << 2;
-				y_new += (report->data[2] & 0x20) >> 4;
-				z_new =  (report->data[5] & 0xFF) << 2;
-				z_new += (report->data[2] & 0x40) >> 5;
+				y_new =  (report->data[5] & 0xFF) << 2;
+				y_new += (report->data[2] & 0x40) >> 5;
+				z_new =  (report->data[4] & 0xFF) << 2;
+				z_new += (report->data[2] & 0x20) >> 4;
 
 				if (this->acceleration_smoothing != QWiimote::SmoothingNone) {
 					this->raw_acceleration = QVector3D(x_new, y_new, z_new);
@@ -597,32 +597,32 @@ void QWiimote::GetAnglesFromAccelerometer(qreal &final_pitch, qreal &final_roll)
 	acc.normalize();
 
 	/* http://code.google.com/p/giimote/wiki/Pitch */
-	qreal pitch = QW_RAD_TO_DEGREES(atan2(acc.y(), sqrt(acc.x() * acc.x() + acc.z() * acc.z())));
+	qreal pitch = QW_RAD_TO_DEGREES(atan2(acc.z(), sqrt(acc.x() * acc.x() + acc.y() * acc.y())));
 	/* http://code.google.com/p/giimote/wiki/Roll */
-	qreal roll =  QW_RAD_TO_DEGREES(atan2(acc.x(), sqrt(acc.y() * acc.y() + acc.z() * acc.z())));
+	qreal roll =  QW_RAD_TO_DEGREES(atan2(acc.x(), sqrt(acc.z() * acc.z() + acc.y() * acc.y())));
 
-	if        (acc.x() >= 0 && acc.y() >= 0 && acc.z() <  0) {
+	if        (acc.x() >= 0 && acc.z() >= 0 && acc.y() <  0) {
 		final_pitch = pitch;
 		final_roll  = roll;
-	} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() <  0) {
+	} else if (acc.x() <  0 && acc.z() >= 0 && acc.y() <  0) {
 		final_pitch = pitch;
 		final_roll  = roll;
-	} else if (acc.x() <  0 && acc.y() >= 0 && acc.z() >= 0) {
+	} else if (acc.x() <  0 && acc.z() >= 0 && acc.y() >= 0) {
 		final_pitch = 180.0 - pitch;
 		final_roll  = roll;
-	} else if (acc.x() >= 0 && acc.y() >= 0 && acc.z() >= 0) {
+	} else if (acc.x() >= 0 && acc.z() >= 0 && acc.y() >= 0) {
 		final_pitch = 180.0 - pitch;
 		final_roll  = roll;
-	} else if (acc.x() <  0 && acc.y() <  0 && acc.z() >= 0) {
+	} else if (acc.x() <  0 && acc.z() <  0 && acc.y() >= 0) {
 		final_pitch = 180.0 - pitch;
 		final_roll  = roll;
-	} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() >= 0) {
+	} else if (acc.x() >= 0 && acc.z() <  0 && acc.y() >= 0) {
 		final_pitch = 180.0 - pitch;
 		final_roll  = roll;
-	} else if (acc.x() >= 0 && acc.y() <  0 && acc.z() <  0) {
+	} else if (acc.x() >= 0 && acc.z() <  0 && acc.y() <  0) {
 		final_pitch = pitch;
 		final_roll  = roll;
-	} else if (acc.x() <  0 && acc.y() <  0 && acc.z() <  0) {
+	} else if (acc.x() <  0 && acc.z() <  0 && acc.y() <  0) {
 		final_pitch = pitch;
 		final_roll  = roll;
 	}
