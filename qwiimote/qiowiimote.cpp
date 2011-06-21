@@ -159,7 +159,6 @@ void QIOWiimote::close()
 bool QIOWiimote::writeReport(const char * data, const qint64 max_size)
 {
 	Q_ASSERT_X(max_size <= MAX_REPORT_SIZE, "QIOWiimote::writeReport", "A report can't have a size greater than 22.");
-	// qDebug() << "Writing the report " << QByteArray(data, max_size).toHex() << " to the wiimote.";
 
 	char data_copy[MAX_REPORT_SIZE];
 

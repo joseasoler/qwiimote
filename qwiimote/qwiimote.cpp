@@ -309,9 +309,7 @@ bool QWiimote::requestCalibrationData()
  */
 void QWiimote::getCalibrationReport(QWiimoteReport *report)
 {
-	// qDebug() << "Receiving the report " << report->data.toHex() << " from the wiimote.";
 	if (report->data[0] == (char)0x21) {
-		qDebug() << "Calibration report:" << report->data.toHex();
 		/* Get the required calibration values from the report. */
 		this->zero_acceleration.setX(((report->data[12] & 0xFF) << 2) + ((report->data[15] & 0x30) >> 4));
 		this->zero_acceleration.setY(((report->data[14] & 0xFF) << 2) +  (report->data[15] & 0x03));
@@ -486,8 +484,6 @@ void QWiimote::getReport(QWiimoteReport *report)
 		break;
 
 	case 0x21: // Read memory data, assumed to be a MotionPlus check.
-			// qDebug() << "Receiving a read memory report " << report->data.toHex() << " from the wiimote.";
-
 			if (((report->data[3] & 0xF0)  != 0xF0) && //There are no errors.
 					((report->data[6] & 0xFF)  == 0x00) && //There is a MotionPlus plugged in.
 					((report->data[7] & 0xFF)  == 0x00) &&
@@ -508,8 +504,6 @@ void QWiimote::getReport(QWiimoteReport *report)
 		break;
 
 		case 0x20: // Status report.
-			// qDebug() << "Receiving a status report " << report->data.toHex() << " from the wiimote.";
-
 			quint8 new_battery_level = (report->data[6] & 0xFF);
 			bool new_battery_empty = ((report->data[3] & 0x01) == 0x01);
 			/* Check if the battery level has changed. */
