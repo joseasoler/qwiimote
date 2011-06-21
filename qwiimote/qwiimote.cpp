@@ -687,6 +687,10 @@ void QWiimote::processOrientationData()
 	emit this->updatedOrientation();
 }
 
+/**
+ * Get a matrix with orientation data. See #OrientationMode.
+ * @return Orientation matrix.
+ */
 QMatrix4x4 QWiimote::orientation() const
 {
 	if (this->orientation_matrix == NULL ||
@@ -703,6 +707,15 @@ QMatrix4x4 QWiimote::orientation() const
 	}
 
 	return QMatrix4x4();
+}
+
+/**
+ * Resets the MotionPlus orientation data.
+ */
+void QWiimote::resetOrientation()
+{
+	if (this->orientation_matrix == NULL) return;
+	this->orientation_matrix->setToIdentity();
 }
 
 /**

@@ -147,8 +147,8 @@ public:
 	void setOrientationMode(QWiimote::OrientationMode new_mode);
 	QWiimote::OrientationMode getOrientationMode() const;
 
-	/** Get a matrix with orientation data. See #OrientationMode. */
 	QMatrix4x4 orientation() const;
+	void resetOrientation();
 
 	/** Get euler angle for pitch. See #OrientationMode. */
 	qreal orientationPitch() const { return this->pitch_orientation; }
