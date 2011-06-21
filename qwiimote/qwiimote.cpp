@@ -194,7 +194,7 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
  * Modify the calibration values for the accelerometer.
  * @param acc_s Smoothing method to use.
  */
-void setAccelerationCalibration(QVector3D zero_acc, QVector3D grav)
+void QWiimote::setAccelerationCalibration(QVector3D zero_acc, QVector3D grav)
 {
 	this->zero_acceleration = zero_acc;
 	this->gravity = grav;
@@ -698,9 +698,11 @@ QMatrix4x4 QWiimote::orientation() const
 
 		case QWiimote::OrientationModeMixed:
 			QMatrix4x4 calculated_matrix;
-			UpdateOrientationMatrix(calculated_matrix, this->pitch_orientation, this->roll_orientation, this->yaw_orientation);
+			UpdateOrientationMatrix(calculated_matrix, this->pitch_orientation, -this->roll_orientation, this->yaw_orientation);
 			return calculated_matrix;
 	}
+
+	return QMatrix4x4();
 }
 
 /**
