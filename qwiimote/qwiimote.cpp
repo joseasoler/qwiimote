@@ -146,6 +146,9 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 		this->motionplus_state = QWiimote::MotionPlusActivated;
 		this->current_polling = 0;
 
+		/* Make sure that the MotionPlus is in the correct state. */
+		this->disableMotionPlus();
+
 		/* Start MotionPlus polling. */
 		if (!this->motionplus_polling.isActive()) {
 			connect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
