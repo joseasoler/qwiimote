@@ -83,6 +83,7 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->acceleration_smoothing = QWiimote::SmoothingEMA;
 		this->max_acceleration_samples = 24;
 		this->motionplus_threshold = 30;
+		this->max_polling = 5;
 
 		this->orientation_mode = QWiimote::OrientationModeNone;
 		this->orientation_matrix = NULL;
@@ -91,7 +92,6 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 		this->yaw_orientation = 0;
 
 		this->motionplus_state = QWiimote::MotionPlusInactive;
-		this->motionplus_polling = NULL;
 		this->pitch_speed = 0;
 		this->roll_speed = 0;
 		this->yaw_speed = 0;
@@ -110,6 +110,16 @@ bool QWiimote::start(QWiimote::DataTypes new_data_types)
 void QWiimote::stop()
 {
 	this->setDataTypes(QWiimote::DefaultData);
+	if (this->motionplus_polling.isActive()) {
+		disconnect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+		this->motionplus_polling.stop();
+	}
+
+	if (this->status_polling.isActive()) {
+		disconnect(&status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
+		this->status_polling.stop();
+	}
+
 	this->io_wiimote->close();
 }
 
@@ -134,21 +144,20 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 		this->motionplus_state = QWiimote::MotionPlusActivated;
 
 		/* Start MotionPlus polling. */
-		if (this->motionplus_polling == NULL) {
-			motionplus_polling = new QTimer(this);
-			connect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
-			motionplus_polling->start(1000);
+		if (!this->motionplus_polling.isActive()) {
+			connect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+			motionplus_polling.start(1000);
+			this->current_polling = 0;
 			this->pollMotionPlus();
 		}
 	} else if (!(new_data_types & QWiimote::MotionPlusData) &&
 			   (this->motionplus_state == QWiimote::MotionPlusWorking ||
 				this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
 		this->motionplus_state = QWiimote::MotionPlusInactive;
-		if (this->motionplus_polling != NULL) {// Stop MotionPlus polling.
+		if (this->motionplus_polling.isActive()) {// Stop MotionPlus polling.
 			this->disableMotionPlus();
-			disconnect(motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
-			delete motionplus_polling;
-			motionplus_polling = NULL;
+			disconnect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
+			this->motionplus_polling.stop();
 		}
 	}
 	this->data_types = new_data_types;
@@ -326,9 +335,8 @@ void QWiimote::getCalibrationReport(QWiimoteReport *report)
 		connect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getReport(QWiimoteReport *)));
 
 		/* Start status report polling. */
-		status_polling = new QTimer(this);
-		connect(status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
-		status_polling->start(12000);
+		connect(&status_polling, SIGNAL(timeout()), this, SLOT(pollStatusReport()));
+		status_polling.start(12000);
 		this->pollStatusReport();
 	} else {
 		this->requestCalibrationData();
@@ -490,6 +498,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 					((report->data[8] & 0xFF)  == 0xA6) &&
 					((report->data[9] & 0xFF)  == 0x20) &&
 					((report->data[11] & 0xFF) == 0x05)) {
+
 				if (this->motionplus_state == QWiimote::MotionPlusActivated) {
 					this->enableMotionPlus();
 					this->motionplus_state = QWiimote::MotionPlusWorking;
@@ -717,6 +726,16 @@ void QWiimote::resetOrientation()
  */
 void QWiimote::pollMotionPlus()
 {
+	/* Check for timeouts. */
+
+	if (this->motionplus_state == MotionPlusActivated) {
+		if (this->current_polling > this->max_polling) {
+			emit motionPlusTimeout();
+		} else {
+			this->current_polling++;
+		}
+	}
+
 	send_buffer[0] = (char)0x17; // Report type.
 	send_buffer[1] = (char)0x04 | (this->led_data & QWiimote::Rumble); // Read from the registers.
 	send_buffer[2] = (char)0xA6; // Memory position.

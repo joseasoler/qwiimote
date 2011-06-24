@@ -178,6 +178,8 @@ signals:
 	void emptyBattery();
 	/** Emitted when the MotionPlus changes its state. */
 	void motionPlusState(QWiimote::MotionPlusStates);
+	/** Emitted when the MotionPlus connections times out. */
+	void motionPlusTimeout();
 	/** Emitted when the orientation values change. */
 	void updatedOrientation();
 private:
@@ -217,9 +219,11 @@ private:
 	/* Current acceleration values. */
 	QVector3D calibrated_acceleration;      ///< Acceleration vector.
 
-	QTimer * motionplus_polling;            ///< Timer that checks the MotionPlus state.
+	QTimer motionplus_polling;              ///< Timer that checks the MotionPlus state.
 	QWiimote::MotionPlusStates
 					motionplus_state;       ///< Current state of the MotionPlus.
+	quint8 max_polling;                     ///< Number of polling attempts before giving up.
+	quint8 current_polling;                 ///< Current number of polling attempts.
 
 	OrientationMode orientation_mode;       ///< Orientation mode being used.
 
@@ -240,7 +244,7 @@ private:
 
 	quint8  motionplus_threshold;           ///< MotionPlus speed threshold.
 
-	QTimer * status_polling;                ///< Timer that polls wiimote status reports.
+	QTimer status_polling;                  ///< Timer that polls wiimote status reports.
 	bool status_requested;                  ///< True if a status report is expected.
 	quint8 battery_level;                   ///< Battery level of the wiimote.
 	bool battery_empty;                     ///< True if the battery is almost empty.
