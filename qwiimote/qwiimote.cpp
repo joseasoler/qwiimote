@@ -122,6 +122,7 @@ void QWiimote::stop()
 
 	disconnect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getCalibrationReport(QWiimoteReport *)));
 	disconnect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getReport(QWiimoteReport *)));
+
 	this->io_wiimote->close();
 }
 
@@ -402,7 +403,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 							emit motionPlusState(this->motionplus_state);
 						}
 					}
-				} else {
+				} else if (this->motionplus_state == QWiimote::MotionPlusCalibrated) {
 					pitch_speed = abs(raw_pitch - this->pitch_zero_orientation) > this->GetMotionPlusThreshold() ?
 									  raw_pitch - this->pitch_zero_orientation : 0;
 					pitch_speed /= (fast_pitch) ?	QWiimote::DEGREES_PER_SECOND_FAST :
@@ -558,6 +559,7 @@ void QWiimote::getReport(QWiimoteReport *report)
 void QWiimote::setOrientationMode(QWiimote::OrientationMode new_mode)
 {
 	this->orientation_mode = new_mode;
+	this->resetAccelerationData();
 }
 
 /**
