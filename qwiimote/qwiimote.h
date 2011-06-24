@@ -148,7 +148,6 @@ public:
 	QWiimote::OrientationMode getOrientationMode() const;
 
 	QMatrix4x4 orientation() const;
-	void resetOrientation();
 
 	/** Get euler angle for pitch. See #OrientationMode. */
 	qreal orientationPitch() const { return this->pitch_orientation; }
@@ -164,6 +163,9 @@ public:
 	quint8 batteryLevel() const;
 	bool batteryEmpty() const;
 	bool isStill() const;
+
+public slots:
+	void resetOrientation();
 
 signals:
 	/** Emitted when the state of the buttons changes. */
