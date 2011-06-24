@@ -120,6 +120,8 @@ void QWiimote::stop()
 		this->status_polling.stop();
 	}
 
+	disconnect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getCalibrationReport(QWiimoteReport *)));
+	disconnect(io_wiimote, SIGNAL(reportReady(QWiimoteReport *)), this, SLOT(getReport(QWiimoteReport *)));
 	this->io_wiimote->close();
 }
 
@@ -142,22 +144,23 @@ void QWiimote::setDataTypes(QWiimote::DataTypes new_data_types)
 		/* MotionPlus always activates AccelerometerData. */
 		new_data_types |= QWiimote::AccelerometerData;
 		this->motionplus_state = QWiimote::MotionPlusActivated;
+		this->current_polling = 0;
 
 		/* Start MotionPlus polling. */
 		if (!this->motionplus_polling.isActive()) {
 			connect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
 			motionplus_polling.start(1000);
-			this->current_polling = 0;
-			this->pollMotionPlus();
 		}
-	} else if (!(new_data_types & QWiimote::MotionPlusData) &&
-			   (this->motionplus_state == QWiimote::MotionPlusWorking ||
-				this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
+	} else if (!(new_data_types & QWiimote::MotionPlusData)) {
 		this->motionplus_state = QWiimote::MotionPlusInactive;
 		if (this->motionplus_polling.isActive()) {// Stop MotionPlus polling.
-			this->disableMotionPlus();
 			disconnect(&motionplus_polling, SIGNAL(timeout()), this, SLOT(pollMotionPlus()));
 			this->motionplus_polling.stop();
+		}
+
+		if ((this->motionplus_state == QWiimote::MotionPlusWorking ||
+				this->motionplus_state == QWiimote::MotionPlusCalibrated)) {
+			this->disableMotionPlus();
 		}
 	}
 	this->data_types = new_data_types;
