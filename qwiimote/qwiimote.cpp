@@ -45,7 +45,7 @@ const qreal   QWiimote::DEGREES_PER_SECOND_SLOW = 8192.0 / 595.0;
 const qreal   QWiimote::DEGREES_PER_SECOND_FAST = QWiimote::DEGREES_PER_SECOND_SLOW / 2000 / 440;
 
 #define QW_PI (3.141592653589793238462643) ///< Pi constant.
-#define QW_RAD_TO_DEGREES(angle) (angle * 180 / QW_PI)
+#define QW_RAD_TO_DEGREES(angle) (angle * 180 / QW_PI) ///< Macro for converting radians to degrees.
 
 /**
  * Creates a new QWiimote instance.
@@ -67,6 +67,7 @@ QWiimote::~QWiimote()
 
 /**
  * The QWiimote starts working.
+ * @param new_data_types Data types to use.
  * @return true if the QWiimote started correctly.
  */
 bool QWiimote::start(QWiimote::DataTypes new_data_types)
@@ -208,7 +209,8 @@ void QWiimote::setLeds(QWiimote::WiimoteLeds leds)
 
 /**
  * Modify the calibration values for the accelerometer.
- * @param acc_s Smoothing method to use.
+ * @param zero_acc Zero acceleration vector.
+ * @param grav Gravity vector.
  */
 void QWiimote::setAccelerationCalibration(QVector3D zero_acc, QVector3D grav)
 {
@@ -585,6 +587,10 @@ void QWiimote::PrepareOrientationMatrix()
 
 /**
  * Update a orientation matrix with the given data.
+ * @param matrix Matrix to update.
+ * @param pitch_change Rotation change for pitch.
+ * @param roll_change Rotation change for roll.
+ * @param yaw_change Rotation change for yaw.
  */
 void UpdateOrientationMatrix(QMatrix4x4 &matrix, qreal pitch_change, qreal roll_change, qreal yaw_change)
 {
@@ -596,6 +602,8 @@ void UpdateOrientationMatrix(QMatrix4x4 &matrix, qreal pitch_change, qreal roll_
 
 /**
  * Get the pitch and roll angles from accelerometer data.
+ * @param final_pitch Pitch calculated from accelerometer data.
+ * @param final_roll Roll calculated from accelerometer data.
  * @todo Currently, transition fails between some quadrants. This means
  * that the method currently being used for calculating angles is wrong.
  */

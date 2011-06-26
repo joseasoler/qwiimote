@@ -156,7 +156,16 @@ public:
 	/** Get euler angle for yaw. See #OrientationMode. */
 	qreal orientationYaw()   const { return this->yaw_orientation; }
 
+	/**
+	 * Allows to modify the MotionPlus threshold. Raw angle changes smaller than the threshold will be ignored.
+	 * @param threshold New threshold.
+	 */
 	void   SetMotionPlusThreshold(quint8 threshold) { this->motionplus_threshold = threshold; }
+
+	/**
+	 * Allows to check the MotionPlus threshold. Raw angle changes smaller than the threshold will be ignored.
+	 * @return Current threshold.
+	 */
 	quint8 GetMotionPlusThreshold() const           { return this->motionplus_threshold; }
 
 
