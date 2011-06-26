@@ -63,6 +63,11 @@ public:
 	QIOWiimote(QObject * parent = NULL);
 	~QIOWiimote();
 	bool open();
+
+	/**
+	 * Checks if communication with the Wiimote is opened.
+	 * @return True iff the Wiimote can be accessed.
+	 */
 	bool isOpened() { return this->opened; }
 	void close();
 	bool writeReport(const char * data, const qint64 max_size);

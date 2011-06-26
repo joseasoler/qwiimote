@@ -39,7 +39,7 @@ struct QAccelerationSample;
 class  QIOWiimote;
 class  QWiimoteReport;
 
-typedef QList<QAccelerationSample> QAccelerationSampleList;
+typedef QList<QAccelerationSample> QAccelerationSampleList; ///< List of acceleration samples.
 
 /**
  * QWiimote represents the state of a Wiimote and any connected extensions.
